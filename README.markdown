@@ -181,3 +181,16 @@ to match a duplicate from the GFF file is that the two must overlap.
 An overlap is counted as the duplicate from the GFF having start/end positions such
 that it lies inside the start/end positions of the mapping gene extended by 1kb i.e.
 between `start` - 1000 and `end` +  1000.
+
+Set up and prerequisites
+------------------------
+
+`GFFcleaner.py` requires the `TabFile.py` module from the FLS Bioinformatics
+Core `genomics` repository.
+
+Running tests
+-------------
+
+`GFFcleaner.py` has a set of unit tests built in; to run these do:
+
+    GFFcleaner.py --test
