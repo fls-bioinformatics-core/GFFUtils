@@ -30,6 +30,7 @@ __version__ = "0.1.0"
 import os,sys
 import copy
 import logging
+import optparse
 
 # Set up for local modules in "share"
 SHARE_DIR = os.path.abspath(
@@ -1012,127 +1013,107 @@ if __name__ == "__main__":
     # Set up logging format
     logging.basicConfig(format='[%(levelname)s][%(funcName)s] %(message)s')
 
-    # Check command line
-    if len(sys.argv) < 2 or '-h' in sys.argv or '--help' in sys.argv:
-        print "Usage: %s [OPTIONS] <file>.gff" % os.path.basename(sys.argv[0])
-        print
-        print "Options:"
-        print "--prepend=<str> String to prepend to seqname in first column"
-        print "--clean         Perform the 'cleaning' manipulations on data"
-        print "--report-duplicates"
-        print "                Report duplicate SGD names"
-        print "--resolve-duplicates=<mapping-file>"
-        print "                Resolve duplicates by matching against 'best' genes"
-        print "                in <mapping-file>"
-        print "                Non-matching genes are discarded"
-        print "--discard-unresolved"
-        print "                Also discard any unresolved duplicates"
-        print "--insert-missing[=<mapping-file>]"
-        print "                Insert genes from <mapping-file> with SGD names"
-        print "                that don't appear in the input GFF"
-        print "                (If <mapping-file> is specified with the"
-        print "                --resolve-duplicates option then that will be"
-        print "                used by default.)"
-        print "--debug         Print debugging information"
-        print "--test          Run unit tests"
-        print
-        print "Output files:"
-        print
-        print "<file>_clean.gff      - 'cleaned' version of input"
-        print "<file>_duplicates.txt - list of duplicated SGD names and the lines"
-        print "                        they appear on in the input file,"
-        print "                        chromosome, start coordinate and strand"
-        print "<file>_discarded.gff  - genes rejected by --resolve-duplicates"
-        sys.exit()
+    p = optparse.OptionParser(usage="%prog [options] <file>.gff",
+                              version="%prog "+__version__,
+                              description=
+                              "Utility to perform various 'cleaning' operations on a GFF file "
+                              "and produce output file <file>_clean.gff.")
+    p.add_option('--prepend',action='store',dest='prepend_str',default=None,
+                 help="String to prepend to seqname in first column")
+    p.add_option('--clean',action='store_true',dest='do_clean',
+                 help="Perform the 'cleaning' manipulations on the input data")
+    p.add_option('--report-duplicates',action='store_true',dest='report_duplicates',
+                 help="Report duplicate SGD names and write list to <file>_duplicates.gff "
+                 "with line numbers, chromosome, start coordinate and strand.")
+    p.add_option('--resolve-duplicates',action='store',dest='mapping_file',default=None,
+                 help="Resolve duplicate SGDs by matching against 'best' genes in the supplied "
+                 "mapping file; other non-matching genes are discarded and written to "
+                 "<file>_discarded.gff.")
+    p.add_option('--discard-unresolved',action='store_true',dest='discard_unresolved',
+                 help="Also discard any unresolved duplicates, which are written to "
+                 "<file>_unresolved.gff.")
+    p.add_option('--insert-missing',action='store',dest='gene_file',default=None,
+                 help="Insert genes from gene file with SGD names that don't appear in the "
+                 "input GFF. If a mapping-file was specified with the --resolve-duplicates "
+                 "option then that will be used by default.")
+                 
+    p.add_option('--debug',action='store_true',dest='debug',
+                 help="Print debugging information")
+    p.add_option('--test',action='store_true',dest='run_tests',
+                 help="Run unit tests")
+
+    # Process the command line
+    options,arguments = p.parse_args()
 
     # Check for debugging
-    if "--debug" in sys.argv:
+    if options.debug:
         # Turn on debugging output
         logging.getLogger().setLevel(logging.DEBUG)
 
     # Check for unit testing
-    if "--test" in sys.argv:
+    if options.run_tests:
         print "Running unit tests"
-        suite = unittest.TestSuite(unittest.TestLoader().discover('.',pattern='GFFcleaner.py'))
+        suite = unittest.TestSuite(unittest.TestLoader().\
+                                       discover(os.path.dirname(sys.argv[0]), \
+                                                    pattern=os.path.basename(sys.argv[0])))
         unittest.TextTestRunner(verbosity=2).run(suite)
         print "Tests finished"
         sys.exit()
 
-    # Input file name
-    infile = sys.argv[-1]
-    if not os.path.exists(infile):
-        logging.error("Input file '%s' not found" % infile)
-        sys.exit(1)
+    # Input files
+    if len(arguments) != 1:
+        p.error("input GFF file required")
+    else:
+        infile = arguments[0]
+        if not os.path.exists(infile):
+            p.error("Input file '%s' not found" % infile)
 
-    # Initialise flags
+    # Set flags based on command line
 
     # String to prepend to first column
-    prepend_str = None
-    # clean_score: update the values in "score" column
-    clean_score = False
-    # Initialise mapping of keys from input to output in "attributes" column
-    # where new values are required etc
-    clean_attributes = False
-    attributes_key_map = OrderedDictionary()
-    attributes_key_map['ID'] = 'SGD'
-    attributes_key_map['Gene'] = 'SGD'
-    attributes_key_map['Parent'] = 'SGD'
-    attributes_key_map['Name'] = 'SGD'
-    attributes_dont_replace_with_empty_data = True
-    attributes_exclude_keys = ['kaks','kaks2','ncbi']
-    # Set ID field in 'attributes' to group lines with matching SGDs
-    group_SGDs = False
+    prepend_str = options.prepend_str
+    # Cleaning options
+    if options.do_clean:
+        # Update values in the "score" column
+        clean_score = True
+        # Clean up the "attributes" column
+        clean_attributes = True
+        # Initialise mapping of keys from input to output in "attributes" column
+        # where new values are required etc
+        attributes_key_map = OrderedDictionary()
+        attributes_key_map['ID'] = 'SGD'
+        attributes_key_map['Gene'] = 'SGD'
+        attributes_key_map['Parent'] = 'SGD'
+        attributes_key_map['Name'] = 'SGD'
+        attributes_dont_replace_with_empty_data = True
+        attributes_exclude_keys = ['kaks','kaks2','ncbi']
+        # Set ID field in "attributes" to group lines with matching SGDs
+        group_SGDs = True
+    else:
+        clean_score = False
+        clean_attributes = False
+        group_SGDs = False
     # Report duplicate names
-    report_duplicates = False
+    report_duplicates = options.report_duplicates
     # Resolve duplicated genes using CDS file
-    resolve_duplicates = False
-    cdsfile = None
+    if options.mapping_file is not None:
+        resolve_duplicates = True
+        cdsfile = options.mapping_file
+    else:
+        resolve_duplicates = False
+        cdsfile = None
     # Discard unresolved duplicates
-    discard_unresolved = False
+    discard_unresolved = options.discard_unresolved
     # Insert missing genes
-    insert_missing = False
-    genefile = None
-
-    # Get command line options
-    for arg in sys.argv[1:-1]:
-        if arg.startswith("--prepend="):
-            # String to prepend to first column
-            prepend_str = arg.split('=')[1]
-        elif arg == "--report-duplicates":
-            # Report duplicate SGD names
-            report_duplicates = True
-        elif arg.startswith("--resolve-duplicates"):
-            # File with 'best' genes for filtering
-            resolve_duplicates = True
-            try:
-                cdsfile = arg.split('=')[1]
-            except IndexError:
-                logging.error("--resolve-duplicates: needs a mapping file")
-                sys.exit(1)
-        elif arg == "--discard-unresolved":
-            # Also discard unresolved duplicates
-            discard_unresolved = True
-        elif arg.startswith("--insert-missing"):
-            # File with gene list for insertion
-            insert_missing = True
-            try:
-                genefile = arg.split('=')[1]
-            except IndexError:
-                pass
-        elif arg == "--clean":
-            # Clean up the data
-            clean_score = True
-            clean_attributes = True
-            group_SGDs = True
-        elif arg == "--debug":
-            # Turn on debugging output
-            # Skip as it will already have been
-            # handled previously
-            pass
+    if options.gene_file is not None:
+        insert_missing = True
+        if options.gene_file:
+            genefile = options.gene_file
         else:
-            # Unrecognised option
-            logging.error("Unrecognised option: %s" % arg)
-            sys.exit(1)
+            genefile = cdsfile
+    else:
+        insert_missing = False
+        genefile = None
 
     # Name for output files
     outext = os.path.splitext(infile)[1]
