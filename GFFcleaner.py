@@ -1034,7 +1034,7 @@ if __name__ == "__main__":
                  "<file>_unresolved.gff.")
     p.add_option('--insert-missing',action='store',dest='gene_file',default=None,
                  help="Insert genes from gene file with SGD names that don't appear in the "
-                 "input GFF. GENE_FILE is blank ('='s must still be present) then the mapping "
+                 "input GFF. If GENE_FILE is blank ('='s must still be present) then the mapping "
                  "file supplied with the --resolve-duplicates option will be used instead.")
                  
     p.add_option('--debug',action='store_true',dest='debug',
