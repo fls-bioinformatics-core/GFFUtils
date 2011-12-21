@@ -1304,7 +1304,9 @@ if __name__ == "__main__":
         # Format is tab-delimited, each line has:
         # orf      chr      start     end      strand
         mapping = TabFile(genefile,column_names=('name','chr','start','end','strand'))
-        GFFInsertMissingGenes(gff_data,mapping)
+        n_genes_before_insert = len(gff_data)
+        gff_data = GFFInsertMissingGenes(gff_data,mapping)
+        print "Inserted %d missing genes" % (len(gff_data) - n_genes_before_insert)
 
     # Write to output file
     print "Writing output file %s" % outfile
