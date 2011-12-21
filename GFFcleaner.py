@@ -1030,12 +1030,12 @@ if __name__ == "__main__":
                  "mapping file; other non-matching genes are discarded and written to "
                  "<file>_discarded.gff.")
     p.add_option('--discard-unresolved',action='store_true',dest='discard_unresolved',
-                 help="Also discard any unresolved duplicates, which are written to "
+                 help="Discard any unresolved duplicates, which are written to "
                  "<file>_unresolved.gff.")
     p.add_option('--insert-missing',action='store',dest='gene_file',default=None,
                  help="Insert genes from gene file with SGD names that don't appear in the "
-                 "input GFF. If a mapping-file was specified with the --resolve-duplicates "
-                 "option then that will be used by default.")
+                 "input GFF. GENE_FILE is blank ('='s must still be present) then the mapping "
+                 "file supplied with the --resolve-duplicates option will be used instead.")
                  
     p.add_option('--debug',action='store_true',dest='debug',
                  help="Print debugging information")
