@@ -1068,6 +1068,9 @@ if __name__ == "__main__":
         if not os.path.exists(infile):
             p.error("Input file '%s' not found" % infile)
 
+    # Report version
+    p.print_version()
+
     # Set flags based on command line
 
     # String to prepend to first column
