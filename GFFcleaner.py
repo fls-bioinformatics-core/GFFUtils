@@ -1119,8 +1119,8 @@ if __name__ == "__main__":
         genefile = None
 
     # Name for output files
-    outext = os.path.splitext(infile)[1]
-    outbase = os.path.splitext(infile)[0]
+    outext = os.path.splitext(os.path.basename(infile))[1]
+    outbase = os.path.splitext(os.path.basename(infile))[0]
     outfile = outbase+'_clean'+outext
     print "Input : %s" % infile
     print "Output: %s" % outfile
