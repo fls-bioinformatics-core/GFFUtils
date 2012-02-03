@@ -67,10 +67,11 @@ def main():
 
     # Input and output file
     gff_file = arguments[0]
-    if options.out_file is not None:
+    if options.out_file:
         out_file = options.out_file
     else:
         out_file = os.path.splitext(os.path.basename(gff_file))[0]+"_mRNA_to_gene.txt"
+        print "Output file: %s" % out_file
 
     # Read in the GFF
     gff = GFFcleaner.GFFFile(gff_file)
