@@ -9,6 +9,16 @@
 #
 #######################################################################
 
+"""gff_extract_mRNA_to_gene.py
+
+Utility to match 'mRNA' features with 'gene' features in a GFF, by
+finding genes which have the same 'ID' attribute as the mRNA's 'Parent'
+attribute. Outputs a list of mRNA IDs with the matching gene ID, name
+and description.
+
+Uses the GFFFile and supporting classes to read in the GFF file.
+"""
+
 #######################################################################
 # Module metadata
 #######################################################################
