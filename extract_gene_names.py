@@ -1,4 +1,23 @@
 #!/usr/bin/env python
+#
+#     gff_extract_mRNA_to_gene.py: match gene data to mRNA from GFF file
+#     Copyright (C) University of Manchester 2012 Peter Briggs, Leo Zeef
+#
+#######################################################################
+#
+# gff_extract_mRNA_to_gene.py
+#
+#######################################################################
+
+#######################################################################
+# Module metadata
+#######################################################################
+
+__version__ = "0.0.1"
+
+#######################################################################
+# Import modules that this module depends on
+#######################################################################
 
 import optparse
 import GFFcleaner
@@ -6,9 +25,19 @@ import sys
 import logging
 import os
 
-__version__ = "0.0.1"
+#######################################################################
+# Class definitions
+#######################################################################
+
+# No classes defined
+
+#######################################################################
+# Functions
+#######################################################################
 
 def main():
+    """Main program
+    """
     # Process command line
     p = optparse.OptionParser(usage="%prog OPTIONS gff_file",
                               version="%prog "+__version__,
@@ -77,6 +106,9 @@ def main():
         fo.write('\t'.join(data)+'\n')
     fo.close()
 
+#######################################################################
+# Main program
+#######################################################################
 
 if __name__ == "__main__":
     main()
