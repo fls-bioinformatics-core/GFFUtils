@@ -103,6 +103,8 @@ def main():
                 logging.debug("Failed to get description attribute data for gene ID %s" % gene_ID)
                 description = ''
             logging.debug("%s\t%s\t%s" % (gene_ID,name,description))
+            if gene_ID in gene_data:
+                logging.warning("gene ID '%s' matched multiple times" % gene_ID)
             gene_data[gene_ID] = { 'name': name, 'description': description }
 
     # Combine mRNA and gene data for output
