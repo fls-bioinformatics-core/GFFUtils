@@ -11,10 +11,12 @@
 
 """gff_extract_mRNA_to_gene.py
 
-Utility to match 'mRNA' features with 'gene' features in a GFF, by
-finding genes which have the same 'ID' attribute as the mRNA's 'Parent'
-attribute. Outputs a list of mRNA IDs with the matching gene ID, name
-and description.
+Utility to match 'mRNA' and 'pseudogene' features with 'gene' features
+in a GFF, by finding genes which have the same 'ID' attribute as the
+mRNA's 'Parent' attribute.
+
+Outputs a list of mRNA and pseudogene IDs with the matching gene ID,
+locus, name and description.
 
 Uses the GFFFile and supporting classes to read in the GFF file.
 """
@@ -23,7 +25,7 @@ Uses the GFFFile and supporting classes to read in the GFF file.
 # Module metadata
 #######################################################################
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 #######################################################################
 # Import modules that this module depends on
@@ -51,14 +53,14 @@ def main():
     # Process command line
     p = optparse.OptionParser(usage="%prog OPTIONS gff_file",
                               version="%prog "+__version__,
-                              description="Match mRNA IDs in a GFF file with their 'parent' "
-                              "genes: reads in GFF file and for each 'mRNA' feature, identifies "
-                              "matching genes where the gene 'ID' attribute is the same as the "
-                              "mRNA 'Parent' attribute. Outputs a tab-delimited file with each "
-                              "line consisting of mRNA ID, gene ID, gene name and gene "
-                              "description. "
+                              description="Match mRNA & pseudogene IDs in a GFF file with their "
+                              "'parent' genes: reads in GFF file and for each 'mRNA' and "
+                              "'pseudogene' feature, identifies matching genes where the gene "
+                              "'ID' attribute is the same as the feature's mRNA 'Parent' "
+                              "attribute. Outputs a tab-delimited file with each line consisting "
+                              "of mRNA ID, gene ID, gene name and gene description. "
                               "Output file name can be specified with the -o option, otherwise "
-                              "it will be the input file name with '_annotated' appended.")
+                              "it will be the input file name with '_feature_to_gene' appended.")
     p.add_option('-o',action="store",dest="out_file",default=None,
                  help="specify output file name")
     options,arguments = p.parse_args()
@@ -70,24 +72,25 @@ def main():
     if options.out_file:
         out_file = options.out_file
     else:
-        out_file = os.path.splitext(os.path.basename(gff_file))[0]+"_mRNA_to_gene.txt"
+        out_file = os.path.splitext(os.path.basename(gff_file))[0]+"_feature_to_gene.txt"
         print "Output file: %s" % out_file
 
     # Read in the GFF
     gff = GFFcleaner.GFFFile(gff_file)
 
-    # Assemble list of gene IDs from mRNA lines, and store data for
-    # genes (ID, Name and Description)
-    mRNA_to_genes = {}
+    # Assemble list of gene IDs from mRNA & pseudogene lines, and store data for
+    # genes (ID, Name and Description, and locus)
+    features_to_genes = {}
     gene_data = {}
     for line in gff:
-        if line['feature'] == "mRNA":
-            # Get the mRNA ID and the Parent (= gene ID) from the attributes
+        if line['feature'] == "mRNA" or line['feature'] == 'pseudogene':
+            # Get the feature ID and the Parent (= gene ID) from the attributes
             attributes = GFFcleaner.GFFAttributes(line['attributes'])
-            mRNA_ID = attributes['ID']
+            feature_ID = attributes['ID']
             gene_ID = attributes['Parent']
-            logging.debug("mRNA_ID = %s\tgene_ID = %s" % (mRNA_ID,gene_ID))
-            mRNA_to_genes[mRNA_ID] = gene_ID
+            logging.debug("feature_ID = %s\tgene_ID = %s" % (feature_ID,gene_ID))
+            features_to_genes[feature_ID] = { 'parent_ID': gene_ID,
+                                              'type': line['feature'] }
         elif line['feature'] == "gene":
             # Get the gene ID, Name and Description
             attributes = GFFcleaner.GFFAttributes(line['attributes'])
@@ -102,18 +105,24 @@ def main():
             except KeyError:
                 logging.debug("Failed to get description attribute data for gene ID %s" % gene_ID)
                 description = ''
+            locus = "%s:%s-%s" % (line['seqname'],line['start'],line['end'])
             logging.debug("%s\t%s\t%s" % (gene_ID,name,description))
             if gene_ID in gene_data:
                 logging.warning("gene ID '%s' matched multiple times" % gene_ID)
-            gene_data[gene_ID] = { 'name': name, 'description': description }
+            gene_data[gene_ID] = { 'name': name,
+                                   'description': description,
+                                   'locus': locus}
 
     # Combine mRNA and gene data for output
     fo = open(out_file,'w')
-    for mRNA_ID in mRNA_to_genes:
-        gene_ID = mRNA_to_genes[mRNA_ID]
-        # mRNA ID and gene ID (i.e. parent)
-        data = [mRNA_ID,gene_ID]
+    fo.write("exon_parent\tfeature\tgene_id\tlocus\tname\tdescription\n")
+    for feature_ID in features_to_genes:
+        gene_ID = features_to_genes[feature_ID]['parent_ID']
+        feature_type = features_to_genes[feature_ID]['type']
+        # Feature ID and type, and gene ID (i.e. parent)
+        data = [feature_ID,feature_type,gene_ID]
         # Append gene data
+        data.append(gene_data[gene_ID]['locus'])
         data.append(gene_data[gene_ID]['name'])
         data.append(gene_data[gene_ID]['description'])
         fo.write('\t'.join(data)+'\n')
