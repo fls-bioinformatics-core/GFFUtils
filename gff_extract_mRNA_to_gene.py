@@ -25,7 +25,7 @@ Uses the GFFFile and supporting classes to read in the GFF file.
 # Module metadata
 #######################################################################
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 #######################################################################
 # Import modules that this module depends on
@@ -75,6 +75,10 @@ def main():
         out_file = os.path.splitext(os.path.basename(gff_file))[0]+"_feature_to_gene.txt"
         print "Output file: %s" % out_file
 
+    # Types of features to look up
+    feature_list = ['mRNA','pseudogene','C_D_box_snoRNA','class_I_RNA','ncRNA',
+                    'tRNA','snRNA','SRP_RNA']
+
     # Read in the GFF
     gff = GFFcleaner.GFFFile(gff_file)
 
@@ -83,7 +87,7 @@ def main():
     features_to_genes = {}
     gene_data = {}
     for line in gff:
-        if line['feature'] == "mRNA" or line['feature'] == 'pseudogene':
+        if line['feature'] in feature_list:
             # Get the feature ID and the Parent (= gene ID) from the attributes
             attributes = GFFcleaner.GFFAttributes(line['attributes'])
             feature_ID = attributes['ID']
