@@ -21,7 +21,7 @@ field.
 # Module metadata
 #######################################################################
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 #######################################################################
 # Import modules
@@ -106,6 +106,9 @@ class OrderedDictionary:
 
     def __contains__(self,key):
         return key in self.__keys
+
+    def __iter__(self):
+        return iter(self.__keys)
 
     def keys(self):
         return copy.copy(self.__keys)
