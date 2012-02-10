@@ -25,7 +25,7 @@ Uses the GFFFile and supporting classes to read in the GFF file.
 # Module metadata
 #######################################################################
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 #######################################################################
 # Import modules that this module depends on
@@ -77,7 +77,8 @@ def main():
 
     # Types of features to look up
     feature_list = ['mRNA','pseudogene','C_D_box_snoRNA','class_I_RNA','ncRNA',
-                    'tRNA','snRNA','SRP_RNA']
+                    'tRNA','snRNA','SRP_RNA','H_ACA_box_snoRNA','class_II_RNA',
+                    'RNase_P_RNA','RNase_MRP_RNA']
 
     # Read in the GFF
     gff = GFFcleaner.GFFFile(gff_file)
