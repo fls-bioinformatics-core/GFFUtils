@@ -1004,6 +1004,40 @@ YEL0W06\tchr2\t49195\t49569\t-
             idx = GFFAttributes(gff[i]['attributes'])['ID']
             self.assertNotEqual(idx,'CDS:YEL0W06:3',"wrong ID at position %d" %i)
 
+class TestOrderDictionary(unittest.TestCase):
+    """Unit tests for the OrderedDictionary class
+    """
+
+    def test_get_and_set(self):
+        """Add and retrieve data
+        """
+        d = OrderedDictionary()
+        self.assertEqual(len(d),0)
+        d['hello'] = 'goodbye'
+        self.assertEqual(d['hello'],'goodbye')
+
+    def test_keeps_things_in_order(self):
+        """Check that items are returned in same order as added
+        """
+        d = OrderedDictionary()
+        d['hello'] = 'goodbye'
+        d['stanley'] = 'fletcher'
+        d['monty'] = 'python'
+        self.assertEqual(d.keys(),['hello','stanley','monty'])
+
+    def test_iteration_over_keys(self):
+        """Check iterating over keys
+        """
+        d = OrderedDictionary()
+        d['hello'] = 'goodbye'
+        d['stanley'] = 'fletcher'
+        d['monty'] = 'python'
+        try:
+            for i in d:
+                pass
+        except KeyError:
+            self.fail("Iteration over OrderedDictionary failed")
+
 #######################################################################
 # Main program
 #######################################################################
