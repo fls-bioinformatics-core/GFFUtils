@@ -18,7 +18,7 @@ Annotate HTSeq-count output with data from GFF
 # Module metadata
 #######################################################################
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 #######################################################################
 # Import modules that this module depends on
@@ -104,12 +104,18 @@ def main():
             except KeyError:
                 logging.error("Failed to get name attribute for feature ID %s" % feature_ID)
                 sys.exit(1)
-            try:
-                description = attributes['description']
-            except KeyError:
-                logging.debug("Failed to get description attribute data for feature ID %s" %
-                              feature_ID)
-                description = ''
+            # Build description text
+            # This will be all the attribute data from the 'description' attribute
+            # onwards
+            store_attribute = False
+            description = []
+            for attr in attributes:
+                if attr == 'description':
+                    store_attribute = True
+                if store_attribute:
+                    description.append(attr+'='+attributes[attr])
+            # Reconstruct the description string
+            description = ';'.join(description)
             # Feature type
             parent_feature_type = data['feature']
             # Locus
