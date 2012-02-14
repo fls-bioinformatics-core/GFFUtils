@@ -18,7 +18,7 @@ Annotate HTSeq-count output with data from GFF
 # Module metadata
 #######################################################################
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 #######################################################################
 # Import modules that this module depends on
@@ -164,14 +164,13 @@ def main():
 
     # Create a TabFile for output
     print "Building annotated count file for output"
-    header = ['exon_parent',
-              'feature_type',
-              'locus',
-              'name',
-              'description']
+    annotated_counts = TabFile.TabFile(column_names=['exon_parent',
+                                                     'feature_type',
+                                                     'locus',
+                                                     'gene name',
+                                                     'description'])
     for htseqfile in htseq_files:
-        header.append(htseqfile)
-    annotated_counts = TabFile.TabFile(column_names=header)
+        annotated_counts.appendColumn(htseqfile)
 
     # Combine feature counts and parent feature data
     for feature_ID in feature_IDs:
@@ -196,10 +195,9 @@ def main():
 
     # Make second file for the trailing table data
     print "Building HTSeq tables file for output"
-    header = ['count']
+    table_counts = TabFile.TabFile(column_names=['count'])
     for htseqfile in htseq_files:
-        header.append(htseqfile)
-    table_counts = TabFile.TabFile(column_names=header)
+        table_counts.appendColumn(htseqfile)
     for name in htseq_tables[htseq_files[0]]:
         # Build the data line
         data = [name]
