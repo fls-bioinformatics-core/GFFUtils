@@ -18,7 +18,7 @@ Annotate HTSeq-count output with data from GFF
 # Module metadata
 #######################################################################
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 #######################################################################
 # Import modules that this module depends on
@@ -192,7 +192,7 @@ def main():
 
     # Write the file
     print "Writing output file %s" % annotated_counts_out_file
-    annotated_counts.write(annotated_counts_out_file,include_header=True)
+    annotated_counts.write(annotated_counts_out_file,include_header=True,no_hash=True)
 
     # Make second file for the trailing table data
     print "Building HTSeq tables file for output"
@@ -207,7 +207,7 @@ def main():
             data.append(htseq_tables[htseqfile][name])
         table_counts.append(data=data)
     print "Writing output file %s" % tables_out_file
-    table_counts.write(tables_out_file,include_header=True)
+    table_counts.write(tables_out_file,include_header=True,no_hash=True)
 
 #######################################################################
 # Main program
