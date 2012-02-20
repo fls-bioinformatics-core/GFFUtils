@@ -18,7 +18,7 @@ Annotate HTSeq-count output with data from GFF
 # Module metadata
 #######################################################################
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 #######################################################################
 # Import modules that this module depends on
@@ -30,6 +30,7 @@ import TabFile
 import sys
 import logging
 import os
+import glob
 
 #######################################################################
 # Class definitions
@@ -58,7 +59,13 @@ def main():
 
     # Input files
     gff_file = arguments[0]
-    htseq_files = arguments[1:]
+    htseq_files = []
+
+    # Check for wildcards in HTSeq file names, to emulate linux shell globbing
+    # on platforms such as Windows which don't have this built in
+    for arg in arguments[1:]:
+        for filen in glob.iglob(arg):
+            htseq_files.append(filen)
 
     # Feature type being considered
     feature_type = options.feature_type
