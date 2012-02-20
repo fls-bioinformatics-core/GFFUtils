@@ -65,7 +65,11 @@ def main():
     # on platforms such as Windows which don't have this built in
     for arg in arguments[1:]:
         for filen in glob.iglob(arg):
+            if not os.path.exists(filen):
+                p.error("File '%s' not found" % filen)
             htseq_files.append(filen)
+    if not htseq_files:
+        p.error("No input HTSeq-count files found")
 
     # Feature type being considered
     feature_type = options.feature_type
