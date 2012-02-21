@@ -25,7 +25,7 @@ __version__ = "0.1.1"
 #######################################################################
 
 import optparse
-import GFFcleaner
+import GFFFile
 import TabFile
 import sys
 import logging
@@ -83,7 +83,7 @@ def main():
 
     # Process GFF data
     print "Reading data from %s" % gff_file
-    gff = GFFcleaner.GFFFile(gff_file)
+    gff = GFFFile.GFFFile(gff_file)
 
     # Overview of the method:
     #
@@ -102,7 +102,7 @@ def main():
     for data in gff:
         if data['feature'] == feature_type:
             # Get the Parent ID from the attributes
-            attributes = GFFcleaner.GFFAttributes(data['attributes'])
+            attributes = GFFFile.GFFAttributes(data['attributes'])
             parent = attributes['Parent']
             if parent not in exon_parent_IDs:
                 exon_parent_IDs.append(parent)
@@ -116,7 +116,7 @@ def main():
     # Link IDs of genes to the exon parents that they (the genes) are parents of
     parent_gene_IDs = {}
     for data in gff:
-        attributes = GFFcleaner.GFFAttributes(data['attributes'])
+        attributes = GFFFile.GFFAttributes(data['attributes'])
         try:
             feature_ID = attributes['ID']
             if feature_ID in exon_parent_IDs:
@@ -136,7 +136,7 @@ def main():
     parent_genes = {}
     for data in gff:
         # Get the ID from the attributes
-        attributes = GFFcleaner.GFFAttributes(data['attributes'])
+        attributes = GFFFile.GFFAttributes(data['attributes'])
         try:
             feature_ID = attributes['ID']
         except KeyError:
@@ -179,13 +179,13 @@ def main():
 
     # Process the HTSeq-count files
     print "Processing HTSeq-count files"
-    htseq_counts = GFFcleaner.OrderedDictionary()
-    htseq_tables = GFFcleaner.OrderedDictionary()
+    htseq_counts = GFFFile.OrderedDictionary()
+    htseq_tables = GFFFile.OrderedDictionary()
     for htseqfile in htseq_files:
         print "\t%s" % htseqfile
         # Create dictionaries to store data
-        htseq_counts[htseqfile] = GFFcleaner.OrderedDictionary()
-        htseq_tables[htseqfile] = GFFcleaner.OrderedDictionary()
+        htseq_counts[htseqfile] = GFFFile.OrderedDictionary()
+        htseq_tables[htseqfile] = GFFFile.OrderedDictionary()
         # Read in data from file
         fp = open(htseqfile,'rU')
         # Flag indicating whether we're reading feature counts
