@@ -211,7 +211,14 @@ class GFFID:
     <code>:<name>:<index> (e.g. 'CDS:XYZ123-A:2')
 
     The components can be queried and changed via the code,
-    name and index properties of the class.
+    name and index properties of the class, e.g.
+
+    >>> code = GFFID('CDS:XYZ123-A:2').code
+
+    etc
+
+    If there is no code then this is returned as an empty string;
+    if there is no index then this is returned as 0.
 
     Doing e.g. str(gffid) returns the appropriate string
     representation.
@@ -242,7 +249,81 @@ class GFFID:
 #######################################################################
 # Tests
 #######################################################################
+
 import unittest
+import cStringIO
+
+class TestGFFFile(unittest.TestCase):
+    """Unit tests for the GFFFile class
+    """
+
+    def setUp(self):
+        # Example GFF file fragment
+        self.fp = cStringIO.StringIO(
+"""##gff-version   3
+# generated: Wed Feb 21 12:01:58 2012
+DDB0123458	Sequencing Center	chromosome	1	4923596	.	+	.	ID=DDB0232428;Name=1
+DDB0232428	Sequencing Center	contig	101	174493	.	+	.	ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02
+DDB0232428	.	gene	1890	3287	.	+	.	ID=DDB_G0267178;Name=DDB_G0267178_RTE;description=ORF2 protein fragment of DIRS1 retrotransposon%3B refer to Genbank M11339 for full-length element
+DDB0232428	Sequencing Center	mRNA	1890	3287	.	+	.	ID=DDB0216437;Parent=DDB_G0267178;Name=DDB0216437;description=JC1V2_0_00003: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Protein Accession Version:EAL73826.1,Inparanoid V. 5.1:DDB0216437,Protein Accession Number:EAL73826.1,Protein GI Number:60475899,UniProt:Q55H43,Genome V. 2.0 ID:JC1V2_0_00003
+DDB0232428	Sequencing Center	exon	1890	3287	.	+	.	Parent=DDB0216437
+DDB0232428	Sequencing Center	CDS	1890	3287	.	+	.	Parent=DDB0216437
+""")
+
+    def test_read_in_gff(self):
+        """Test that the GFF data can be read in
+        """
+        gff = GFFFile("test.gff",self.fp)
+        # There should be 6 lines of data
+        self.assertEqual(len(gff),6)
+        # Check the feature names are correct
+        feature = ('chromosome','contig','gene','mRNA','exon','CDS')
+        for i in range(len(gff)):
+            self.assertEqual(feature[i],gff[i]['feature'],
+                             "Incorrect feature '%s' on data line %d" % (gff[i]['feature'],i))
+
+class TestGFFAttributes(unittest.TestCase):
+    """Unit tests for GFFAttributes class
+    """
+
+    def test_extract_attributes(self):
+        """Test that attribute data can be extracted
+        """
+        attributes = "ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02"
+        attr = GFFAttributes(attributes)
+        self.assertTrue('ID' in attr)
+        self.assertEqual(attr['ID'],'DDB0232440')
+        self.assertTrue('Parent' in attr)
+        self.assertEqual(attr['Parent'],'DDB0232428')
+        self.assertTrue('Name' in attr)
+        self.assertEqual(attr['Name'],'DDB0232440')
+        self.assertTrue('description' in attr)
+        self.assertEqual(attr['description'],'Contig generated from contig finding genome version 2.5')
+        self.assertTrue('Dbxref' in attr)
+        self.assertEqual(attr['Dbxref'],'Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02')
+        self.assertFalse('not_here' in attr)
+
+class TestGFFID(unittest.TestCase):
+    """Unit tests for GFFID class
+    """
+
+    def test_simple_ID(self):
+        """Check that name and index can be extracted from ID without code or index
+        """
+        gffid = GFFID('XYZ123-A')
+        self.assertEqual(gffid.code,'')
+        self.assertEqual(gffid.name,'XYZ123-A')
+        self.assertEqual(gffid.index,0)
+        self.assertEqual(str(gffid),'XYZ123-A')        
+
+    def test_full_ID(self):
+        """Check that code, name and index can be extracted from full ID
+        """
+        gffid = GFFID('CDS:XYZ123-A:2')
+        self.assertEqual(gffid.code,'CDS')
+        self.assertEqual(gffid.name,'XYZ123-A')
+        self.assertEqual(gffid.index,2)
+        self.assertEqual(str(gffid),'CDS:XYZ123-A:2')
 
 class TestOrderDictionary(unittest.TestCase):
     """Unit tests for the OrderedDictionary class
