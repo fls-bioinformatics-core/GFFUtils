@@ -51,12 +51,13 @@ To iterate over all lines and extract 'ID' field from attributes:
 >>>    if 'ID' in attr:
 >>>       print attr['ID']
 
-To iterate over all lines and break up 'ID' field into components:
+To iterate over all lines and print just the 'name' part of the
+'ID' attribute:
 
 >>> for line in gff:
 >>>    attr = GFFAttributes(line['attributes'])
 >>>    if 'ID' in attr:
->>>       print attr['ID']
+>>>       print GFFID(attr['ID']).name
 
 """
 
