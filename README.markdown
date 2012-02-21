@@ -1,13 +1,22 @@
+GFFUtils
+========
+
+GFFUtils package provides the following utilities for working with GFF files:
+
+ * `GFFcleaner.py`: performs various "cleaning" manipulations on a GFF file
+ * `GFF_HTSeq_Annotator.py`: combine and annotate HTSeq-count output with data from
+   the source GFF file
+
 GFFcleaner.py
-=============
+-------------
 
 The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
 
-## Usage ##
+### Usage ###
 
         GFFcleaner.py [OPTIONS] <file>.gff
 
-## Options ##
+### Options ###
 
  *  `--prepend=<str>`
 
@@ -43,7 +52,7 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
 
  *  `--test`  Run unit tests
 
-## Output files ##
+### Output files ###
 
  *  `<file>_clean.gff` 'cleaned' version of input
 
@@ -55,7 +64,7 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
 See <http://www.sanger.ac.uk/resources/software/gff/spec.html> for details of the GFF
 format.
 
-## run_cleanup.sh ##
+### run_cleanup.sh ###
 
 This is a shell script which automatically runs all the steps outlined in the
 _Usage recipe_.
@@ -65,7 +74,7 @@ Usage: `run_cleanup.sh <gff_file> [<mapping_file>]`
 Note that duplicate resolution and missing gene insertion cannot be performed without
 a mapping file.
 
-## Usage recipe ##
+### Usage recipe ###
 
 The following steps outline the procedure for using the program, with each step
 being run on the output from the previous one:
@@ -134,10 +143,9 @@ being run on the output from the previous one:
      Adds genes from a list of "best" genes given in a mapping file which have names not
      found in the input GFF.
 
-Notes
------
+### Notes ###
 
-### SGD grouping ###
+#### SGD grouping ####
 
 As part of setting the ID attribute of GFF lines, the "clean" option also attempts to group
 neighbouring lines which have the same SGD name.
@@ -164,7 +172,7 @@ for example:
         chr1   Test   CDS   38050   38120   0   -   0   ID=CDS:YEL0X:1;SGD=YEL0X
         chr1   Test   CDS   39195   39569   0   -   0   ID=CDS:YEL0W:3;SGD=YEL0W
 
-### Mapping file format ###
+#### Mapping file format ####
 
 The mapping file is a tab-delimited text file with lines of the form:
 
@@ -173,7 +181,7 @@ The mapping file is a tab-delimited text file with lines of the form:
 `<name>` is used to match against the SGD names in the input GFF file.
 
 
-### Overlap criteria ###
+#### Overlap criteria ####
 
 Aside from matching chromosome and strand, one of the criteria for a mapping gene
 to match a duplicate from the GFF file is that the two must overlap.
@@ -182,10 +190,46 @@ An overlap is counted as the duplicate from the GFF having start/end positions s
 that it lies inside the start/end positions of the mapping gene extended by 1kb i.e.
 between `start` - 1000 and `end` +  1000.
 
+GFF_HTSeq_Annotator.py
+----------------------
+
+GFF_HTSeq_Annotator.py takes the output from one or more runs of the HTSeq-count program
+and combines it with data from the source GFF file.
+
+HTSeq-count should have been run using e.g.:
+
+        htseq-count --type=exon -i Parent <file>.gff <file>.sam
+
+which returns counts of each exon against the name of that exon's parent.
+
+GFF_HTSeq_Annotator will match up the exon parent with its parent gene and output the
+counts against gene names.
+
+### Usage ###
+
+        GFF_HTSeq_Annotator.py <file>.gff <htseq-log1> [<htseq-log2> ...]
+
+Alternatively you can use wildcards to specify multiple HTSeq log files e.g. `*_HTSeq.txt`.
+
+### Options ###
+
+    --version             show program's version number and exit
+    -h, --help            show this help message and exit
+    -o OUT_FILE           specify output file name
+    -t FEATURE_TYPE, --type=FEATURE_TYPE
+                          feature type to process (default 'exon')
+
+### Output files ###
+
+ * `<basename>_htseq_counts.txt`: the counts from each log for each gene name.
+
+ * `<basename>_htseq_counts_stats.txt`: the counts of "ambiguous", "two_low_aQual" etc
+    from each log.
+
 Set up and prerequisites
 ------------------------
 
-`GFFcleaner.py` requires the `TabFile.py` module from the FLS Bioinformatics
+The `GFFUtils` programs require the `TabFile.py` module from the FLS Bioinformatics
 Core `genomics` repository.
 
 Running tests
@@ -194,3 +238,7 @@ Running tests
 `GFFcleaner.py` has a set of unit tests built in; to run these do:
 
     GFFcleaner.py --test
+
+To run the unit tests for the GFFFile.py module, do:
+
+    python GFFFile.py
