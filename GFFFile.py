@@ -326,7 +326,7 @@ class TestGFFID(unittest.TestCase):
         self.assertEqual(gffid.index,2)
         self.assertEqual(str(gffid),'CDS:XYZ123-A:2')
 
-class TestOrderDictionary(unittest.TestCase):
+class TestOrderedDictionary(unittest.TestCase):
     """Unit tests for the OrderedDictionary class
     """
 
