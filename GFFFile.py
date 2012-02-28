@@ -69,6 +69,7 @@ To iterate over all lines and print just the 'name' part of the
 from TabFile import TabFile
 import logging
 import copy
+import urllib
 
 #######################################################################
 # Class definitions
@@ -159,7 +160,10 @@ class GFFAttributes(OrderedDictionary):
     Keyed data can be modified and deleted via this syntax.
 
     The values without keys can be accessed as a list via the
-    nokeys() method.
+    nokeys() method. Special characters that have been escaped
+    using "percent encoding" (e.g. semicolons, equals, tabs etc)
+    are automatically converted back to their original values
+    (e.g. ';' rather than '%3B').
 
     str(GFFAttributes) returns the attribute data as a
     string representation which restores the original format
@@ -181,6 +185,8 @@ class GFFAttributes(OrderedDictionary):
                     # No equals sign
                     key = ''
                     value = item.strip()
+                # Percent-decode value
+                value = urllib.unquote(value)
                 # Store data
                 if key == '':
                     # No key: store in a list
@@ -256,7 +262,7 @@ import unittest
 import cStringIO
 
 class TestGFFFile(unittest.TestCase):
-    """Unit tests for the GFFFile class
+    """Basic unit tests for the GFFFile class
     """
 
     def setUp(self):
@@ -304,6 +310,22 @@ class TestGFFAttributes(unittest.TestCase):
         self.assertTrue('Dbxref' in attr)
         self.assertEqual(attr['Dbxref'],'Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02')
         self.assertFalse('not_here' in attr)
+
+    def test_percent_decoding(self):
+        """Test that percent decoding works on attribute lists
+        """
+        attributes = "ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0234567%22%3EDDB_G0234567%3C%2Fa%3E"
+        attr = GFFAttributes(attributes)
+        self.assertEqual(attr['ID'],'DDB_G0789012')
+        self.assertEqual(attr['Name'],'DDB_G0789012_ps')
+        self.assertEqual(attr['description'],'putative pseudogene; similar to a family of genes, including <a href="/gene/DDB_G0234567">DDB_G0234567</a>')
+
+    def test_recover_representation(self):
+        """Test that __repr__ returns original string
+        """
+        attributes = "ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02"
+        attr = GFFAttributes(attributes)
+        self.assertEqual(attributes,str(attr))
 
 class TestGFFID(unittest.TestCase):
     """Unit tests for GFFID class
