@@ -169,11 +169,16 @@ class GFFAttributes(OrderedDictionary):
     string representation which restores the original format
     found in the GFF file (i.e. semi-column separated data
     items with single values or 'key=value' pairs as
-    appropriate).
+    appropriate). Values which contain special characters
+    will be escaped appropriately using URL percent encoding
+    (i.e. the reverse of the decoding process).
     """
     def __init__(self,attribute_data=None):
         OrderedDictionary.__init__(self)
         self.__nokeys = []
+        # Special attributes (which are allowed to contain
+        # unescaped commas)
+        self.__special_attributes = ('Parent','Dbxref')
         # Extract individual data items
         if attribute_data is not None:
             for item in attribute_data.split(';'):
@@ -198,12 +203,31 @@ class GFFAttributes(OrderedDictionary):
     def nokeys(self):
         return self.__nokeys
 
+    def __escape_value(self,key,value):
+        """Internal: return escaped value of input string
+
+        Performs the URL percent encoding of values for the GFF
+        attributes.
+
+        Note that for certain predefined keys, an unescaped comma
+        is allowed in the value. For all others commas will be
+        escaped.
+
+        Arguments:
+          key: name of the attribute that the value belongs to
+          value: the string to be encoded
+        """
+        if key in self.__special_attributes:
+            return urllib.quote(value,safe=" ,:^*$@!+?|")
+        else:
+            return urllib.quote(self[key],safe=" :^*$@!+?|")
+
     def __repr__(self):
         items = []
         for item in self.__nokeys:
             items.append(item)
         for key in self.keys():
-            items.append("%s=%s" % (key,self[key]))
+            items.append("%s=%s" % (key,self.__escape_value(key,self[key])))
         return ';'.join(items)
 
 class GFFID:
@@ -320,10 +344,27 @@ class TestGFFAttributes(unittest.TestCase):
         self.assertEqual(attr['Name'],'DDB_G0789012_ps')
         self.assertEqual(attr['description'],'putative pseudogene; similar to a family of genes, including <a href="/gene/DDB_G0234567">DDB_G0234567</a>')
 
+    def test_percent_encoding(self):
+        """Test that attributes are properly re-encoded
+        """
+        dbxref = "Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02"
+        self.assertEqual(dbxref,str(GFFAttributes(dbxref)))
+        parent = "Parent=AF2312,AB2812,abc-3"
+        self.assertEqual(parent,str(GFFAttributes(parent)))
+        description = "description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0234567%22%3EDDB_G0234567%3C%2Fa%3E"
+        self.assertEqual(description,str(GFFAttributes(description)))
+
     def test_recover_representation(self):
         """Test that __repr__ returns original string
         """
         attributes = "ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02"
+        attr = GFFAttributes(attributes)
+        self.assertEqual(attributes,str(attr))
+
+    def test_recover_representation_with_percent_encoding(self):
+        """Test that __repr__ returns original string with percent encoding
+        """
+        attributes = "ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0234567%22%3EDDB_G0234567%3C%2Fa%3E"
         attr = GFFAttributes(attributes)
         self.assertEqual(attributes,str(attr))
 
