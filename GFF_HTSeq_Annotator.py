@@ -163,10 +163,11 @@ def main():
             store_attribute = False
             description = []
             for attr in attributes:
-                if attr == 'description':
-                    store_attribute = True
                 if store_attribute:
                     description.append(attr+'='+attributes[attr])
+                if attr == 'description':
+                    description.append(attributes[attr])
+                    store_attribute = True
             # Reconstruct the description string
             description = ';'.join(description)
             # Locus: chromosome plus start and end data
