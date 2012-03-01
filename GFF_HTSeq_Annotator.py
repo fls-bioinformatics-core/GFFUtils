@@ -173,13 +173,19 @@ def main():
             # Locus: chromosome plus start and end data
             locus = "%s:%s-%s" % (data['seqname'],data['start'],data['end'])
             logging.debug("%s\t%s\t%s" % (feature_ID,name,description))
+            # Gene length
+            gene_length = data['end'] - data['start']
             # Check if it's unique
             if feature_ID in parent_genes:
                 logging.warning("ID '%s' matched multiple times" % feature_ID)
             # Store data
             parent_genes[feature_ID] = { 'gene_name': name,
                                          'gene_locus': locus,
-                                         'description': description}
+                                         'description': description,
+                                         'chr': data['seqname'],
+                                         'start': data['start'],
+                                         'end': data['end'],
+                                         'gene_length': gene_length }
 
     # Process the HTSeq-count files
     print "Processing HTSeq-count files"
@@ -226,6 +232,10 @@ def main():
                                                      'feature_type_exon_parent',
                                                      'gene_ID',
                                                      'gene_name',
+                                                     'chr',
+                                                     'start',
+                                                     'end',
+                                                     'gene_length',
                                                      'locus',
                                                      'description'])
     for htseqfile in htseq_files:
@@ -242,6 +252,10 @@ def main():
         exon_parent_gene = exon_parent_data[exon_parent_ID]['Parent']
         data.append(exon_parent_gene)
         data.append(parent_genes[exon_parent_gene]['gene_name'])
+        data.append(parent_genes[exon_parent_gene]['chr'])
+        data.append(parent_genes[exon_parent_gene]['start'])
+        data.append(parent_genes[exon_parent_gene]['end'])
+        data.append(parent_genes[exon_parent_gene]['gene_length'])
         data.append(parent_genes[exon_parent_gene]['gene_locus'])
         data.append(parent_genes[exon_parent_gene]['description'])
         # Add the counts from each file
