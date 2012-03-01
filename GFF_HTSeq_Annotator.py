@@ -219,6 +219,17 @@ def main():
                 # too_low_aQual	0
                 htseq_tables[htseqfile][name] = count
 
+    # Total reads counted into genes for each HTSeq output file
+    print "Determining numbers counted into genes"
+    for htseqfile in htseq_files:
+        total_counted_into_genes = 0
+        for feature in htseq_counts[htseqfile]:
+            total_counted_into_genes += int(htseq_counts[htseqfile][feature])
+        # Insert at the start of the table of counts
+        htseq_tables[htseqfile].insert(0,
+                                       'total_counted_into_genes',
+                                       total_counted_into_genes)
+
     # Make a list of names found in the count files
     print "Building list of IDs from %s" % htseq_files[0]
     feature_IDs = []
