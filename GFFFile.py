@@ -145,6 +145,13 @@ class OrderedDictionary:
     def keys(self):
         return copy.copy(self.__keys)
 
+    def insert(self,i,key,value):
+        if key not in self.__keys:
+            self.__keys.insert(i,key)
+            self.__dict[key] = value
+        else:
+            raise KeyError, "Key '%s' already exists" % key
+
 class GFFAttributes(OrderedDictionary):
     """Class for handling GFF 'attribute' data
 
@@ -400,6 +407,27 @@ class TestOrderedDictionary(unittest.TestCase):
         d = OrderedDictionary()
         self.assertEqual(len(d),0)
         d['hello'] = 'goodbye'
+        self.assertEqual(d['hello'],'goodbye')
+
+    def test_insert(self):
+        """Insert items
+        """
+        d = OrderedDictionary()
+        d['hello'] = 'goodbye'
+        self.assertEqual(d.keys(),['hello'])
+        self.assertEqual(len(d),1)
+        # Insert at start of list
+        d.insert(0,'stanley','fetcher')
+        self.assertEqual(d.keys(),['stanley','hello'])
+        self.assertEqual(len(d),2)
+        self.assertEqual(d['stanley'],'fetcher')
+        self.assertEqual(d['hello'],'goodbye')
+        # Insert in middle
+        d.insert(1,'monty','python')
+        self.assertEqual(d.keys(),['stanley','monty','hello'])
+        self.assertEqual(len(d),3)
+        self.assertEqual(d['stanley'],'fetcher')
+        self.assertEqual(d['monty'],'python')
         self.assertEqual(d['hello'],'goodbye')
 
     def test_keeps_things_in_order(self):
