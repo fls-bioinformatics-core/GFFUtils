@@ -12,6 +12,16 @@
 """GFF_HTSeq_Annotator.py
 
 Annotate HTSeq-count output with data from GFF
+
+Usage:
+
+First Run the htseq-count program to generate counts using e.g.
+
+   htseq-count -q -i ID -t exon <sam> <gff> > htseq-counts
+
+Then run the annotator:
+
+   GFF_HTSeq_Annotator.py -t exon <gff> htseq-counts
 """
 
 #######################################################################
@@ -49,11 +59,18 @@ def main():
     # Process command line
     p = optparse.OptionParser(usage="%prog OPTIONS gff_file HTSeq_out [ HTSeq_out_2 ... ]",
                               version="%prog "+__version__,
-                              description="Annotate HTSeq-count output with data from GFF.")
+                              description="Annotate htseq-count output with data from GFF. "
+                              "Generate input HTSeq_out files using the htseq-count program "
+                              "e.g. 'htseq-count -q -t exon -i ID gff_file sam_file'. "
+                              "The annotator looks up the parent genes of each feature and "
+                              "outputs this information against the htseq-counts (in"
+                              "<gff_file>_htseq_counts.txt) plus the totals assigned, not "
+                              "counted etc (in <gff_file>_htseq_counts_stats.txt).")
     p.add_option('-o',action="store",dest="out_file",default=None,
                  help="specify output file name")
     p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
-                 help="feature type to process (default 'exon')")
+                 help="feature type to process (default 'exon'; should be the same as the "
+                 "feature type used in htseq-count runs)")
     options,arguments = p.parse_args()
     if len(arguments) < 2:
         p.error("Expected GFF file and at least one HTSeq-count log file")
