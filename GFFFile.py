@@ -183,9 +183,12 @@ class GFFAttributes(OrderedDictionary):
     def __init__(self,attribute_data=None):
         OrderedDictionary.__init__(self)
         self.__nokeys = []
-        # Special attributes (which are allowed to contain
-        # unescaped commas)
-        self.__special_attributes = ('Parent','Dbxref')
+        # Special attributes which can have multiple values
+        self.__multivalued_attributes = ('Parent',
+                                         'Alias',
+                                         'Note',
+                                         'Dbxref',
+                                         'Ontology_term')
         # Extract individual data items
         if attribute_data is not None:
             for item in attribute_data.split(';'):
@@ -224,7 +227,7 @@ class GFFAttributes(OrderedDictionary):
           key: name of the attribute that the value belongs to
           value: the string to be encoded
         """
-        if key in self.__special_attributes:
+        if key in self.__multivalued_attributes:
             return urllib.quote(value,safe=" ,:^*$@!+?|")
         else:
             return urllib.quote(self[key],safe=" :^*$@!+?|")
