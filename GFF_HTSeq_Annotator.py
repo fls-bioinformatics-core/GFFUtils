@@ -30,10 +30,9 @@ Multiple parents
 It's possible for features in a GFF file to have multiple parents.
 
 In this case the output from htseq-count will reproduce the 'Parent'
-attribute verbatim, e.g. AF2312,AB2812,abc-3.
-
-GFF_HTSeq_Annotator will 
-
+attribute verbatim, e.g. AF2312,AB2812,abc-3. However GFF_HTSeq_Annotator
+will be unable to determine the parent genes in this case, and so will
+issue a warning and continue.
 """
 
 #######################################################################
