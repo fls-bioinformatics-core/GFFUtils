@@ -73,7 +73,7 @@ def main():
                               version="%prog "+__version__,
                               description="Annotate htseq-count output with data from GFF. "
                               "Generate input HTSeq_out files using the htseq-count program "
-                              "e.g. 'htseq-count -q -t exon -i ID gff_file sam_file'. "
+                              "e.g. 'htseq-count -q -t exon -i Parent gff_file sam_file'. "
                               "The annotator looks up the parent genes of each feature and "
                               "outputs this information against the htseq-counts (in"
                               "<gff_file>_htseq_counts.txt) plus the totals assigned, not "
@@ -270,7 +270,7 @@ def main():
                                        'total_counted_into_genes',
                                        total_counted_into_genes)
 
-    # Make a list of names found in the count files
+    # Make a list of names found in the first count file
     print "Building list of IDs from %s" % htseq_files[0]
     feature_IDs = []
     for feature_ID in htseq_counts[htseq_files[0]]:
