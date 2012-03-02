@@ -58,12 +58,14 @@ def main():
     if len(arguments) < 2:
         p.error("Expected GFF file and at least one HTSeq-count log file")
 
-    # Input files
+    # Input GFF file
     gff_file = arguments[0]
-    htseq_files = []
+    if not os.path.exists(gff_file):
+        p.error("Input GFF file %s not found" % gff_file)
 
     # Check for wildcards in HTSeq file names, to emulate linux shell globbing
     # on platforms such as Windows which don't have this built in
+    htseq_files = []
     for arg in arguments[1:]:
         for filen in glob.iglob(arg):
             if not os.path.exists(filen):
@@ -110,7 +112,7 @@ def main():
 
     # Get the actual data for each exon parent
     # Also build a list of *their* parents (i.e. genes)
-    print "Collecting data for %s parents and build lookup list of their parent gene IDs" % \
+    print "Collecting data for %s parents & building lookup list of their parent gene IDs" % \
         feature_type
     # Data about exon parents (e.g. type, the ID of its parent)
     exon_parent_data = {}
@@ -270,4 +272,5 @@ def main():
 #######################################################################
 
 if __name__ == "__main__":
+    logging.basicConfig(format="%(levelname)s: %(message)s")
     main()
