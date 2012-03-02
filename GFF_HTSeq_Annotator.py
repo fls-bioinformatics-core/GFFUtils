@@ -13,7 +13,8 @@
 
 Annotate HTSeq-count output with data from GFF
 
-Usage:
+Usage
+-----
 
 First Run the htseq-count program to generate counts using e.g.
 
@@ -22,6 +23,17 @@ First Run the htseq-count program to generate counts using e.g.
 Then run the annotator:
 
    GFF_HTSeq_Annotator.py -t exon <gff> htseq-counts
+
+Multiple parents
+----------------
+
+It's possible for features in a GFF file to have multiple parents.
+
+In this case the output from htseq-count will reproduce the 'Parent'
+attribute verbatim, e.g. AF2312,AB2812,abc-3.
+
+GFF_HTSeq_Annotator will 
+
 """
 
 #######################################################################
@@ -124,6 +136,12 @@ def main():
             # Get the Parent ID from the attributes
             attributes = GFFFile.GFFAttributes(data['attributes'])
             parent = attributes['Parent']
+            # Check for multiple parents - split on comma
+            if len(parent.split(',')) > 1:
+                # Issue a warning but continue for now
+                logging.warning("Multiple parents found on line %d: %s" % (data.lineno(),
+                                                                           parent))
+            # Store the ID
             if parent not in exon_parent_IDs:
                 exon_parent_IDs.append(parent)
 
@@ -142,6 +160,11 @@ def main():
             if feature_ID in exon_parent_IDs:
                 # This is a parent of an exon - store its data
                 feature_parent_ID = attributes['Parent']
+                # Check for multiple parents
+                if len(feature_parent_ID.split(',')) > 1:
+                    # Issue a warning
+                    logging.warning("Multiple parents detected for %s ID %s (line %d,parents %s)" %
+                                    (data['feature'],feature_ID,data.lineno(),feature_parent_ID))
                 exon_parent_data[feature_ID] = { 'Parent': feature_parent_ID,
                                                  'type' : data['feature'] }
                 # Also store lookup from gene IDs to exon parents
@@ -271,21 +294,42 @@ def main():
 
     # Combine feature counts and parent feature data
     for exon_parent_ID in feature_IDs:
+        # Check that we have data for the parent referenced in the HTSeq_count files
+        if exon_parent_ID in exon_parent_data:
+            # Add the exon parent data
+            data.append(exon_parent_ID)
+            exon_parent_gene = exon_parent_data[exon_parent_ID]['Parent']
+            # Look up the name, description etc
+            exon_parent_type        = exon_parent_data[exon_parent_ID]['type']
+            exon_parent_gene_name   = parent_genes[exon_parent_gene]['gene_name']
+            exon_parent_chr         = parent_genes[exon_parent_gene]['chr']
+            exon_parent_start       = parent_genes[exon_parent_gene]['start']
+            exon_parent_end         = parent_genes[exon_parent_gene]['end']
+            exon_parent_gene_length = parent_genes[exon_parent_gene]['gene_length']
+            exon_parent_gene_locus  = parent_genes[exon_parent_gene]['gene_locus']
+            exon_parent_description = parent_genes[exon_parent_gene]['description']
+        else:
+            # No data found for the exon parent 
+            logging.error("No data found in GFF for %s parent '%s' referenced in "
+                          "HTSeq_count files" % (feature_type,exon_parent_ID))
+            exon_parent_type        = ''
+            exon_parent_gene_name   = ''
+            exon_parent_chr         = ''
+            exon_parent_start       = ''
+            exon_parent_end         = ''
+            exon_parent_gene_length = ''
+            exon_parent_gene_locus  = ''
+            exon_parent_description = ''
         # Build the data line
-        data = []
-        # Add the exon parent data
-        data.append(exon_parent_ID)
-        data.append(exon_parent_data[exon_parent_ID]['type'])
-        # Look up the name, description etc
-        exon_parent_gene = exon_parent_data[exon_parent_ID]['Parent']
-        data.append(exon_parent_gene)
-        data.append(parent_genes[exon_parent_gene]['gene_name'])
-        data.append(parent_genes[exon_parent_gene]['chr'])
-        data.append(parent_genes[exon_parent_gene]['start'])
-        data.append(parent_genes[exon_parent_gene]['end'])
-        data.append(parent_genes[exon_parent_gene]['gene_length'])
-        data.append(parent_genes[exon_parent_gene]['gene_locus'])
-        data.append(parent_genes[exon_parent_gene]['description'])
+        data = [exon_parent_ID,
+                exon_parent_type,
+                exon_parent_gene_name,
+                exon_parent_chr,
+                exon_parent_start,
+                exon_parent_end,
+                exon_parent_gene_length,
+                exon_parent_gene_locus,
+                exon_parent_description]
         # Add the counts from each file
         for htseqfile in htseq_files:
             data.append(htseq_counts[htseqfile][exon_parent_ID])
