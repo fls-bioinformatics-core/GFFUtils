@@ -106,12 +106,15 @@ def main():
     # Feature type being considered
     feature_type = options.feature_type
 
-    # Output file
+    # Output files
     if options.out_file:
         annotated_counts_out_file = options.out_file
     else:
-        annotated_counts_out_file = os.path.splitext(os.path.basename(gff_file))[0]+"_htseq_counts.txt"
-    tables_out_file = os.path.splitext(os.path.basename(annotated_counts_out_file))[0]+"_stats.txt"
+        annotated_counts_out_file = os.path.splitext(os.path.basename(gff_file))[0]+\
+            "_htseq_counts.txt"
+    tables_out_file = \
+        os.path.splitext(os.path.basename(annotated_counts_out_file))[0]+\
+        "_stats"+os.path.splitext(annotated_counts_out_file)[1]
 
     # Process GFF data
     print "Reading data from %s" % gff_file
