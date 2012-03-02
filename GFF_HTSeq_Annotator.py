@@ -325,6 +325,7 @@ def main():
         # Build the data line
         data = [exon_parent_ID,
                 exon_parent_type,
+                exon_parent_gene,
                 exon_parent_gene_name,
                 exon_parent_chr,
                 exon_parent_start,
