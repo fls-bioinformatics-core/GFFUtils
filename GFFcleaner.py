@@ -445,6 +445,44 @@ def GFFInsertMissingGenes(gff_data,mapping_data):
     # Finished inserting missing genes
     return gff_data
 
+def GFFAddExonIDs(gff_data):
+    """Construct and insert a ID attribute for exons
+
+    For each exon in the input GFF data, insert an ID attribute of
+    the form:
+
+    ID=exon_<Parent>_<n>
+
+    where <Parent> is the name specified in the Parent attribute and
+    <n> is a numerical string that is unique across all exons in the
+    GFF data.
+
+    Note that if an exon already has an ID attribute then it will be
+    overwritten with the constructed ID string.
+
+    Arguments:
+      gff_data: a GFFFile object containing the GFF file data (which
+        is modified in place)
+
+    Returns:
+      The modified GFFFile object.
+    """
+    count = 0
+    for record in gff_data:
+        if record['feature'] == 'exon':
+            attributes = GFFAttributes(record['attributes'])
+            if 'Parent' not in attributes:
+                logging.warning("No 'Parent' attribute")
+            else:
+                count += 1
+                exon_ID = "exon_%s_%08d" % (attributes['Parent'],count)
+                if 'ID' not in attributes:
+                    attributes.insert(0,'ID',exon_ID)
+                else:
+                    attributes['ID'] = exon_ID
+            record['attributes'] = str(attributes)
+    return gff_data
+
 #######################################################################
 # Tests
 #######################################################################
@@ -840,6 +878,36 @@ YEL0W06\tchr2\t49195\t49569\t-
             idx = GFFAttributes(gff[i]['attributes'])['ID']
             self.assertNotEqual(idx,'CDS:YEL0W06:3',"wrong ID at position %d" %i)
 
+class TestGFFAddExonIDs(unittest.TestCase):
+
+    def setUp(self):
+        # Make file-like object for GFF pseudo-data
+        self.fp = cStringIO.StringIO(
+"""chr1\tTest\texon\t1890\t3287\t.\t+\t.\tParent=DDB0216437
+chr1\tTest\texon\t3848\t4855\t.\t+\t.\tParent=DDB0216438
+chr1\tTest\tCDS\t5505\t7769\t.\t+\t.\tParent=DDB0216439
+chr1\tTest\tCDS\t8308\t9522\t.\t-\t.\tParent=DDB0216440
+chr1\tTest\texon\t9635\t9889\t.\t-\t.\tParent=DDB0216441
+chr1\tTest\texon\t10033\t11199\t.\t+\t.\tParent=DDB0216442
+chr1\tTest\texon\t11264\t11952\t.\t+\t.\tParent=DDB0216442
+chr1\tTest\texon\t12069\t12183\t.\t+\t.\tParent=DDB0216442
+chr1\tTest\tgene\t12436\t13044\t.\t-\t.\tParent=DDB0216443
+chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
+""")
+
+    def test_add_exon_id(self):
+        """Test adding ID attributes to exon records
+        """
+        gff = GFFFile('test.gff',self.fp)
+        # Add the exon IDs
+        gff = GFFAddExonIDs(gff)
+        # Check that all exons have an ID
+        for data in gff:
+            if data['feature'] == 'exon':
+                attr = GFFAttributes(data['attributes'])
+                self.assertTrue('ID' in attr,"No ID attribute found")
+                self.assertEqual(attr.keys()[0],'ID',"ID attribute should be first")
+
 #######################################################################
 # Main program
 #######################################################################
@@ -872,7 +940,9 @@ if __name__ == "__main__":
                  help="Insert genes from gene file with SGD names that don't appear in the "
                  "input GFF. If GENE_FILE is blank ('='s must still be present) then the mapping "
                  "file supplied with the --resolve-duplicates option will be used instead.")
-                 
+    p.add_option('--add-exon-ids',action='store_true',dest='add_exon_ids',default=None,
+                 help="For exon features without an ID attribute, construct and insert an "
+                 "ID of the form 'exon_<Parent>_<n>' (where n is a unique number).")
     p.add_option('--debug',action='store_true',dest='debug',
                  help="Print debugging information")
     p.add_option('--test',action='store_true',dest='run_tests',
@@ -953,6 +1023,8 @@ if __name__ == "__main__":
     else:
         insert_missing = False
         genefile = None
+    # Add an artificial exon ID attribute
+    add_exon_ids = options.add_exon_ids
 
     # Name for output files
     outext = os.path.splitext(os.path.basename(infile))[1]
@@ -1143,6 +1215,11 @@ if __name__ == "__main__":
         n_genes_before_insert = len(gff_data)
         gff_data = GFFInsertMissingGenes(gff_data,mapping)
         print "Inserted %d missing genes" % (len(gff_data) - n_genes_before_insert)
+
+    # Construct and insert ID for exons
+    if add_exon_ids:
+        print "Inserting artificial IDs for exon records"
+        gff_data = GFFAddExonIDs(gff_data)
 
     # Write to output file
     print "Writing output file %s" % outfile
