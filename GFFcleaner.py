@@ -920,8 +920,9 @@ if __name__ == "__main__":
     p = optparse.OptionParser(usage="%prog [options] <file>.gff",
                               version="%prog "+__version__,
                               description=
-                              "Utility to perform various 'cleaning' operations on a GFF file "
-                              "and produce output file <file>_clean.gff.")
+                              "Utility to perform various 'cleaning' operations on a GFF file.")
+    p.add_option('-o',action='store',dest='output_gff',default=None,
+                 help="Name of output GFF file (default is '<file>_clean.gff')")
     p.add_option('--prepend',action='store',dest='prepend_str',default=None,
                  help="String to prepend to seqname in first column")
     p.add_option('--clean',action='store_true',dest='do_clean',
@@ -940,7 +941,7 @@ if __name__ == "__main__":
                  help="Insert genes from gene file with SGD names that don't appear in the "
                  "input GFF. If GENE_FILE is blank ('='s must still be present) then the mapping "
                  "file supplied with the --resolve-duplicates option will be used instead.")
-    p.add_option('--add-exon-ids',action='store_true',dest='add_exon_ids',default=None,
+    p.add_option('--add-exon-ids',action='store_true',dest='add_exon_ids',default=False,
                  help="For exon features without an ID attribute, construct and insert an "
                  "ID of the form 'exon_<Parent>_<n>' (where n is a unique number).")
     p.add_option('--debug',action='store_true',dest='debug',
@@ -1027,9 +1028,13 @@ if __name__ == "__main__":
     add_exon_ids = options.add_exon_ids
 
     # Name for output files
-    outext = os.path.splitext(os.path.basename(infile))[1]
-    outbase = os.path.splitext(os.path.basename(infile))[0]
-    outfile = outbase+'_clean'+outext
+    ##outext = os.path.splitext(os.path.basename(infile))[1]
+    if not options.output_gff:
+        outbase = os.path.splitext(os.path.basename(infile))[0]
+        outfile = outbase+'_clean.gff'
+    else:
+        outbase = os.path.splitext(os.path.basename(options.output_gff))[0]
+        outfile = options.output_gff
     print "Input : %s" % infile
     print "Output: %s" % outfile
     dupfile = outbase+'_duplicates.txt'
