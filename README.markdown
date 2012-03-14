@@ -18,6 +18,10 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
 
 ### Options ###
 
+ *  `-o OUTPUT_GFF`
+
+    Explicitly set the output file name (otherwise defaults to `<file>_clean.gff`)
+
  *  `--prepend=<str>`
 
     String to prepend to seqname in first column
@@ -47,6 +51,12 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
     (If `<mapping-file>` is specified with the
     `--resolve-duplicates` option then that will be
     used by default.)
+
+ *  `--add-exon-ids`
+
+    For exon features without an ID attribute, construct
+    and insert an ID of the form `exon_<Parent>_<n>`
+    (where n is a unique number).
 
  *  `--debug` Print debugging information
 
