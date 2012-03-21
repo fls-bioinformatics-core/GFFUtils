@@ -475,7 +475,7 @@ def GFFAddExonIDs(gff_data):
                 logging.warning("No 'Parent' attribute")
             else:
                 count += 1
-                exon_ID = "exon_%s_%08d" % (attributes['Parent'],count)
+                exon_ID = "exon:%s:%08d" % (attributes['Parent'],count)
                 if 'ID' not in attributes:
                     attributes.insert(0,'ID',exon_ID)
                 else:
