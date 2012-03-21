@@ -55,8 +55,14 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
  *  `--add-exon-ids`
 
     For exon features without an ID attribute, construct
-    and insert an ID of the form `exon_<Parent>_<n>`
+    and insert an ID of the form `exon:<Parent>:<n>`
     (where n is a unique number).
+
+ *  `--add-missing-ids`
+
+     For features without an ID attribute, construct and
+     insert a generated ID of the form
+     `<feature>:<Parent>:<n>` (where n is a unique number).
 
  *  `--debug` Print debugging information
 

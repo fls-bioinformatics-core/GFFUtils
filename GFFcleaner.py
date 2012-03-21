@@ -451,7 +451,7 @@ def GFFAddExonIDs(gff_data):
     For each exon in the input GFF data, insert an ID attribute of
     the form:
 
-    ID=exon_<Parent>_<n>
+    ID=exon:<Parent>:<n>
 
     where <Parent> is the name specified in the Parent attribute and
     <n> is a numerical string that is unique across all exons in the
@@ -480,6 +480,44 @@ def GFFAddExonIDs(gff_data):
                     attributes.insert(0,'ID',exon_ID)
                 else:
                     attributes['ID'] = exon_ID
+            record['attributes'] = str(attributes)
+    return gff_data
+
+def GFFAddIDAttributes(gff_data):
+    """Construct and insert a ID attribute for all features without one
+
+    For each feature in the input GFF data that doesn't already have an
+    an ID attribute, insert one of the form:
+
+    ID=<feature>:<Parent>:<n>
+
+    where <feature> is the feature type (e.g. 'exon', 'CDS' etc),
+    <Parent> is the name specified in the Parent attribute and
+    <n> is a numerical string that is unique across all exons in the
+    GFF data.
+
+    Arguments:
+      gff_data: a GFFFile object containing the GFF file data (which
+        is modified in place)
+
+    Returns:
+      The modified GFFFile object.
+    """
+    count = 0
+    for record in gff_data:
+        attributes = GFFAttributes(record['attributes'])
+        if 'ID' not in attributes:
+            # Add an ID
+            count += 1
+            if 'Parent' not in attributes:
+                logging.warning("No 'Parent' attribute")
+                feature_ID = "%s:NOPARENT:%08d" % (record['feature'],
+                                                   count)
+            else:
+                feature_ID = "%s:%s:%08d" % (record['feature'],
+                                             attributes['Parent'],
+                                             count)
+                attributes.insert(0,'ID',feature_ID)
             record['attributes'] = str(attributes)
     return gff_data
 
@@ -908,6 +946,35 @@ chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
                 self.assertTrue('ID' in attr,"No ID attribute found")
                 self.assertEqual(attr.keys()[0],'ID',"ID attribute should be first")
 
+class TestGFFAddIDAttributes(unittest.TestCase):
+
+    def setUp(self):
+        # Make file-like object for GFF pseudo-data
+        self.fp = cStringIO.StringIO(
+"""chr1\tTest\texon\t1890\t3287\t.\t+\t.\tParent=DDB0216437
+chr1\tTest\texon\t3848\t4855\t.\t+\t.\tParent=DDB0216438
+chr1\tTest\tCDS\t5505\t7769\t.\t+\t.\tParent=DDB0216439
+chr1\tTest\tCDS\t8308\t9522\t.\t-\t.\tParent=DDB0216440
+chr1\tTest\texon\t9635\t9889\t.\t-\t.\tParent=DDB0216441
+chr1\tTest\texon\t10033\t11199\t.\t+\t.\tParent=DDB0216442
+chr1\tTest\texon\t11264\t11952\t.\t+\t.\tParent=DDB0216442
+chr1\tTest\texon\t12069\t12183\t.\t+\t.\tParent=DDB0216442
+chr1\tTest\tgene\t12436\t13044\t.\t-\t.\tID=DDB012345678;Parent=DDB0216443
+chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
+""")
+
+    def test_add_ids(self):
+        """Test adding ID attributes
+        """
+        gff = GFFFile('test.gff',self.fp)
+        # Add the exon IDs
+        gff = GFFAddIDAttributes(gff)
+        # Check that all exons have an ID
+        for data in gff:
+            attr = GFFAttributes(data['attributes'])
+            self.assertTrue('ID' in attr,"No ID attribute found")
+            self.assertEqual(attr.keys()[0],'ID',"ID attribute should be first")
+
 #######################################################################
 # Main program
 #######################################################################
@@ -943,7 +1010,11 @@ if __name__ == "__main__":
                  "file supplied with the --resolve-duplicates option will be used instead.")
     p.add_option('--add-exon-ids',action='store_true',dest='add_exon_ids',default=False,
                  help="For exon features without an ID attribute, construct and insert an "
-                 "ID of the form 'exon_<Parent>_<n>' (where n is a unique number).")
+                 "ID of the form 'exon:<Parent>:<n>' (where n is a unique number).")
+    p.add_option('--add-missing-ids',action='store_true',dest='add_missing_ids',default=False,
+                 help="For features without an ID attribute, construct and insert a "
+                 "generated ID of the form '<feature>:<Parent>:<n>' (where n is a unique "
+                 "number).")
     p.add_option('--debug',action='store_true',dest='debug',
                  help="Print debugging information")
     p.add_option('--test',action='store_true',dest='run_tests',
@@ -1026,6 +1097,8 @@ if __name__ == "__main__":
         genefile = None
     # Add an artificial exon ID attribute
     add_exon_ids = options.add_exon_ids
+    # Add generated ID attributes
+    add_missing_ids = options.add_missing_ids
 
     # Name for output files
     ##outext = os.path.splitext(os.path.basename(infile))[1]
@@ -1225,6 +1298,11 @@ if __name__ == "__main__":
     if add_exon_ids:
         print "Inserting artificial IDs for exon records"
         gff_data = GFFAddExonIDs(gff_data)
+
+    # Construct and insert missing ID attributes
+    if add_missing_ids:
+        print "Inserting generated IDs for records where IDs are missing"
+        gff_data = GFFAddIDAttributes(gff_data)
 
     # Write to output file
     print "Writing output file %s" % outfile
