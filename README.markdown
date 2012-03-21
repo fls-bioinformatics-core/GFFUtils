@@ -64,6 +64,14 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
      insert a generated ID of the form
      `<feature>:<Parent>:<n>` (where n is a unique number).
 
+ *  `--no-percent-encoding`
+
+     Convert encoded attributes to the correct characters
+     in the output GFF. **WARNING this may result in a non-
+     cannonical GFF that can't be read correctly by this or
+     other programs.**
+
+
  *  `--debug` Print debugging information
 
  *  `--test`  Run unit tests

@@ -521,6 +521,32 @@ def GFFAddIDAttributes(gff_data):
             record['attributes'] = str(attributes)
     return gff_data
 
+def GFFDecodeAttributes(gff_data):
+    """Update GFF records removing percent encoding of special characters
+
+    The GFF format specifies that certain special characters in the
+    "attribute" field must be escaped using "percent encoding" (i.e.
+    HTML-style encoding).
+
+    This function converts special characters back to their original
+    form, essentially 'decoding' the attribute values so that they are
+    more "human-readable". However the resulting attributes may be non-
+    cannonical and thus cause problems when fed into other GFF reading
+    programs that parse the attribute field. Caveat emptor.
+
+    Arguments:
+      gff_data: a GFFFile object containing the GFF file data (which
+        is modified in place)
+
+    Returns:
+      The modified GFFFile object.
+    """
+    for record in gff_data:
+        attributes = GFFAttributes(record['attributes'])
+        attributes.encode(False)
+        record['attributes'] = str(attributes)
+    return gff_data
+
 #######################################################################
 # Tests
 #######################################################################
@@ -975,6 +1001,26 @@ chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
             self.assertTrue('ID' in attr,"No ID attribute found")
             self.assertEqual(attr.keys()[0],'ID',"ID attribute should be first")
 
+class TestGFFDecodeAttributes(unittest.TestCase):
+
+    def setUp(self):
+        # Make file-like object for GFF pseudo-data
+        self.fp = cStringIO.StringIO(
+"""chr1\t.\tgene\t5505\t7769\t.\t+\t.\tID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon%3B refer to Genbank M11339 for full-length element
+chr1\t.\tgene\t21490\t23468\t.\t+\t.\tID=DDB_G0267204;Name=DDB_G0123456;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0267252%22%3EDDB_G0267252%3C%2Fa%3E
+""")
+
+    def test_decode_attributes(self):
+        """Test adding ID attributes
+        """
+        gff = GFFFile('test.gff',self.fp)
+        # Decode the attribute data
+        gff = GFFDecodeAttributes(gff)
+        # Check decoding
+        self.assertEqual(gff[0]['attributes'],"ID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon; refer to Genbank M11339 for full-length element")
+        self.assertEqual(gff[1]['attributes'],"ID=DDB_G0267204;Name=DDB_G0123456;description=putative pseudogene; similar to a family of genes, including <a href=\"/gene/DDB_G0267252\">DDB_G0267252</a>")
+    
+
 #######################################################################
 # Main program
 #######################################################################
@@ -982,7 +1028,7 @@ chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
 if __name__ == "__main__":
 
     # Set up logging format
-    logging.basicConfig(format='[%(levelname)s][%(funcName)s] %(message)s')
+    logging.basicConfig(format='%(levelname)s: %(message)s')
 
     p = optparse.OptionParser(usage="%prog [options] <file>.gff",
                               version="%prog "+__version__,
@@ -1015,6 +1061,10 @@ if __name__ == "__main__":
                  help="For features without an ID attribute, construct and insert a "
                  "generated ID of the form '<feature>:<Parent>:<n>' (where n is a unique "
                  "number).")
+    p.add_option('--no-percent-encoding',action='store_true',dest='no_encoding',default=False,
+                 help="Convert encoded attributes to the correct characters in "
+                 "the output GFF. WARNING this may result in a non-cannonical GFF that can't "
+                 "be read correctly by this or other programs.")
     p.add_option('--debug',action='store_true',dest='debug',
                  help="Print debugging information")
     p.add_option('--test',action='store_true',dest='run_tests',
@@ -1099,6 +1149,8 @@ if __name__ == "__main__":
     add_exon_ids = options.add_exon_ids
     # Add generated ID attributes
     add_missing_ids = options.add_missing_ids
+    # Suppress encoding of attributes on output
+    no_attribute_encoding = options.no_encoding
 
     # Name for output files
     ##outext = os.path.splitext(os.path.basename(infile))[1]
@@ -1303,6 +1355,13 @@ if __name__ == "__main__":
     if add_missing_ids:
         print "Inserting generated IDs for records where IDs are missing"
         gff_data = GFFAddIDAttributes(gff_data)
+
+    # Suppress percent encoding of attributes
+    if no_attribute_encoding:
+        print "Converting encoded special characters in attribute data to non-encoded form"
+        logging.warning("!!! Special characters will not be correctly encoded in the output  !!!")
+        logging.warning("!!! The resulting GFF may not be readable by this or other programs !!!")
+        gff_data = GFFDecodeAttributes(gff_data)
 
     # Write to output file
     print "Writing output file %s" % outfile

@@ -189,6 +189,8 @@ class GFFAttributes(OrderedDictionary):
                                          'Note',
                                          'Dbxref',
                                          'Ontology_term')
+        # Flag indicating whether to encode values on output
+        self.__encode_values = True
         # Extract individual data items
         if attribute_data is not None:
             for item in attribute_data.split(';'):
@@ -213,6 +215,44 @@ class GFFAttributes(OrderedDictionary):
     def nokeys(self):
         return self.__nokeys
 
+    def encode(self,new_setting=None):
+        """Query or set the value of the 'encoding' flag
+
+        By default attribute values are encoded when written as a
+        string i.e. special characters are escaped using HTML-style
+        encoding to convert them to "percent codes" e.g. '%3B'.
+        This method allows this encoding to be turned on or off
+        explicitly.
+
+        To query the current setting, invoke the method without
+        arguments e.g.:
+
+        >>> attr.encode()
+        ... True
+
+        To turn encoding on or off, invoke with a boolean argument,
+        e.g.:
+
+        >>> attr.encode(False)  # Turns encoding off
+        ... False
+
+        Note that turning the decoding off is not recommended when
+        writing the attributes back to a GFF file.
+        
+        Arguments:
+          new_setting: (optional) the new value for the encoding
+            flag - True to turn encoding on, False to turn it off
+
+        Returns:
+          Value of the encoding flag, indicating whether encoding
+          is on (True) or off (False).
+        """
+        if new_setting in (True,False):
+            self.__encode_values = new_setting
+        elif new_setting is not None:
+            raise ValueError, "bad value '%s': can only be True or False" % new_setting
+        return self.__encode_values
+
     def __escape_value(self,key,value):
         """Internal: return escaped value of input string
 
@@ -236,8 +276,14 @@ class GFFAttributes(OrderedDictionary):
         items = []
         for item in self.__nokeys:
             items.append(item)
-        for key in self.keys():
-            items.append("%s=%s" % (key,self.__escape_value(key,self[key])))
+        if self.__encode_values:
+            # Percent encode the attributes
+            for key in self.keys():
+                items.append("%s=%s" % (key,self.__escape_value(key,self[key])))
+        else:
+            # Don't encode the attributes
+            for key in self.keys():
+                items.append("%s=%s" % (key,self[key]))
         return ';'.join(items)
 
 class GFFID:
@@ -377,6 +423,19 @@ class TestGFFAttributes(unittest.TestCase):
         attributes = "ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0234567%22%3EDDB_G0234567%3C%2Fa%3E"
         attr = GFFAttributes(attributes)
         self.assertEqual(attributes,str(attr))
+
+    def test_switch_off_encoding(self):
+        """Test that __repr__ returns unescaped strings when encoding is off
+        """      
+        attributes = "ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0234567%22%3EDDB_G0234567%3C%2Fa%3E"
+        
+        attr = GFFAttributes(attributes)
+        self.assertTrue(attr.encode())
+        self.assertEqual(attributes,str(attr))
+        self.assertTrue(attr.encode(True))
+        self.assertEqual(attributes,str(attr))
+        self.assertFalse(attr.encode(False))
+        self.assertEqual("ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene; similar to a family of genes, including <a href=\"/gene/DDB_G0234567\">DDB_G0234567</a>",str(attr))
 
 class TestGFFID(unittest.TestCase):
     """Unit tests for GFFID class
