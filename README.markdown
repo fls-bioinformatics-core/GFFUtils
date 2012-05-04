@@ -4,7 +4,7 @@ GFFUtils
 GFFUtils package provides the following utilities for working with GFF files:
 
  * `GFFcleaner.py`: performs various "cleaning" manipulations on a GFF file
- * `GFF_RNASeq_Annotator.py`: combine and annotate gene count data with information
+ * `GFF_RNASeq_Annotator.py`: combine and annotate feature count data with information
    from a GFF file
 
 GFFcleaner.py
@@ -217,23 +217,24 @@ between `start` - 1000 and `end` +  1000.
 GFF_RNASeq_Annotator.py
 ----------------------
 
-GFF_RNASeq_Annotator.py takes gene count data (for example the output from one or
-more runs of the HTSeq-count program) and combines it with data from a GFF file.
+GFF_RNASeq_Annotator.py takes gene feature data (for example the output from one or
+more runs of the HTSeq-count program) and combines it with data about each feature's
+parent gene from a GFF file.
 
-HTSeq-count should have been run using e.g.:
+To use with HTSeq-count, generate the feature count files using e.g.:
 
         htseq-count --type=exon -i Parent <file>.gff <file>.sam
 
 which returns counts of each exon against the name of that exon's parent.
 
-GFF_HTSeq_Annotator will match up the exon parent with its parent gene and output the
+GFF_RNASeq_Annotator will match up the exon parent with its parent gene and output the
 counts against gene names.
 
 ### Usage ###
 
-        GFF_RNASeq_Annotator.py <file>.gff <htseq-log1> [<htseq-log2> ...]
+        GFF_RNASeq_Annotator.py <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
 
-Alternatively you can use wildcards to specify multiple HTSeq log files e.g. `*_HTSeq.txt`.
+Alternatively you can use wildcards to specify multiple feature count files e.g. `*_features.txt`.
 
 ### Options ###
 
@@ -241,13 +242,13 @@ Alternatively you can use wildcards to specify multiple HTSeq log files e.g. `*_
     -h, --help            show this help message and exit
     -o OUT_FILE           specify output file name
     -t FEATURE_TYPE, --type=FEATURE_TYPE
-                          feature type to process (default 'exon')
+                          feature type contained in the process (default 'exon')
 
 ### Output files ###
 
- * `<basename>_htseq_counts.txt`: the counts from each log for each gene name.
+ * `<basename>_counts.txt`: the counts from each log for each gene name.
 
- * `<basename>_htseq_counts_stats.txt`: the counts of "ambiguous", "two_low_aQual" etc
+ * `<basename>_counts_stats.txt`: the counts of "ambiguous", "two_low_aQual" etc
     from each log.
 
 Set up and prerequisites

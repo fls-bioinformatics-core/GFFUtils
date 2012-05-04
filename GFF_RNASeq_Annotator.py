@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#     GFF_RNASeq_Annotator.py: annotate gene count data with information from GFF
+#     GFF_RNASeq_Annotator.py: annotate feature count data with information from GFF
 #     Copyright (C) University of Manchester 2012 Peter Briggs, Leo Zeef
 #
 #######################################################################
@@ -11,12 +11,12 @@
 
 """GFF_RNASeq_Annotator.py
 
-Annotate HTSeq-count-style output using data from GFF file.
+Annotate HTSeq-count-style feature count data with information from GFF file.
 
 Usage
 -----
 
-First Run the htseq-count program to generate counts using e.g.
+First run the htseq-count program to generate counts using e.g.
 
    htseq-count -q -i ID -t exon <sam> <gff> > htseq-counts
 
@@ -68,30 +68,29 @@ def main():
     """Main program
     """
     # Process command line
-    p = optparse.OptionParser(usage="%prog OPTIONS gff_file HTSeq_out [ HTSeq_out_2 ... ]",
+    p = optparse.OptionParser(usage="%prog OPTIONS gff_file FEATURE_COUNTS [ FEATURE_COUNTS ... ]",
                               version="%prog "+__version__,
-                              description="Annotate htseq-count output with data from GFF. "
-                              "Generate input HTSeq_out files using the htseq-count program "
-                              "e.g. 'htseq-count -q -t exon -i Parent gff_file sam_file'. "
-                              "The annotator looks up the parent genes of each feature and "
-                              "outputs this information against the htseq-counts (in"
-                              "<gff_file>_htseq_counts.txt) plus the totals assigned, not "
-                              "counted etc (in <gff_file>_htseq_counts_stats.txt).")
+                              description="Annotate feature count data with information from a "
+                              "GFF file. Input FEATURE_COUNTS files can be generated using e.g. "
+                              "htseq-count ('htseq-count -q -t exon -i Parent gff_file "
+                              "sam_file'). The annotator looks up the parent genes of each "
+                              "feature and outputs this information against the feature counts "
+                              "(in <gff_file>_counts.txt) plus the totals assigned, not "
+                              "counted etc (in <gff_file>_counts_stats.txt).")
     p.add_option('-o',action="store",dest="out_file",default=None,
                  help="specify output file name")
     p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
-                 help="feature type to process (default 'exon'; should be the same as the "
-                 "feature type used in htseq-count runs)")
+                 help="feature type listed in input count files (default 'exon')")
     options,arguments = p.parse_args()
     if len(arguments) < 2:
-        p.error("Expected GFF file and at least one HTSeq-count log file")
+        p.error("Expected GFF file and at least one feature count file")
 
     # Input GFF file
     gff_file = arguments[0]
     if not os.path.exists(gff_file):
         p.error("Input GFF file %s not found" % gff_file)
 
-    # Check for wildcards in HTSeq file names, to emulate linux shell globbing
+    # Check for wildcards in feature count file names, to emulate linux shell globbing
     # on platforms such as Windows which don't have this built in
     htseq_files = []
     for arg in arguments[1:]:
@@ -100,7 +99,7 @@ def main():
                 p.error("File '%s' not found" % filen)
             htseq_files.append(filen)
     if not htseq_files:
-        p.error("No input HTSeq-count files found")
+        p.error("No input feature count files found")
 
     # Feature type being considered
     feature_type = options.feature_type
@@ -110,7 +109,7 @@ def main():
         annotated_counts_out_file = options.out_file
     else:
         annotated_counts_out_file = os.path.splitext(os.path.basename(gff_file))[0]+\
-            "_htseq_counts.txt"
+            "_counts.txt"
     tables_out_file = \
         os.path.splitext(os.path.basename(annotated_counts_out_file))[0]+\
         "_stats"+os.path.splitext(annotated_counts_out_file)[1]
@@ -230,7 +229,7 @@ def main():
                                          'gene_length': gene_length }
 
     # Process the HTSeq-count files
-    print "Processing HTSeq-count files"
+    print "Processing feature count files"
     htseq_counts = GFFFile.OrderedDictionary()
     htseq_tables = GFFFile.OrderedDictionary()
     for htseqfile in htseq_files:
@@ -296,7 +295,7 @@ def main():
 
     # Combine feature counts and parent feature data
     for exon_parent_ID in feature_IDs:
-        # Check that we have data for the parent referenced in the HTSeq_count files
+        # Check that we have data for the parent referenced in the feature count files
         if exon_parent_ID in exon_parent_data:
             # Add the exon parent data
             data.append(exon_parent_ID)
@@ -313,7 +312,7 @@ def main():
         else:
             # No data found for the exon parent 
             logging.error("No data found in GFF for %s parent '%s' referenced in "
-                          "HTSeq_count files" % (feature_type,exon_parent_ID))
+                          "gene count files" % (feature_type,exon_parent_ID))
             exon_parent_type        = ''
             exon_parent_gene_name   = ''
             exon_parent_chr         = ''
@@ -344,7 +343,7 @@ def main():
     annotated_counts.write(annotated_counts_out_file,include_header=True,no_hash=True)
 
     # Make second file for the trailing table data
-    print "Building HTSeq tables file for output"
+    print "Building trailing tables data file for output"
     table_counts = TabFile.TabFile(column_names=['count'])
     for htseqfile in htseq_files:
         table_counts.appendColumn(htseqfile)
