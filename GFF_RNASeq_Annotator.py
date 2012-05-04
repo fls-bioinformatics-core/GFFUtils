@@ -211,6 +211,8 @@ def main():
                     store_attribute = True
             # Reconstruct the description string
             description = ';'.join(description)
+            # Finally: replace any tab characters that were introduced by % decoding
+            description = description.replace('\t','    ')
             # Locus: chromosome plus start and end data
             locus = "%s:%s-%s" % (data['seqname'],data['start'],data['end'])
             logging.debug("%s\t%s\t%s" % (feature_ID,name,description))
