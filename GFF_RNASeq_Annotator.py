@@ -225,6 +225,7 @@ def main():
                                          'description': description,
                                          'chr': data['seqname'],
                                          'start': data['start'],
+                                         'strand': data['strand'],
                                          'end': data['end'],
                                          'gene_length': gene_length }
 
@@ -287,6 +288,7 @@ def main():
                                                      'chr',
                                                      'start',
                                                      'end',
+                                                     'strand',
                                                      'gene_length',
                                                      'locus',
                                                      'description'])
@@ -306,6 +308,7 @@ def main():
             exon_parent_chr         = parent_genes[exon_parent_gene]['chr']
             exon_parent_start       = parent_genes[exon_parent_gene]['start']
             exon_parent_end         = parent_genes[exon_parent_gene]['end']
+            exon_parent_strand      = parent_genes[exon_parent_gene]['strand']
             exon_parent_gene_length = parent_genes[exon_parent_gene]['gene_length']
             exon_parent_gene_locus  = parent_genes[exon_parent_gene]['gene_locus']
             exon_parent_description = parent_genes[exon_parent_gene]['description']
@@ -318,6 +321,7 @@ def main():
             exon_parent_chr         = ''
             exon_parent_start       = ''
             exon_parent_end         = ''
+            exon_parent_strand      = ''
             exon_parent_gene_length = ''
             exon_parent_gene_locus  = ''
             exon_parent_description = ''
@@ -329,6 +333,7 @@ def main():
                 exon_parent_chr,
                 exon_parent_start,
                 exon_parent_end,
+                exon_parent_strand,
                 exon_parent_gene_length,
                 exon_parent_gene_locus,
                 exon_parent_description]
