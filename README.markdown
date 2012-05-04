@@ -4,8 +4,8 @@ GFFUtils
 GFFUtils package provides the following utilities for working with GFF files:
 
  * `GFFcleaner.py`: performs various "cleaning" manipulations on a GFF file
- * `GFF_HTSeq_Annotator.py`: combine and annotate HTSeq-count output with data from
-   the source GFF file
+ * `GFF_RNASeq_Annotator.py`: combine and annotate gene count data with information
+   from a GFF file
 
 GFFcleaner.py
 -------------
@@ -214,11 +214,11 @@ An overlap is counted as the duplicate from the GFF having start/end positions s
 that it lies inside the start/end positions of the mapping gene extended by 1kb i.e.
 between `start` - 1000 and `end` +  1000.
 
-GFF_HTSeq_Annotator.py
+GFF_RNASeq_Annotator.py
 ----------------------
 
-GFF_HTSeq_Annotator.py takes the output from one or more runs of the HTSeq-count program
-and combines it with data from the source GFF file.
+GFF_RNASeq_Annotator.py takes gene count data (for example the output from one or
+more runs of the HTSeq-count program) and combines it with data from a GFF file.
 
 HTSeq-count should have been run using e.g.:
 
@@ -231,7 +231,7 @@ counts against gene names.
 
 ### Usage ###
 
-        GFF_HTSeq_Annotator.py <file>.gff <htseq-log1> [<htseq-log2> ...]
+        GFF_RNASeq_Annotator.py <file>.gff <htseq-log1> [<htseq-log2> ...]
 
 Alternatively you can use wildcards to specify multiple HTSeq log files e.g. `*_HTSeq.txt`.
 

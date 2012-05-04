@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 #
-#     GFF_HTSeq_Annotator.py: annotate HTSeq-count output with data from GFF
+#     GFF_RNASeq_Annotator.py: annotate gene count data with information from GFF
 #     Copyright (C) University of Manchester 2012 Peter Briggs, Leo Zeef
 #
 #######################################################################
 #
-# GFF_HTSeq_Annotator.py
+# GFF_RNASeq_Annotator.py
 #
 #######################################################################
 
-"""GFF_HTSeq_Annotator.py
+"""GFF_RNASeq_Annotator.py
 
-Annotate HTSeq-count output with data from GFF
+Annotate HTSeq-count-style output using data from GFF file.
 
 Usage
 -----
@@ -22,7 +22,7 @@ First Run the htseq-count program to generate counts using e.g.
 
 Then run the annotator:
 
-   GFF_HTSeq_Annotator.py -t exon <gff> htseq-counts
+   GFF_RNASeq_Annotator.py -t exon <gff> htseq-counts
 
 Multiple parents
 ----------------
@@ -30,7 +30,7 @@ Multiple parents
 It's possible for features in a GFF file to have multiple parents.
 
 In this case the output from htseq-count will reproduce the 'Parent'
-attribute verbatim, e.g. AF2312,AB2812,abc-3. However GFF_HTSeq_Annotator
+attribute verbatim, e.g. AF2312,AB2812,abc-3. However GFF_RNASeq_Annotator
 will be unable to determine the parent genes in this case, and so will
 issue a warning and continue.
 """
