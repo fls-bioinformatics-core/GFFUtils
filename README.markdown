@@ -4,7 +4,7 @@ GFFUtils
 GFFUtils package provides the following utilities for working with GFF files:
 
  * `GFFcleaner.py`: performs various "cleaning" manipulations on a GFF file
- * `GFF_RNASeq_Annotator.py`: combine and annotate feature count data with information
+ * `GFF3_Annotation_Extractor.py`: combine and annotate feature counts with data
    from a GFF file
 
 GFFcleaner.py
@@ -214,11 +214,11 @@ An overlap is counted as the duplicate from the GFF having start/end positions s
 that it lies inside the start/end positions of the mapping gene extended by 1kb i.e.
 between `start` - 1000 and `end` +  1000.
 
-GFF_RNASeq_Annotator.py
+GFF3_Annotation_Extractor.py
 ----------------------
 
-GFF_RNASeq_Annotator.py takes gene feature data (for example the output from one or
-more runs of the HTSeq-count program) and combines it with data about each feature's
+GFF3_Annotation_Extractor.py takes gene feature data (for example the output from one
+or more runs of the HTSeq-count program) and combines it with data about each feature's
 parent gene from a GFF file.
 
 To use with HTSeq-count, generate the feature count files using e.g.:
@@ -227,12 +227,12 @@ To use with HTSeq-count, generate the feature count files using e.g.:
 
 which returns counts of each exon against the name of that exon's parent.
 
-GFF_RNASeq_Annotator will match up the exon parent with its parent gene and output the
-counts against gene names.
+GFF3_Annotation_Extractor will match up the exon parent with its parent gene and output
+the counts against gene names.
 
 ### Usage ###
 
-        GFF_RNASeq_Annotator.py <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
+        GFF3_Annotation_Extractor.py <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
 
 Alternatively you can use wildcards to specify multiple feature count files e.g. `*_features.txt`.
 
