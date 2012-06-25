@@ -68,7 +68,7 @@ def GroupGeneSubsets(gff_data):
     last_index = None
     logging.debug("%d genes submitted for grouping" % len(gff_data))
     for data in gff_data:
-        this_index = GFFID(GFFAttributes(data['attributes'])['ID']).index
+        this_index = GFFID(data['attributes']['ID']).index
         if last_index is not None:
             if this_index != last_index + 1:
                 subsets.append(this_subset)
@@ -82,7 +82,7 @@ def GroupGeneSubsets(gff_data):
     for subset in subsets:
         logging.debug("--Subset--")
         for gene in subset:
-            logging.debug("\t%s" % GFFID(GFFAttributes(gene['attributes'])['ID']))
+            logging.debug("\t%s" % GFFID(gene['attributes']['ID']))
     return subsets
 
 def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=True):
@@ -105,7 +105,7 @@ def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=
     """
     for data in gff_data:
         # Process the attributes data
-        attributes = GFFAttributes(data['attributes'])
+        attributes = data['attributes']
         # Look up values for each of the keys
         for key in attributes.keys():
             # Exclude this key?
@@ -129,8 +129,6 @@ def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=
             except KeyError:
                 # No mapping found for key, ignore
                 pass
-        # Update attributes in GFF
-        data['attributes'] = str(attributes)
         logging.debug("Updated data for output: %s" % data['attributes'])
 
 def GFFGetDuplicateSGDs(gff_data):
@@ -159,7 +157,7 @@ def GFFGetDuplicateSGDs(gff_data):
     duplicates = OrderedDictionary()
     # Process data line-by-line
     for data in gff_data:
-        attributes = GFFAttributes(data['attributes'])
+        attributes = data['attributes']
         if 'SGD' in attributes:
             # Store data
             sgd = attributes['SGD']
@@ -232,7 +230,7 @@ def GFFResolveDuplicateSGDs(gff_data,mapping_data,duplicates,overlap_margin):
         if len(mapping_genes) == 0:
             logging.debug("No genes in mapping file with matching SGD to resolve:")
             for duplicate in duplicates[sgd]:
-                attr = GFFAttributes(duplicate['attributes'])
+                attr = duplicate['attributes']
                 logging.debug("\t%s %s %s %s %s L%d %s" % (attr['ID'],
                                                            duplicate['seqname'],
                                                            duplicate['start'],
@@ -349,7 +347,7 @@ def GFFGroupSGDs(gff_data):
         # Increment the line index
         next_ln += 1
         # Process the attributes data
-        attributes = GFFAttributes(data['attributes'])
+        attributes = data['attributes']
         # Get the SGD value
         sgd = attributes['SGD']
         if sgd != '':
@@ -360,11 +358,10 @@ def GFFGroupSGDs(gff_data):
                 idx.code = 'CDS'
                 idx.index = 1
                 attributes['ID'] = str(idx)
-                data['attributes'] = str(attributes)
             ln = data.lineno()
             # Loop over next 5 data lines after this looking for matching SGD
             for data0 in gff_data[next_ln:next_ln+5]:
-                attr0 = GFFAttributes(data0['attributes'])
+                attr0 = data0['attributes']
                 sgd0 = attr0['SGD']
                 if sgd0 == sgd:
                     # Found a match
@@ -376,7 +373,6 @@ def GFFGroupSGDs(gff_data):
                         idx0.code = "CDS"
                     idx0.index = idx.index + 1
                     attr0['ID'] = str(idx0)
-                    data0['attributes'] = str(attr0)
                     logging.debug("%d %s\t%d %s" % (next_ln,idx,data0.lineno(),idx0))
                     # Don't look any further
                     break
@@ -400,7 +396,7 @@ def GFFInsertMissingGenes(gff_data,mapping_data):
     # Make a list of all SGDs in current GFF file
     sgds = []
     for data in gff_data:
-        attributes = GFFAttributes(data['attributes'])
+        attributes = data['attributes']
         if 'SGD' in attributes:
             sgd = attributes['SGD']
             if not sgd in sgds: sgds.append(sgd)
@@ -436,12 +432,11 @@ def GFFInsertMissingGenes(gff_data,mapping_data):
             missing['score'] = '0'
             missing['strand'] = gene['strand']
             missing['frame'] = '0'
-            attributes = GFFAttributes()
+            attributes = missing['attributes']
             attributes['ID'] = 'CDS:%s:1' % sgd
             attributes['SGD'] = sgd
             attributes['Gene'] = sgd
             attributes['Parent'] = sgd
-            missing['attributes'] = str(attributes)
     # Finished inserting missing genes
     return gff_data
 
@@ -470,7 +465,7 @@ def GFFAddExonIDs(gff_data):
     count = 0
     for record in gff_data:
         if record['feature'] == 'exon':
-            attributes = GFFAttributes(record['attributes'])
+            attributes = record['attributes']
             if 'Parent' not in attributes:
                 logging.warning("No 'Parent' attribute")
             else:
@@ -480,7 +475,6 @@ def GFFAddExonIDs(gff_data):
                     attributes.insert(0,'ID',exon_ID)
                 else:
                     attributes['ID'] = exon_ID
-            record['attributes'] = str(attributes)
     return gff_data
 
 def GFFAddIDAttributes(gff_data):
@@ -505,7 +499,7 @@ def GFFAddIDAttributes(gff_data):
     """
     count = 0
     for record in gff_data:
-        attributes = GFFAttributes(record['attributes'])
+        attributes = record['attributes']
         if 'ID' not in attributes:
             # Add an ID
             count += 1
@@ -518,7 +512,6 @@ def GFFAddIDAttributes(gff_data):
                                              attributes['Parent'],
                                              count)
                 attributes.insert(0,'ID',feature_ID)
-            record['attributes'] = str(attributes)
     return gff_data
 
 def GFFDecodeAttributes(gff_data):
@@ -542,9 +535,8 @@ def GFFDecodeAttributes(gff_data):
       The modified GFFFile object.
     """
     for record in gff_data:
-        attributes = GFFAttributes(record['attributes'])
+        attributes = record['attributes']
         attributes.encode(False)
-        record['attributes'] = str(attributes)
     return gff_data
 
 #######################################################################
@@ -590,13 +582,13 @@ class TestGFFUpdateAttributes(unittest.TestCase):
         """
         gff = GFFFile('test.gff',self.fp)
         # Check that attributes are present initially
-        attributes = GFFAttributes(gff[0]['attributes'])
+        attributes = gff[0]['attributes']
         for attr in ['ID','Name','SGD','ncbi','kaks']:
             self.assertTrue(attr in attributes.keys())
         # Do the exclusion operation
         GFFUpdateAttributes(gff,exclude_keys=['ncbi','kaks'])
         # Check that expected attributes have been removed
-        attributes = GFFAttributes(gff[0]['attributes'])
+        attributes = gff[0]['attributes']
         for attr in ['ID','Name','SGD']:
             self.assertTrue(attr in attributes.keys())
         for attr in ['ncbi','kaks']:
@@ -608,7 +600,7 @@ class TestGFFUpdateAttributes(unittest.TestCase):
         gff = GFFFile('test.gff',self.fp)
         GFFUpdateAttributes(gff,update_keys={'ID':'SGD','Name':'SGD'})
         # Check that attributes have the expected values
-        attributes = GFFAttributes(gff[0]['attributes'])
+        attributes = gff[0]['attributes']
         sgd = attributes['SGD']
         for attr in ['ID','Name']:
             self.assertTrue(attributes[attr] == sgd)
@@ -902,7 +894,7 @@ chr1\tTest\tCDS\t40406\t40864\t0\t-\t0\tID=YEL0W01;SGD=YEL0W01
         GFFGroupSGDs(gff)
         # Check the ID attribute for each line
         for i in range(len(gff)):
-            idx = GFFAttributes(gff[i]['attributes'])['ID']
+            idx = gff[i]['attributes']['ID']
             self.assertEqual(idx,self.ids[i],"incorrect ID at position %d" % i)
 
 class TestGFFInsertMissingGenes(unittest.TestCase):
@@ -935,12 +927,15 @@ YEL0W06\tchr2\t49195\t49569\t-
         GFFInsertMissingGenes(gff,mapping)
         # Check: YEL0W03 should be inserted at index 2
         i = 2
-        idx = GFFAttributes(gff[i]['attributes'])['ID']
+        idx = gff[i]['attributes']['ID']
         self.assertEqual(idx,'CDS:YEL0W03:1',"incorrect ID at position %d" % i)
         # Check: YEL0W06 should not have been inserted
         for i in range(len(gff)):
-            idx = GFFAttributes(gff[i]['attributes'])['ID']
+            idx = gff[i]['attributes']['ID']
             self.assertNotEqual(idx,'CDS:YEL0W06:3',"wrong ID at position %d" %i)
+        # Check: no leading ';' on the string representation
+        self.assertNotEqual(str(gff[i]['attributes'])[0],';',"Erroneous leading semicolon: %s"
+                            % str(gff[i]['attributes']))
 
 class TestGFFAddExonIDs(unittest.TestCase):
 
@@ -968,7 +963,7 @@ chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
         # Check that all exons have an ID
         for data in gff:
             if data['feature'] == 'exon':
-                attr = GFFAttributes(data['attributes'])
+                attr = data['attributes']
                 self.assertTrue('ID' in attr,"No ID attribute found")
                 self.assertEqual(attr.keys()[0],'ID',"ID attribute should be first")
 
@@ -997,7 +992,7 @@ chr1\tTest\texon\t17379\t17386\t.\t+\t.	Parent=DDB0216445
         gff = GFFAddIDAttributes(gff)
         # Check that all exons have an ID
         for data in gff:
-            attr = GFFAttributes(data['attributes'])
+            attr = data['attributes']
             self.assertTrue('ID' in attr,"No ID attribute found")
             self.assertEqual(attr.keys()[0],'ID',"ID attribute should be first")
 
@@ -1017,8 +1012,8 @@ chr1\t.\tgene\t21490\t23468\t.\t+\t.\tID=DDB_G0267204;Name=DDB_G0123456;descript
         # Decode the attribute data
         gff = GFFDecodeAttributes(gff)
         # Check decoding
-        self.assertEqual(gff[0]['attributes'],"ID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon; refer to Genbank M11339 for full-length element")
-        self.assertEqual(gff[1]['attributes'],"ID=DDB_G0267204;Name=DDB_G0123456;description=putative pseudogene; similar to a family of genes, including <a href=\"/gene/DDB_G0267252\">DDB_G0267252</a>")
+        self.assertEqual("%s" % gff[0]['attributes'],"ID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon; refer to Genbank M11339 for full-length element")
+        self.assertEqual("%s" % gff[1]['attributes'],"ID=DDB_G0267204;Name=DDB_G0123456;description=putative pseudogene; similar to a family of genes, including <a href=\"/gene/DDB_G0267252\">DDB_G0267252</a>")
     
 
 #######################################################################
@@ -1317,7 +1312,7 @@ if __name__ == "__main__":
             # Get list of unresolved duplicates
             unresolved = []
             for data in gff_data:
-                attributes = GFFAttributes(data['attributes'])
+                attributes = data['attributes']
                 if 'SGD' in attributes:
                     if attributes['SGD'] in all_unresolved:
                         unresolved.append(data)

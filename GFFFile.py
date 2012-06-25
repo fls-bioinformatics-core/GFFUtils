@@ -45,20 +45,28 @@ To iterate over all lines in the GFF and print the feature type:
 >>> for line in gff:
 >>>    print line['feature']
 
+The 'attributes' data of the file are automatically converted to a
+GFFAttributes object, which allows the values of named attributes to be
+referenced directly. For example, if the attributes string is:
+
+"ID=1690892742066571889;SGD=YEL026W;Gene=Sbay_5.43;Parent=Sbay_5.43"
+
+then the value of the 'Parent' attribute can be obtained using
+
+>>> print line['attributes']['Parent']
+
 To iterate over all lines and extract 'ID' field from attributes:
 
 >>> for line in gff:
->>>    attr = GFFAttributes(line['attributes'])
->>>    if 'ID' in attr:
->>>       print attr['ID']
+>>>    if 'ID' in line['attributes']['ID']:
+>>>       print line['attributes']['ID']
 
 To iterate over all lines and print just the 'name' part of the
 'ID' attribute:
 
 >>> for line in gff:
->>>    attr = GFFAttributes(line['attributes'])
->>>    if 'ID' in attr:
->>>       print GFFID(attr['ID']).name
+>>>    if 'ID' line['attributes']
+>>>       print GFFID(line['attributes']['ID']).name
 
 """
 
@@ -66,7 +74,7 @@ To iterate over all lines and print just the 'name' part of the
 # Import modules that this module depends on
 #######################################################################
 
-from TabFile import TabFile
+from TabFile import TabFile,TabDataLine
 import logging
 import copy
 import urllib
@@ -75,6 +83,20 @@ import urllib
 # Class definitions
 #######################################################################
 
+class GFFDataLine(TabDataLine):
+    """Data line specific to GFF files
+
+    Subclass of TabDataLine which automatically converts data in the
+    attributes column into a GFFAttributes object. This allows GFF
+    attributes to be accessed directly using the syntax
+    gff_line['attributes']['Parent'].
+    """
+    def __init__(self,line=None,column_names=None,lineno=None):
+        TabDataLine.__init__(self,line=line,column_names=column_names,
+                             lineno=lineno)
+        # Convert attributes to GFFAttributes object
+        self['attributes'] = GFFAttributes(self['attributes'])
+
 class GFFFile(TabFile):
     """Class for reading GFF files
 
@@ -82,17 +104,19 @@ class GFFFile(TabFile):
     """
     def __init__(self,gff_file,fp=None,skip_first_line=False,
                  first_line_is_header=False):
-        TabFile.__init__(self,gff_file,column_names=('seqname',
-                                                     'source',
-                                                     'feature',
-                                                     'start',
-                                                     'end',
-                                                     'score',
-                                                     'strand',
-                                                     'frame',
-                                                     'attributes'),
+        TabFile.__init__(self,gff_file,
                          fp=fp,skip_first_line=skip_first_line,
-                         first_line_is_header=first_line_is_header)
+                         first_line_is_header=first_line_is_header,
+                         tab_data_line=GFFDataLine,
+                         column_names=('seqname',
+                                       'source',
+                                       'feature',
+                                       'start',
+                                       'end',
+                                       'score',
+                                       'strand',
+                                       'frame',
+                                       'attributes'))
 
     def write(self,filen):
         """Write the GFF data to an output GFF
@@ -203,7 +227,7 @@ class GFFAttributes(OrderedDictionary):
         # Flag indicating whether to encode values on output
         self.__encode_values = True
         # Extract individual data items
-        if attribute_data is not None:
+        if attribute_data:
             for item in attribute_data.split(';'):
                 try:
                     i = item.index('=')
@@ -447,6 +471,14 @@ class TestGFFAttributes(unittest.TestCase):
         self.assertEqual(attributes,str(attr))
         self.assertFalse(attr.encode(False))
         self.assertEqual("ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene; similar to a family of genes, including <a href=\"/gene/DDB_G0234567\">DDB_G0234567</a>",str(attr))
+
+    def test_empty_attributes_string(self):
+        """Test that empty input generates empty output
+        """
+        attr = GFFAttributes('')
+        self.assertEqual('',str(attr))
+        attr['ID'] = 'test'
+        self.assertEqual('ID=test',str(attr))
 
 class TestGFFID(unittest.TestCase):
     """Unit tests for GFFID class

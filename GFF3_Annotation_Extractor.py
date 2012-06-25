@@ -135,7 +135,7 @@ def main():
     for data in gff:
         if data['feature'] == feature_type:
             # Get the Parent ID from the attributes
-            attributes = GFFFile.GFFAttributes(data['attributes'])
+            attributes = data['attributes']
             parent = attributes['Parent']
             # Check for multiple parents - split on comma
             if len(parent.split(',')) > 1:
@@ -155,7 +155,7 @@ def main():
     # Link IDs of genes to the exon parents that they (the genes) are parents of
     parent_gene_IDs = {}
     for data in gff:
-        attributes = GFFFile.GFFAttributes(data['attributes'])
+        attributes = data['attributes']
         try:
             feature_ID = attributes['ID']
             if feature_ID in exon_parent_IDs:
@@ -180,7 +180,7 @@ def main():
     parent_genes = {}
     for data in gff:
         # Get the ID from the attributes
-        attributes = GFFFile.GFFAttributes(data['attributes'])
+        attributes = data['attributes']
         try:
             feature_ID = attributes['ID']
         except KeyError:
