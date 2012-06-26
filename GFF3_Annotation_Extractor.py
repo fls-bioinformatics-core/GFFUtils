@@ -58,9 +58,20 @@ import glob
 # Class definitions
 #######################################################################
 
-class GFFIDLookup:
+class GFFAnnotationLookup:
+    """Utility class for acquiring parent gene names and data
+
+    The GFFAnnotationLookup class provides functionality for indexing
+    data from a GFF file in order to facilitate finding the parent
+    genes and associated data from the IDs of "feature parents".
+    """
 
     def __init__(self,gff_data):
+        """Create a new GFFAnnotationLookup instance
+
+        Arguments:
+          gff_data: a GFFFile.GFFFile object populated from a GFF file
+        """
         self.__lookup_id = {}
         self.__lookup_parent = {}
         for line in gff_data:
@@ -74,14 +85,40 @@ class GFFIDLookup:
                     self.__lookup_parent[idx] = parent
 
     def getDataFromID(self,idx):
-        # Return line based on ID
+        """Return line of data from GFF file matching the ID attribute
+
+        Arguments:
+          idx: ID attribute to search for
+
+        Returns:
+          Line of data where the value of the ID attribute matches the
+          one supplied; raises KeyError exception if no match is found.
+        """
         return self.__lookup_id[idx]
 
     def getParentID(self,idx):
-        # Return parent based on ID
+        """Return ID attribute value for parent feature
+
+        Arguments:
+          idx: ID attribute of feature to find the parent of
+
+        Returns:
+          ID attribute value of the parent feature; raises KeyError
+          exception if no Parent is found
+        """
         return self.__lookup_parent[idx]
 
     def getAncestorGene(self,idx):
+        """Return line of data for 'ancestor gene' of feature
+
+        Arguments:
+          idx: ID attribute of feature to find the ancestor gene of
+
+        Returns:
+          Line of data for the gene which is the ancestor of the
+          feature identified by the supplied ID attribute; returns None
+          if no parent is found.
+        """
         # Follow parents until we find the "ancestor" gene
         idx0 = idx
         try:
@@ -96,12 +133,20 @@ class GFFIDLookup:
         return None
 
     def getAnnotation(self,idx):
+        """Return annotation data for the supplied feature ID
+
+        Arguments:
+          idx: ID attribute of feature to get annotation data for
+
+        Returns:
+          GFFAnnotation object populated with the annotation data
+          for the feature identified by the supplied ID attribute.
+        """
         # Return annotation for an ID
         annotation = GFFAnnotation()
         # Parent feature data
         annotation.parent_feature_name = idx
         parent_feature = self.getDataFromID(idx)
-        ##print "%s" % parent_feature
         annotation.parent_feature_type = parent_feature['feature']
         annotation.parent_feature_parent = parent_feature['attributes']['Parent']
         # Parent gene data
@@ -136,9 +181,15 @@ class GFFIDLookup:
         return annotation
 
 class GFFAnnotation:
-    # Container for annotation information
+    """Container class for GFF annotation data
+
+    Once instantiated the calling subprogram should populate the
+    object properties with the appropriate data.
+    """
 
     def __init__(self):
+        """Create a new GFFAnnotation instance
+        """
         self.parent_feature_name = ''
         self.parent_feature_type = ''
         self.parent_feature_parent = ''
@@ -211,7 +262,7 @@ def main():
 
     # Build lookup
     print "Creating lookup for GFF data"
-    gff_lookup = GFFIDLookup(gff)
+    gff_lookup = GFFAnnotationLookup(gff)
 
     # Process the HTSeq-count files
     print "Processing feature count files"
