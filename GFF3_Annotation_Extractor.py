@@ -238,8 +238,6 @@ class HTSeqCountFile:
         self.__htseq_table = GFFFile.OrderedDictionary()
         # Total reads counted
         self.__total_reads = 0
-        # List of feature IDs
-        self.__feature_IDs = []
         # Read in data from file
         fp = open(htseqfile,'rU')
         # Flag indicating whether we're reading feature counts
@@ -255,8 +253,6 @@ class HTSeqCountFile:
                 reading_feature_counts = False
             # Determine what type of data we're storing
             if reading_feature_counts:
-                # Feature name/ID
-                self.__feature_IDs.append(name)
                 # Feature-by-feature counts i.e.:
                 # DDB0166998	1
                 self.__htseq_counts[name] = count
@@ -274,7 +270,7 @@ class HTSeqCountFile:
     def feature_IDs(self):
         """Return list of feature IDs from the HTSeq-count output
         """
-        return self.__feature_IDs
+        return self.__htseq_counts
 
     def count(self,feature_id):
         """Return count for feature ID
