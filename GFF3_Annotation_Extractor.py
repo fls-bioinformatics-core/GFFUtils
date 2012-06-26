@@ -11,18 +11,22 @@
 
 """GFF3_Annotation_Extractor.py
 
-Annotate HTSeq-count-style feature count data with information from GFF file.
+Annotate gene feature data (for example the output from one or more runs of the
+HTSeq-count program) by combining it with data about each feature's parent gene,
+taken from a GFF file.
 
-Usage
------
+By default the program takes a single tab-delimited input file where the first column
+contains feature IDs, and appends data about the feature's parent gene.
 
-First run the htseq-count program to generate counts using e.g.
+In "htseq-count" mode, one or more `htseq-count` output files should be provided as
+input, and the program will write out the data about the feature's parent gene appended
+with the counts from each input file.
 
-   htseq-count -q -i ID -t exon <sam> <gff> > htseq-counts
+To generate the feature count files using `htseq-count` do e.g.:
 
-Then run the annotator:
+        htseq-count --type=exon -i Parent <file>.gff <file>.sam
 
-   GFF3_Annotation_Extractor.py -t exon <gff> htseq-counts
+which returns counts of each exon against the name of that exon's parent.
 
 Multiple parents
 ----------------
@@ -290,63 +294,81 @@ class HTSeqCountFile:
 # Functions
 #######################################################################
 
-def main():
-    """Main program
+# annotate_feature_data
+#
+def annotate_feature_data(gff_lookup,feature_data_file,out_file):
+    """Annotate feature data with gene information
+
+    Reads in 'feature data' from a tab-delimited input file with feature
+    IDs in the first column; outputs these data with data about the
+    parent gene appended to each line.
+
+    Arguments:
+      gff_lookup         populated GFFAnnotationLookup instance
+      feature_data_file  input data file with feature IDs in first column
+      out_file           name of output file
     """
-    # Process command line
-    p = optparse.OptionParser(usage="%prog OPTIONS gff_file FEATURE_COUNTS [ FEATURE_COUNTS ... ]",
-                              version="%prog "+__version__,
-                              description="Annotate feature count data with information from a "
-                              "GFF file. Input FEATURE_COUNTS files can be generated using e.g. "
-                              "htseq-count ('htseq-count -q -t exon -i Parent gff_file "
-                              "sam_file'). The annotator looks up the parent genes of each "
-                              "feature and outputs this information against the feature counts "
-                              "(in <gff_file>_counts.txt) plus the totals assigned, not "
-                              "counted etc (in <gff_file>_counts_stats.txt).")
-    p.add_option('-o',action="store",dest="out_file",default=None,
-                 help="specify output file name")
-    p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
-                 help="feature type listed in input count files (default 'exon')")
-    options,arguments = p.parse_args()
-    if len(arguments) < 2:
-        p.error("Expected GFF file and at least one feature count file")
+    # Read the feature data into a TabFile
+    print "Reading in data from %s" % feature_data_file
+    feature_data = TabFile.TabFile(filen=feature_data_file,
+                                   first_line_is_header=True)
 
-    # Input GFF file
-    gff_file = arguments[0]
-    if not os.path.exists(gff_file):
-        p.error("Input GFF file %s not found" % gff_file)
+    # Append columns for annotation
+    print "Appending columns for annotation"
+    for colname in ('exon_parent',
+                    'feature_type_exon_parent',
+                    'gene_ID',
+                    'gene_name',
+                    'chr',
+                    'start',
+                    'end',
+                    'strand',
+                    'gene_length',
+                    'locus',
+                    'description'):
+        feature_data.appendColumn(colname)
 
-    # Check for wildcards in feature count file names, to emulate linux shell globbing
-    # on platforms such as Windows which don't have this built in
-    htseq_files = []
-    for arg in arguments[1:]:
-        for filen in glob.iglob(arg):
-            if not os.path.exists(filen):
-                p.error("File '%s' not found" % filen)
-            htseq_files.append(filen)
-    if not htseq_files:
-        p.error("No input feature count files found")
+    for line in feature_data:
+        feature_ID = line[0]
+        annotation = gff_lookup.getAnnotation(feature_ID)
+        line['exon_parent'] = annotation.parent_feature_name
+        line['feature_type_exon_parent'] = annotation.parent_feature_type
+        line['gene_ID'] = annotation.parent_feature_parent
+        line['gene_name'] = annotation.parent_gene_name
+        line['chr'] = annotation.chr
+        line['start'] = annotation.start
+        line['end'] = annotation.end
+        line['strand'] = annotation.strand
+        line['gene_length'] = annotation.gene_length
+        line['locus'] = annotation.gene_locus
+        line['description'] = annotation.description
 
-    # Feature type being considered
-    feature_type = options.feature_type
+    # Output
+    print "Writing output file %s" % out_file
+    feature_data.write(out_file,include_header=True,no_hash=True)
 
+# annotate_htseq_count_data
+#
+def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
+    """Annotate count data from htseq-count output with gene information
+
+    Reads in data from one or more htseq-count output files and combines
+    into a single tab-delimited output file where the counts for each
+    feature have been appended to data about the parent gene.
+
+    Also creates an output 'stats' file which combines the summary data
+    from the tail of each htseq-count file.
+
+    Arguments:
+      gff_lookup:  populated GFFAnnotationLookup instance
+      htseq_files: list of output files from htseq-count to use as input
+      out_file:    name of output file
+    """
     # Output files
-    if options.out_file:
-        annotated_counts_out_file = options.out_file
-    else:
-        annotated_counts_out_file = os.path.splitext(os.path.basename(gff_file))[0]+\
-            "_counts.txt"
+    annotated_counts_out_file = out_file
     tables_out_file = \
         os.path.splitext(os.path.basename(annotated_counts_out_file))[0]+\
         "_stats"+os.path.splitext(annotated_counts_out_file)[1]
-
-    # Process GFF data
-    print "Reading data from %s" % gff_file
-    gff = GFFFile.GFFFile(gff_file)
-
-    # Build lookup
-    print "Creating lookup for GFF data"
-    gff_lookup = GFFAnnotationLookup(gff)
 
     # Process the HTSeq-count files
     print "Processing HTSeq-count files"
@@ -410,6 +432,93 @@ def main():
         table_counts.append(data=data)
     print "Writing output file %s" % tables_out_file
     table_counts.write(tables_out_file,include_header=True,no_hash=True)
+
+# Main program
+#
+def main():
+    """Main program
+    """
+    # Process command line
+    p = optparse.OptionParser(usage="\n  %prog OPTIONS GFF_FILE FEATURE_DATA\n"
+                              "  %prog --htseq-count OPTIONS GFF_FILE FEATURE_COUNTS "
+                              "[ FEATURE_COUNTS ... ]",
+                              version="%prog "+__version__,
+                              description="Annotate feature count data with information from a "
+                              "GFF file. Default mode is to take a single tab-delimited "
+                              "FEATURE_DATA input file where the first column consists of feature "
+                              "IDs from the input GFF_FILE; in this mode each line of "
+                              "FEATURE_DATA will be appended with data about the 'parent feature' "
+                              "and 'parent gene' matching the feature ID. In --htseq-count mode "
+                              "input consists of one or more FEATURE_COUNTS files generated using "
+                              "htseq-count (e.g. 'htseq-count -q -t exon -i Parent gff_file "
+                              "sam_file'). The annotator looks up the parent genes of each "
+                              "feature and outputs this information against the feature counts "
+                              "(in <gff_file>_annot.txt) plus the totals assigned, not "
+                              "counted etc (in <gff_file>_annot_stats.txt).")
+    p.add_option('-o',action="store",dest="out_file",default=None,
+                 help="specify output file name")
+    p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
+                 help="feature type listed in input count files (default 'exon')")
+    p.add_option('--htseq-count',action="store_true",dest="htseq_count",default=False,
+                 help="htseq-count mode: input is one or more output FEATURE_COUNT files from "
+                 "the htseq-count program")
+    options,arguments = p.parse_args()
+
+    # Determine what mode to operate in
+    htseq_count_mode = options.htseq_count
+
+    # Initial check on arguments
+    if len(arguments) < 2:
+        p.error("Expected GFF file and at least one feature data file")
+
+    # Input GFF file
+    gff_file = arguments[0]
+    if not os.path.exists(gff_file):
+        p.error("Input GFF file %s not found" % gff_file)
+
+    # Check for wildcards in feature data file names, to emulate linux shell globbing
+    # on platforms such as Windows which don't have this built in
+    feature_data_files = []
+    for arg in arguments[1:]:
+        for filen in glob.iglob(arg):
+            if not os.path.exists(filen):
+                p.error("File '%s' not found" % filen)
+            feature_data_files.append(filen)
+    if not feature_data_files:
+        p.error("No input feature data files found")
+
+    # Final check on number of input files
+    if not htseq_count_mode and len(feature_data_files) > 1:  
+        p.error("Expected GFF file and a single feature data file")
+
+    # Feature type being considered
+    feature_type = options.feature_type
+
+    # Output file
+    if options.out_file:
+        out_file = options.out_file
+    else:
+        out_file = os.path.splitext(os.path.basename(gff_file))[0] + "_annot.txt"
+
+    # Process GFF data
+    print "Reading data from %s" % gff_file
+    gff = GFFFile.GFFFile(gff_file)
+
+    # Build lookup
+    print "Creating lookup for GFF data"
+    gff_lookup = GFFAnnotationLookup(gff)
+
+    # Annotate input data
+    if htseq_count_mode:
+        # HTSeq-count mode
+        annotate_htseq_count_data(gff_lookup,
+                                  feature_data_files,
+                                  out_file)
+    else:
+        # Standard mode
+        annotate_feature_data(gff_lookup,
+                              feature_data_files[0],
+                              out_file)
 
 #######################################################################
 # Main program
