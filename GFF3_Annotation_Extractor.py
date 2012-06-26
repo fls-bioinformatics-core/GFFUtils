@@ -58,7 +58,98 @@ import glob
 # Class definitions
 #######################################################################
 
-# No classes defined
+class GFFIDLookup:
+
+    def __init__(self,gff_data):
+        self.__lookup_id = {}
+        self.__lookup_parent = {}
+        for line in gff_data:
+            if 'ID' in line['attributes']:
+                # Store reference to data by ID
+                idx = line['attributes']['ID']
+                self.__lookup_id[idx] = line
+                if 'Parent' in line['attributes']:
+                    # Store reference to parent by ID
+                    parent = line['attributes']['Parent']
+                    self.__lookup_parent[idx] = parent
+
+    def getDataFromID(self,idx):
+        # Return line based on ID
+        return self.__lookup_id[idx]
+
+    def getParentID(self,idx):
+        # Return parent based on ID
+        return self.__lookup_parent[idx]
+
+    def getAncestorGene(self,idx):
+        # Follow parents until we find the "ancestor" gene
+        idx0 = idx
+        try:
+            while True:
+                idx0 = self.getParentID(idx0)
+        except KeyError,ex:
+            if idx0 != idx:
+                # Check that it's a gene
+                data = self.getDataFromID(idx0)
+                assert(data['feature'] == 'gene')
+                return data
+        return None
+
+    def getAnnotation(self,idx):
+        # Return annotation for an ID
+        annotation = GFFAnnotation()
+        # Parent feature data
+        annotation.parent_feature_name = idx
+        parent_feature = self.getDataFromID(idx)
+        ##print "%s" % parent_feature
+        annotation.parent_feature_type = parent_feature['feature']
+        annotation.parent_feature_parent = parent_feature['attributes']['Parent']
+        # Parent gene data
+        gene = self.getAncestorGene(idx)
+        if not gene: return annotation
+        annotation.parent_gene_name = gene['attributes']['Name']
+        annotation.chr = gene['seqname']
+        annotation.start = gene['start']
+        annotation.end = gene['end']
+        annotation.strand = gene['strand']
+        # Locus: chromosome plus start and end data
+        annotation.gene_locus = "%s:%s-%s" % (gene['seqname'],gene['start'],gene['end'])
+        # Gene length
+        annotation.gene_length = gene['end'] - gene['start']
+        # Build description text
+        # This is all attribute data from the 'description' attribute onwards
+        # (but not including the leading "description=" keyword)
+        store_attribute = False
+        description = []
+        for attr in gene['attributes']:
+            if store_attribute:
+                description.append(attr+'='+gene['attributes'][attr])
+            if attr == 'description':
+                description.append(gene['attributes'][attr])
+                store_attribute = True
+        # Reconstruct the description string
+        description = ';'.join(description)
+        # Finally: replace any tab characters that were introduced by % decoding
+        description = description.replace('\t','    ')
+        annotation.description = description
+        # Done
+        return annotation
+
+class GFFAnnotation:
+    # Container for annotation information
+
+    def __init__(self):
+        self.parent_feature_name = ''
+        self.parent_feature_type = ''
+        self.parent_feature_parent = ''
+        self.parent_gene_name = ''
+        self.gene_locus = ''
+        self.description = ''
+        self.chr = ''
+        self.start = ''
+        self.strand = ''
+        self.end = ''
+        self.gene_length = ''
 
 #######################################################################
 # Functions
@@ -118,118 +209,9 @@ def main():
     print "Reading data from %s" % gff_file
     gff = GFFFile.GFFFile(gff_file)
 
-    # Overview of the method:
-    #
-    # HTSeq-count output has lists of exon parent IDs plus counts
-    #
-    # GFF hierarchy has exon -> [intermediate] -> gene
-    # where intermediate could be mRNA, pseudogene etc
-    #
-    # For all the exon parent IDs from HTSeq-count, locate the intermediates and then
-    # for each intermediate locate the genes.
-
-    # Get a list of unique parent IDs for the feature of interest (=exon by default)
-    print "Building list of unique parent IDs for '%s' features" % feature_type
-    # List of exon parent IDs
-    exon_parent_IDs = []
-    for data in gff:
-        if data['feature'] == feature_type:
-            # Get the Parent ID from the attributes
-            attributes = data['attributes']
-            parent = attributes['Parent']
-            # Check for multiple parents - split on comma
-            if len(parent.split(',')) > 1:
-                # Issue a warning but continue for now
-                logging.warning("Multiple parents found on line %d: %s" % (data.lineno(),
-                                                                           parent))
-            # Store the ID
-            if parent not in exon_parent_IDs:
-                exon_parent_IDs.append(parent)
-
-    # Get the actual data for each exon parent
-    # Also build a list of *their* parents (i.e. genes)
-    print "Collecting data for %s parents & building lookup list of their parent gene IDs" % \
-        feature_type
-    # Data about exon parents (e.g. type, the ID of its parent)
-    exon_parent_data = {}
-    # Link IDs of genes to the exon parents that they (the genes) are parents of
-    parent_gene_IDs = {}
-    for data in gff:
-        attributes = data['attributes']
-        try:
-            feature_ID = attributes['ID']
-            if feature_ID in exon_parent_IDs:
-                # This is a parent of an exon - store its data
-                feature_parent_ID = attributes['Parent']
-                # Check for multiple parents
-                if len(feature_parent_ID.split(',')) > 1:
-                    # Issue a warning
-                    logging.warning("Multiple parents detected for %s ID %s (line %d,parents %s)" %
-                                    (data['feature'],feature_ID,data.lineno(),feature_parent_ID))
-                exon_parent_data[feature_ID] = { 'Parent': feature_parent_ID,
-                                                 'type' : data['feature'] }
-                # Also store lookup from gene IDs to exon parents
-                parent_gene_IDs[feature_parent_ID] = feature_ID
-        except KeyError:
-            # No ID attribute for this feature, skip it
-            logging.debug("No ID for line '%s'" % data)
-
-    # Extract data for features with ID's which match the exon parent's parents (i.e. genes)
-    print "Collecting data for parent genes"
-    # Data about the genes (e.g. name, locus, description)
-    parent_genes = {}
-    for data in gff:
-        # Get the ID from the attributes
-        attributes = data['attributes']
-        try:
-            feature_ID = attributes['ID']
-        except KeyError:
-            # No ID attribute for this feature, skip it
-            logging.debug("No ID for line '%s'" % data)
-            continue
-        if feature_ID in parent_gene_IDs:
-            # This is one of the exon parent's parent genes: extract and store the data
-            try:
-                name = attributes['Name']
-            except KeyError:
-                logging.error("Failed to get name attribute for feature ID %s" % feature_ID)
-                sys.exit(1)
-            # Check it's a gene
-            if data['feature'] != 'gene':
-                logging.error("Non-gene parent! %s" % feature_ID)
-                sys.exit(1)
-            # Build description text
-            # This will be all the attribute data from the 'description' attribute
-            # onwards
-            store_attribute = False
-            description = []
-            for attr in attributes:
-                if store_attribute:
-                    description.append(attr+'='+attributes[attr])
-                if attr == 'description':
-                    description.append(attributes[attr])
-                    store_attribute = True
-            # Reconstruct the description string
-            description = ';'.join(description)
-            # Finally: replace any tab characters that were introduced by % decoding
-            description = description.replace('\t','    ')
-            # Locus: chromosome plus start and end data
-            locus = "%s:%s-%s" % (data['seqname'],data['start'],data['end'])
-            logging.debug("%s\t%s\t%s" % (feature_ID,name,description))
-            # Gene length
-            gene_length = data['end'] - data['start']
-            # Check if it's unique
-            if feature_ID in parent_genes:
-                logging.warning("ID '%s' matched multiple times" % feature_ID)
-            # Store data
-            parent_genes[feature_ID] = { 'gene_name': name,
-                                         'gene_locus': locus,
-                                         'description': description,
-                                         'chr': data['seqname'],
-                                         'start': data['start'],
-                                         'strand': data['strand'],
-                                         'end': data['end'],
-                                         'gene_length': gene_length }
+    # Build lookup
+    print "Creating lookup for GFF data"
+    gff_lookup = GFFIDLookup(gff)
 
     # Process the HTSeq-count files
     print "Processing feature count files"
@@ -278,7 +260,6 @@ def main():
     print "Building list of IDs from %s" % htseq_files[0]
     feature_IDs = []
     for feature_ID in htseq_counts[htseq_files[0]]:
-        ##print str(feature_ID)
         feature_IDs.append(feature_ID)
 
     # Create a TabFile for output
@@ -299,46 +280,20 @@ def main():
 
     # Combine feature counts and parent feature data
     for exon_parent_ID in feature_IDs:
-        # Check that we have data for the parent referenced in the feature count files
-        if exon_parent_ID in exon_parent_data:
-            # Add the exon parent data
-            data.append(exon_parent_ID)
-            exon_parent_gene = exon_parent_data[exon_parent_ID]['Parent']
-            # Look up the name, description etc
-            exon_parent_type        = exon_parent_data[exon_parent_ID]['type']
-            exon_parent_gene_name   = parent_genes[exon_parent_gene]['gene_name']
-            exon_parent_chr         = parent_genes[exon_parent_gene]['chr']
-            exon_parent_start       = parent_genes[exon_parent_gene]['start']
-            exon_parent_end         = parent_genes[exon_parent_gene]['end']
-            exon_parent_strand      = parent_genes[exon_parent_gene]['strand']
-            exon_parent_gene_length = parent_genes[exon_parent_gene]['gene_length']
-            exon_parent_gene_locus  = parent_genes[exon_parent_gene]['gene_locus']
-            exon_parent_description = parent_genes[exon_parent_gene]['description']
-        else:
-            # No data found for the exon parent 
-            logging.error("No data found in GFF for %s parent '%s' referenced in "
-                          "gene count files" % (feature_type,exon_parent_ID))
-            exon_parent_type        = ''
-            exon_parent_gene_name   = ''
-            exon_parent_chr         = ''
-            exon_parent_start       = ''
-            exon_parent_end         = ''
-            exon_parent_strand      = ''
-            exon_parent_gene_length = ''
-            exon_parent_gene_locus  = ''
-            exon_parent_description = ''
+        # Get annotation data
+        annotation = gff_lookup.getAnnotation(exon_parent_ID)
         # Build the data line
-        data = [exon_parent_ID,
-                exon_parent_type,
-                exon_parent_gene,
-                exon_parent_gene_name,
-                exon_parent_chr,
-                exon_parent_start,
-                exon_parent_end,
-                exon_parent_strand,
-                exon_parent_gene_length,
-                exon_parent_gene_locus,
-                exon_parent_description]
+        data = [annotation.parent_feature_name,
+                annotation.parent_feature_type,
+                annotation.parent_feature_parent,
+                annotation.parent_gene_name,
+                annotation.chr,
+                annotation.start,
+                annotation.end,
+                annotation.strand,
+                annotation.gene_length,
+                annotation.gene_locus,
+                annotation.description]
         # Add the counts from each file
         for htseqfile in htseq_files:
             data.append(htseq_counts[htseqfile][exon_parent_ID])
