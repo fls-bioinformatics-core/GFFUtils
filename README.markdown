@@ -215,13 +215,20 @@ that it lies inside the start/end positions of the mapping gene extended by 1kb 
 between `start` - 1000 and `end` +  1000.
 
 GFF3_Annotation_Extractor.py
-----------------------
+----------------------------
 
 GFF3_Annotation_Extractor.py takes gene feature data (for example the output from one
 or more runs of the HTSeq-count program) and combines it with data about each feature's
 parent gene from a GFF file.
 
-To use with HTSeq-count, generate the feature count files using e.g.:
+By default the program takes a single tab-delimited input file where the first column
+contains feature IDs, and appends data about the feature's parent gene.
+
+In "htseq-count" mode, one or more `htseq-count` output files should be provided as
+input, and the program will write out the data about the feature's parent gene appended
+with the counts from each input file.
+
+To generate the feature count files using `htseq-count` do e.g.:
 
         htseq-count --type=exon -i Parent <file>.gff <file>.sam
 
@@ -232,9 +239,8 @@ the counts against gene names.
 
 ### Usage ###
 
-        GFF3_Annotation_Extractor.py <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
-
-Alternatively you can use wildcards to specify multiple feature count files e.g. `*_features.txt`.
+        GFF3_Annotation_Extractor.py OPTIONS <file>.gff FEATURE_DATA
+	GFF3_Annotation_Extractor.py --htseq-count OPTIONS <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
 
 ### Options ###
 
@@ -243,13 +249,15 @@ Alternatively you can use wildcards to specify multiple feature count files e.g.
     -o OUT_FILE           specify output file name
     -t FEATURE_TYPE, --type=FEATURE_TYPE
                           feature type contained in the process (default 'exon')
+    --htseq-count         htseq-count mode: input is one or more output
+                          FEATURE_COUNT files from the htseq-count program
 
 ### Output files ###
 
- * `<basename>_counts.txt`: the counts from each log for each gene name.
+ * `<basename>_annot.txt`: the feature data annotated with data for each parent gene.
 
- * `<basename>_counts_stats.txt`: the counts of "ambiguous", "two_low_aQual" etc
-    from each log.
+ * `<basename>_annot_stats.txt`: the counts of "ambiguous", "two_low_aQual" etc
+    from each log (htseq-count mode only).
 
 Set up and prerequisites
 ------------------------
