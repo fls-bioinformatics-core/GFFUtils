@@ -83,6 +83,11 @@ class GFFAnnotationLookup:
                     # Store reference to parent by ID
                     parent = line['attributes']['Parent']
                     self.__lookup_parent[idx] = parent
+                    # Check for multiple parents
+                    if len(parent.split(',')) > 1:
+                        # Issue a warning but continue for now
+                        logging.warning("Multiple parents found on line %d: %s" % (line.lineno(),
+                                                                                   parent))
 
     def getDataFromID(self,idx):
         """Return line of data from GFF file matching the ID attribute
