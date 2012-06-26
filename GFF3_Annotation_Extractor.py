@@ -154,8 +154,13 @@ class GFFAnnotationLookup:
         # Return annotation for an ID
         annotation = GFFAnnotation()
         # Parent feature data
+        try:
+            parent_feature = self.getDataFromID(idx)
+        except KeyError:
+            # No parent data
+            logging.warning("No parent data for feature '%s'" % idx)
+            return annotation
         annotation.parent_feature_name = idx
-        parent_feature = self.getDataFromID(idx)
         annotation.parent_feature_type = parent_feature['feature']
         annotation.parent_feature_parent = parent_feature['attributes']['Parent']
         # Parent gene data
