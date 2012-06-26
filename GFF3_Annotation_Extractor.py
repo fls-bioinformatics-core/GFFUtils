@@ -207,6 +207,89 @@ class GFFAnnotation:
         self.end = ''
         self.gene_length = ''
 
+class HTSeqCountFile:
+    """Class for handling data from output of htseq-count program
+
+    The htseq-count program outputs 2-columns of tab-delimited data,
+    with the first column containing feature IDs and the second the
+    corresponding count of reads assigned to that feature. Appended
+    to this are summary statistics (for example count of reads not
+    assigned to any feature).
+
+    The HTSeqCountFile class processes the data from this output file,
+    splitting the data into counts against features and a 'trailing
+    table' for the summary statistic data.
+
+    A list of feature IDs can be obtained using the feature_IDs()
+    method; the count for a specified feature ID can be obtained
+    via the count() method; and the trailing table can be obtained
+    using the table() method.
+    """
+
+    def __init__(self,htseqfile):
+        """Create new HTSeqCountFile instance
+
+        Arguments:
+          htseqfile: name of the htseq-count output file (including
+            leading path) to process
+        """
+        # Create dictionaries to store data
+        self.__htseq_counts = GFFFile.OrderedDictionary()
+        self.__htseq_table = GFFFile.OrderedDictionary()
+        # Total reads counted
+        self.__total_reads = 0
+        # List of feature IDs
+        self.__feature_IDs = []
+        # Read in data from file
+        fp = open(htseqfile,'rU')
+        # Flag indicating whether we're reading feature counts
+        # or trailing totals
+        reading_feature_counts = True
+        # Go through the file line-by-line
+        for line in fp:
+            # All lines are two tab-delimited fields
+            name = line.split('\t')[0]
+            count = line.strip('\n').split('\t')[1]
+            # Check if we've encountered the trailing table
+            if line.startswith('no_feature'):
+                reading_feature_counts = False
+            # Determine what type of data we're storing
+            if reading_feature_counts:
+                # Feature name/ID
+                self.__feature_IDs.append(name)
+                # Feature-by-feature counts i.e.:
+                # DDB0166998	1
+                self.__htseq_counts[name] = count
+                self.__total_reads += int(count)
+            else:
+                # Trailing table i.e.:
+                # too_low_aQual	0
+                self.__htseq_table[name] = count
+        # Finished reading from file
+        fp.close()
+        # Add total counted at the start of the table of counts
+        self.__htseq_table.insert(0,'total_counted_into_genes',
+                                  self.__total_reads)
+
+    def feature_IDs(self):
+        """Return list of feature IDs from the HTSeq-count output
+        """
+        return self.__feature_IDs
+
+    def count(self,feature_id):
+        """Return count for feature ID
+        """
+        return self.__htseq_counts[feature_id]
+
+    def table(self):
+        """Return the trailing table data
+
+        Returns:
+          OrderDictionary object with the statistics as keys referencing
+          the values as dictionary items.
+        """
+        return self.__htseq_table
+
 #######################################################################
 # Functions
 #######################################################################
@@ -270,53 +353,11 @@ def main():
     gff_lookup = GFFAnnotationLookup(gff)
 
     # Process the HTSeq-count files
-    print "Processing feature count files"
-    htseq_counts = GFFFile.OrderedDictionary()
-    htseq_tables = GFFFile.OrderedDictionary()
+    print "Processing HTSeq-count files"
+    htseq_data = {}
     for htseqfile in htseq_files:
         print "\t%s" % htseqfile
-        # Create dictionaries to store data
-        htseq_counts[htseqfile] = GFFFile.OrderedDictionary()
-        htseq_tables[htseqfile] = GFFFile.OrderedDictionary()
-        # Read in data from file
-        fp = open(htseqfile,'rU')
-        # Flag indicating whether we're reading feature counts
-        # or trailing totals
-        reading_feature_counts = True
-        # Go through the file line-by-line
-        for line in fp:
-            # All lines are two tab-delimited fields
-            name = line.split('\t')[0]
-            count = line.strip('\n').split('\t')[1]
-            # Check if we've encountered the trailing table
-            if line.startswith('no_feature'):
-                reading_feature_counts = False
-            # Determine what type of data we're storing
-            if reading_feature_counts:
-                # Feature-by-feature counts i.e.:
-                # DDB0166998	1
-                htseq_counts[htseqfile][name] = count
-            else:
-                # Trailing table i.e.:
-                # too_low_aQual	0
-                htseq_tables[htseqfile][name] = count
-
-    # Total reads counted into genes for each HTSeq output file
-    print "Determining numbers counted into genes"
-    for htseqfile in htseq_files:
-        total_counted_into_genes = 0
-        for feature in htseq_counts[htseqfile]:
-            total_counted_into_genes += int(htseq_counts[htseqfile][feature])
-        # Insert at the start of the table of counts
-        htseq_tables[htseqfile].insert(0,
-                                       'total_counted_into_genes',
-                                       total_counted_into_genes)
-
-    # Make a list of names found in the first count file
-    print "Building list of IDs from %s" % htseq_files[0]
-    feature_IDs = []
-    for feature_ID in htseq_counts[htseq_files[0]]:
-        feature_IDs.append(feature_ID)
+        htseq_data[htseqfile] = HTSeqCountFile(htseqfile)
 
     # Create a TabFile for output
     print "Building annotated count file for output"
@@ -335,9 +376,9 @@ def main():
         annotated_counts.appendColumn(htseqfile)
 
     # Combine feature counts and parent feature data
-    for exon_parent_ID in feature_IDs:
+    for feature_ID in htseq_data[htseq_files[0]].feature_IDs():
         # Get annotation data
-        annotation = gff_lookup.getAnnotation(exon_parent_ID)
+        annotation = gff_lookup.getAnnotation(feature_ID)
         # Build the data line
         data = [annotation.parent_feature_name,
                 annotation.parent_feature_type,
@@ -352,7 +393,7 @@ def main():
                 annotation.description]
         # Add the counts from each file
         for htseqfile in htseq_files:
-            data.append(htseq_counts[htseqfile][exon_parent_ID])
+            data.append(htseq_data[htseqfile].count(feature_ID))
         # Add to the tabfile
         annotated_counts.append(data=data)
 
@@ -365,11 +406,11 @@ def main():
     table_counts = TabFile.TabFile(column_names=['count'])
     for htseqfile in htseq_files:
         table_counts.appendColumn(htseqfile)
-    for name in htseq_tables[htseq_files[0]]:
+    for name in htseq_data[htseq_files[0]].table():
         # Build the data line
         data = [name]
         for htseqfile in htseq_files:
-            data.append(htseq_tables[htseqfile][name])
+            data.append(htseq_data[htseqfile].table()[name])
         table_counts.append(data=data)
     print "Writing output file %s" % tables_out_file
     table_counts.write(tables_out_file,include_header=True,no_hash=True)
