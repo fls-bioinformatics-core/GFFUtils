@@ -14,67 +14,77 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
 
 ### Usage ###
 
-        GFFcleaner.py [OPTIONS] <file>.gff
+     GFFcleaner.py [OPTIONS] <file>.gff
 
 ### Options ###
 
- *  `-o OUTPUT_GFF`
+    --version             show program's version number and exit
 
-    Explicitly set the output file name (otherwise defaults to `<file>_clean.gff`)
+    -h, --help            show this help message and exit
 
- *  `--prepend=<str>`
+    -o OUTPUT_GFF         Name of output GFF file (default is
+                          '<file>_clean.gff')
 
-    String to prepend to seqname in first column
+    --prepend=PREPEND_STR
+                          String to prepend to seqname in first column
 
- *  `--clean`
+    --clean               Perform all the 'cleaning' manipulations on the input
+                          data (equivalent to specifying all of --clean-score,
+                          --clean-replace-attributes, --clean-exclude-attributes
+                          and --clean-group-sgds)
 
-    Perform the 'cleaning' manipulations on data
+    --clean-score         Replace 'Anc_*' and blanks in 'score' field with
+                          zeroes
 
- *  `--report-duplicates`
+    --clean-replace-attributes
+                         Replace 'ID', 'Gene', 'Parent' and 'Name' attributes
+                         with the value of the SGD attribute, if present
 
-    Report duplicate SGD names
+    --clean-exclude-attributes
+                          Remove the 'kaks', 'kaks2' and 'ncbi' attributes
 
- *  `--resolve-duplicates=<mapping-file>`
+    --clean-group-sgds    Group features with the same SGD by adding unique
+                          numbers to the 'ID' attributes; IDs will have the form
+                          'CDS:<SGD>:<n>' (where n is a unique number for a
+                          given SGD)
 
-    Resolve duplicates by matching against 'best' genes
-    in `<mapping-file>`. Non-matching genes are discarded.
+    --report-duplicates   Report duplicate SGD names and write list to
+                          <file>_duplicates.gff with line numbers, chromosome,
+                          start coordinate and strand.
 
- *  `--discard-unresolved`
+    --resolve-duplicates=MAPPING_FILE
+                          Resolve duplicate SGDs by matching against 'best'
+                          genes in the supplied mapping file; other non-matching
+                          genes are discarded and written to
+                          <file>_discarded.gff.
 
-    Also discard any unresolved duplicates
+    --discard-unresolved  Discard any unresolved duplicates, which are written
+                          to <file>_unresolved.gff.
 
- *  `--insert-missing[=<mapping-file>]`
+    --insert-missing=GENE_FILE
+                          Insert genes from gene file with SGD names that don't
+                          appear in the input GFF. If GENE_FILE is blank ('='s
+                          must still be present) then the mapping file supplied
+                          with the --resolve-duplicates option will be used
+                          instead.
 
-    Insert genes from <mapping-file> with SGD names
-    that don't appear in the input GFF
+    --add-exon-ids        For exon features without an ID attribute, construct
+                          and insert an ID of the form 'exon:<Parent>:<n>'
+                          (where n is a unique number).
 
-    (If `<mapping-file>` is specified with the
-    `--resolve-duplicates` option then that will be
-    used by default.)
+    --add-missing-ids     For features without an ID attribute, construct and
+                          insert a generated ID of the form
+                          '<feature>:<Parent>:<n>' (where n is a unique number).
 
- *  `--add-exon-ids`
+    --no-percent-encoding
+                          Convert encoded attributes to the correct characters
+                          in the output GFF. WARNING this may result in a non-
+                          cannonical GFF that can't be read correctly by this or
+                          other programs.
 
-    For exon features without an ID attribute, construct
-    and insert an ID of the form `exon:<Parent>:<n>`
-    (where n is a unique number).
+    --debug               Print debugging information
 
- *  `--add-missing-ids`
-
-     For features without an ID attribute, construct and
-     insert a generated ID of the form
-     `<feature>:<Parent>:<n>` (where n is a unique number).
-
- *  `--no-percent-encoding`
-
-     Convert encoded attributes to the correct characters
-     in the output GFF. **WARNING this may result in a non-
-     cannonical GFF that can't be read correctly by this or
-     other programs.**
-
-
- *  `--debug` Print debugging information
-
- *  `--test`  Run unit tests
+    --test                Run unit tests
 
 ### Output files ###
 
@@ -114,20 +124,30 @@ being run on the output from the previous one:
      This is useful if the chromosome is denoted by a number and needs the prefix for
      consistency with a mapping file.
 
-2.   **Clean the GFF score and attribute data (`--clean option`)**
+2.   **Clean the GFF score and attribute data (`--clean` options)**
 
-     The clean option does a number of things:
+     The "clean" options perform the following operations:
 
-     *   The data in the score column is cleaned up by replacing 'Anc_*' and blanks with '0's.
+     *   `--clean-score`: the data in the score column is cleaned up by replacing 'Anc_*'
+         and blanks with '0's.
 
      The attribute field of the GFF can contain various semicolon-separated key-value
      pairs:
 
-     *   If one of these is a non-blank SGD then the Gene, Parent and Name values are
-         updated to be the same as the SGD name; ID is also updated to group neighbouring
-	 lines with the same SGD (see _"SGD grouping"_ below).
+     *   `--clean-replace-attributes`: if one of these is a non-blank SGD then the Gene,
+         Parent and Name values are updated to be the same as the SGD name.
 
-     *   Attributes called `kaks`, `kaks2` and `ncbi` are removed.
+     *   `--clean-exclude-attributes`: attributes called `kaks`, `kaks2` and `ncbi` are
+         removed.
+
+     If multiple features share the same SGD name then `--clean-replace-attributes` can
+     result in them also sharing the same ID; to deal with this:
+
+     *   `--clean-group-sgds`: update the ID attribute to group neighbouring lines that
+         have the same SGD (see _"SGD grouping"_ below).
+
+     A single `--clean` can be specified which performs all these operations
+     automatically.
 
 3.   **Detect duplicate SGDs (`--report-duplicates option`)**
 

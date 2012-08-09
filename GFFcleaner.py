@@ -1034,7 +1034,22 @@ if __name__ == "__main__":
     p.add_option('--prepend',action='store',dest='prepend_str',default=None,
                  help="String to prepend to seqname in first column")
     p.add_option('--clean',action='store_true',dest='do_clean',
-                 help="Perform the 'cleaning' manipulations on the input data")
+                 help="Perform all the 'cleaning' manipulations on the input data (equivalent "
+                 "to specifying all of --clean-score, --clean-replace-attributes, "
+                 "--clean-exclude-attributes and --clean-group-sgds)")
+    p.add_option('--clean-score',action='store_true',dest='do_clean_score',
+                 help="Replace 'Anc_*' and blanks in 'score' field with zeroes")
+    p.add_option('--clean-replace-attributes',action='store_true',
+                 dest='do_clean_replace_attributes',
+                 help="Replace 'ID', 'Gene', 'Parent' and 'Name' attributes with the value "
+                 "of the SGD attribute, if present")
+    p.add_option('--clean-exclude-attributes',action='store_true',
+                 dest='do_clean_exclude_attributes',
+                 help="Remove the 'kaks', 'kaks2' and 'ncbi' attributes")
+    p.add_option('--clean-group-sgds',action='store_true',dest='do_clean_group_sgds',
+                 help="Group features with the same SGD by adding unique numbers to the 'ID' "
+                 "attributes; IDs will have the form 'CDS:<SGD>:<n>' (where n is a unique "
+                 "number for a given SGD)")
     p.add_option('--report-duplicates',action='store_true',dest='report_duplicates',
                  help="Report duplicate SGD names and write list to <file>_duplicates.gff "
                  "with line numbers, chromosome, start coordinate and strand.")
@@ -1103,22 +1118,16 @@ if __name__ == "__main__":
         # Update values in the "score" column
         clean_score = True
         # Clean up the "attributes" column
-        clean_attributes = True
-        # Initialise mapping of keys from input to output in "attributes" column
-        # where new values are required etc
-        attributes_key_map = OrderedDictionary()
-        attributes_key_map['ID'] = 'SGD'
-        attributes_key_map['Gene'] = 'SGD'
-        attributes_key_map['Parent'] = 'SGD'
-        attributes_key_map['Name'] = 'SGD'
-        attributes_dont_replace_with_empty_data = True
-        attributes_exclude_keys = ['kaks','kaks2','ncbi']
+        clean_replace_attributes = True
+        clean_exclude_attributes = True
         # Set ID field in "attributes" to group lines with matching SGDs
         group_SGDs = True
     else:
-        clean_score = False
-        clean_attributes = False
-        group_SGDs = False
+        # Set options based on user input
+        clean_score = options.do_clean_score
+        clean_replace_attributes = options.do_clean_replace_attributes
+        clean_exclude_attributes = options.do_clean_exclude_attributes
+        group_SGDs = options.do_clean_group_sgds
     # Report duplicate names
     report_duplicates = options.report_duplicates
     # Resolve duplicated genes using CDS file
@@ -1193,18 +1202,32 @@ if __name__ == "__main__":
             logging.warning("%d 'score' values that are not '', 0 or 'Anc_*'" % n)
             logging.warning("Other values: %s" % score_unexpected_values)
 
-    # Clean up the data in "attributes" column
-    if clean_attributes:
+    # Clean up the data in "attributes" column: replace keys
+    if clean_replace_attributes:
+        # Initialise mapping of keys from input to output in "attributes" column
+        # where new values are required etc
+        attributes_key_map = OrderedDictionary()
+        attributes_key_map['ID'] = 'SGD'
+        attributes_key_map['Gene'] = 'SGD'
+        attributes_key_map['Parent'] = 'SGD'
+        attributes_key_map['Name'] = 'SGD'
+        attributes_dont_replace_with_empty_data = True
         print "Cleaning up attributes: replacing keys:"
         for key in attributes_key_map.keys():
             print "\t%s -> %s" % (key,attributes_key_map[key])
         if attributes_dont_replace_with_empty_data:
             print "(Replacement will be skipped if new data is missing/blank)"
+        GFFUpdateAttributes(gff_data,attributes_key_map,[],
+                            attributes_dont_replace_with_empty_data)
+
+    # Clean up the data in "attributes" column: exclude keys
+    if clean_exclude_attributes:
+        # List of keys to exclude
+        attributes_exclude_keys = ['kaks','kaks2','ncbi']
         print "Excluding keys:"
         for key in attributes_exclude_keys:
             print "\t%s" % key
-        GFFUpdateAttributes(gff_data,attributes_key_map,attributes_exclude_keys,
-                            attributes_dont_replace_with_empty_data)
+        GFFUpdateAttributes(gff_data,{},attributes_exclude_keys,True)
 
     # Set the IDs for consecutive lines with matching SGD names, to indicate that
     # they're in the same gene
