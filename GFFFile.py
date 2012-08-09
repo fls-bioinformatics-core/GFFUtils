@@ -91,9 +91,9 @@ class GFFDataLine(TabDataLine):
     attributes to be accessed directly using the syntax
     gff_line['attributes']['Parent'].
     """
-    def __init__(self,line=None,column_names=None,lineno=None):
+    def __init__(self,line=None,column_names=None,lineno=None,delimiter='\t'):
         TabDataLine.__init__(self,line=line,column_names=column_names,
-                             lineno=lineno)
+                             lineno=lineno,delimiter=delimiter)
         # Convert attributes to GFFAttributes object
         self['attributes'] = GFFAttributes(self['attributes'])
 
