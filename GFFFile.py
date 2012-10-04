@@ -21,9 +21,10 @@ for details of the format).
 Classes
 -------
 
-There are three GFF-specific classes:
+There are a number of GFF-specific classes:
 
- * GFFFile: read data from GFF so it can be easily interrogated
+ * GFFIterator: line-by-line iteration through a GFF
+ * GFFFile: read data from GFF into memory so it can be easily interrogated
  * GFFAttributes: read data from GFF attributes field to make it easier to
    handle
  * GFFID: handle data stored in 'ID' attribute
@@ -40,13 +41,23 @@ Start by reading the data from a GFF file into a GFFFile object:
 
 >>> gff = GFFFile('my.gff')
 
-To iterate over all lines in the GFF and print the feature type:
+To iterate over all lines in the GFFFile object and print the
+feature type:
 
 >>> for line in gff:
 >>>    print line['feature']
 
-The 'attributes' data of the file are automatically converted to a
-GFFAttributes object, which allows the values of named attributes to be
+(To iterate over all lines in the GFF without caching in memory,
+printing feature types for annotation records:
+
+>>> for line in GFFIterator('my.gff'):
+>>>    if line.type == ANNOTATION:
+>>>       print line['feature']
+
+)
+
+The 'attributes' data of each annotation record are automatically converted
+to a GFFAttributes object, which allows the values of named attributes to be
 referenced directly. For example, if the attributes string is:
 
 "ID=1690892742066571889;SGD=YEL026W;Gene=Sbay_5.43;Parent=Sbay_5.43"
@@ -65,7 +76,7 @@ To iterate over all lines and print just the 'name' part of the
 'ID' attribute:
 
 >>> for line in gff:
->>>    if 'ID' line['attributes']
+>>>    if 'ID' in line['attributes']
 >>>       print GFFID(line['attributes']['ID']).name
 
 """
@@ -78,6 +89,31 @@ from TabFile import TabFile,TabDataLine
 import logging
 import copy
 import urllib
+from collections import Iterator
+
+#######################################################################
+# Constants/globals
+#######################################################################
+
+# Columns in GFF/GTF files
+GFF_COLUMNS = ('seqname',
+               'source',
+               'feature',
+               'start',
+               'end',
+               'score',
+               'strand',
+               'frame',
+               'attributes')
+
+# Types of line in GFF files
+#
+# "Pragma" line starts with '##'
+PRAGMA = 0
+# "Comment" line starts with single '#'
+COMMENT = 1
+# "Annotation" lines are tab-delimited fields containing annotation data 
+ANNOTATION = 2
 
 #######################################################################
 # Class definitions
@@ -91,32 +127,43 @@ class GFFDataLine(TabDataLine):
     attributes to be accessed directly using the syntax
     gff_line['attributes']['Parent'].
     """
-    def __init__(self,line=None,column_names=None,lineno=None,delimiter='\t'):
+    def __init__(self,line=None,column_names=GFF_COLUMNS,lineno=None,delimiter='\t',
+                 gff_line_type=None):
         TabDataLine.__init__(self,line=line,column_names=column_names,
                              lineno=lineno,delimiter=delimiter)
         # Convert attributes to GFFAttributes object
         self['attributes'] = GFFAttributes(self['attributes'])
+        # Metadata
+        self.__type = gff_line_type
+
+    @property
+    def type(self):
+        """'Type' (pragma, comment, annotation)  associated with the GFF data line
+
+        'type' is either None, or one of the module-level constants PRAGMA, COMMENT,
+        ANNOTATION, indicating the type of data held by the line.
+        """
+        return self.__type
 
 class GFFFile(TabFile):
     """Class for reading GFF files
 
     See http://www.sanger.ac.uk/resources/software/gff/spec.html
     """
-    def __init__(self,gff_file,fp=None,skip_first_line=False,
-                 first_line_is_header=False):
-        TabFile.__init__(self,gff_file,
-                         fp=fp,skip_first_line=skip_first_line,
-                         first_line_is_header=first_line_is_header,
+    def __init__(self,gff_file,fp=None,gffdataline=GFFDataLine):
+        # Initialise empty TabFile
+        TabFile.__init__(self,None,fp=None,
                          tab_data_line=GFFDataLine,
-                         column_names=('seqname',
-                                       'source',
-                                       'feature',
-                                       'start',
-                                       'end',
-                                       'score',
-                                       'strand',
-                                       'frame',
-                                       'attributes'))
+                         column_names=GFF_COLUMNS)
+        # Populate by iterating over GFF file
+        for line in GFFIterator(gff_file=gff_file,fp=fp,
+                                gffdataline=gffdataline):
+           if line.type == ANNOTATION:
+                # Append to TabFile
+                self.append(tabdataline=line)
+           elif line.type == PRAGMA:
+               # Ignore pragma for now
+               pass
 
     def write(self,filen):
         """Write the GFF data to an output GFF
@@ -369,12 +416,103 @@ class GFFID:
         else:
             return "%s:%s:%d" % (self.code,self.name,self.index)
 
+class GFFIterator(Iterator):
+    """GFFIterator
+
+    Class to loop over all records in a GFF file, returning a GFFDataLine
+    object for each record.
+
+    Example looping over all reads
+    >>> for record in GFFIterator(gff_file):
+    >>>    print record
+    """
+
+    def __init__(self,gff_file=None,fp=None,gffdataline=GFFDataLine):
+        """Create a new GFFIterator
+
+        Arguments:
+           gff_file: name of the GFF file to iterate through
+           fp: file-like object to read GFF data from
+           gffdataline: GFFDataLine-like class to instantiate
+             and return for each record in the GFF
+        """
+        if fp is not None:
+            self.__fp = fp
+            self.__close_fp = False
+        else:
+            self.__fp = open(gff_file,'rU')
+            self.__close_fp = True
+        self.__gffdataline = gffdataline
+        self.__lineno = 0
+
+    def next(self):
+        """Return next record from GFF file as a GFFDataLine object
+        """
+        line = self.__fp.readline()
+        self.__lineno += 1
+        if line != '':
+            # Set type for line
+            if line.startswith("##"):
+                # Pragma
+                type_ = PRAGMA
+            elif line.startswith("#"):
+                # Comment line
+                type_ = COMMENT
+            else:
+                # Annotation line
+                type_ = ANNOTATION
+            # Convert to GFFDataLine
+            return self.__gffdataline(line=line,lineno=self.__lineno,gff_line_type=type_)
+        else:
+            # Reached EOF
+            if self.__close_fp: self.__fp.close()
+            raise StopIteration
+
 #######################################################################
 # Tests
 #######################################################################
 
 import unittest
 import cStringIO
+
+class TestGFFIterator(unittest.TestCase):
+    """Basic tests for iterating through a GFF file
+    """
+
+    def setUp(self):
+        # Example GFF file fragment
+        self.fp = cStringIO.StringIO(
+"""##gff-version 3
+# generated: Wed Feb 21 12:01:58 2012
+DDB0123458	Sequencing Center	chromosome	1	4923596	.	+	.	ID=DDB0232428;Name=1
+DDB0232428	Sequencing Center	contig	101	174493	.	+	.	ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02
+DDB0232428	.	gene	1890	3287	.	+	.	ID=DDB_G0267178;Name=DDB_G0267178_RTE;description=ORF2 protein fragment of DIRS1 retrotransposon%3B refer to Genbank M11339 for full-length element
+DDB0232428	Sequencing Center	mRNA	1890	3287	.	+	.	ID=DDB0216437;Parent=DDB_G0267178;Name=DDB0216437;description=JC1V2_0_00003: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Protein Accession Version:EAL73826.1,Inparanoid V. 5.1:DDB0216437,Protein Accession Number:EAL73826.1,Protein GI Number:60475899,UniProt:Q55H43,Genome V. 2.0 ID:JC1V2_0_00003
+DDB0232428	Sequencing Center	exon	1890	3287	.	+	.	Parent=DDB0216437
+DDB0232428	Sequencing Center	CDS	1890	3287	.	+	.	Parent=DDB0216437
+""")
+
+    def test_gff_iterator(self):
+        """Test iteration over a file-like object
+        """
+        # Count number of lines, and number of each type
+        nlines = 0
+        npragma = 0
+        ncomment = 0
+        nannotation = 0
+        # Iterate through GFF file fragment
+        for line in GFFIterator(fp=self.fp):
+            nlines += 1
+            self.assertNotEqual(line.type,None)
+            self.assertEqual(line.lineno(),nlines)
+            if line.type == PRAGMA: npragma += 1
+            if line.type == COMMENT: ncomment += 1
+            if line.type == ANNOTATION: nannotation += 1
+        # Check counts
+        self.assertEqual(nlines,8)
+        self.assertEqual(npragma,1)
+        self.assertEqual(ncomment,1)
+        self.assertEqual(nannotation,6)
 
 class TestGFFFile(unittest.TestCase):
     """Basic unit tests for the GFFFile class
