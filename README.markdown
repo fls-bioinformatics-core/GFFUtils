@@ -6,6 +6,7 @@ GFFUtils package provides the following utilities for working with GFF files:
  * `GFFcleaner.py`: performs various "cleaning" manipulations on a GFF file
  * `GFF3_Annotation_Extractor.py`: combine and annotate feature counts with data
    from a GFF file
+ * `GTF_extract.py`: extract selected data items from a GTF file
 
 GFFcleaner.py
 -------------
@@ -278,6 +279,52 @@ the counts against gene names.
 
  * `<basename>_annot_stats.txt`: the counts of "ambiguous", "two_low_aQual" etc
     from each log (htseq-count mode only).
+
+
+GTF_extract.py
+--------------
+
+Extract selected data items from a GTF file and output in tab-delimited format.
+
+### Usage ###
+
+        GTF_extract.py OPTIONS <gft_file>
+
+### Options ###
+
+    --version             show program's version number and exit
+    -h, --help            show this help message and exit
+    -f FEATURE_TYPE, --feature=FEATURE_TYPE
+                          only extract data for lines where feature is
+                          FEATURE_TYPE
+    --fields=FIELD_LIST   comma-separated list of fields to output in tab-
+                          delimited format for each line in the GTF, e.g.
+                          'chrom,start,end'. Fields can either be a GTF field
+                          name (i.e. 'chrom', 'source', 'feature', 'start',
+                          'end', 'score', 'strand' and 'frame') or the name of
+                          an attribute (e.g. 'gene_name', 'gene_id' etc). Data
+                          items are output in the order they appear in
+                          FIELD_LIST.
+    -o OUTFILE            write output to OUTFILE (default is to write to
+                          stdout)
+    --test                run unit tests (developers only)
+
+### Output ###
+
+The program outputs a tab-delimited line of data for each matching line found in the
+input GTF file; the data items in the line are those specified by the --fields option
+(or else all data items, if no fields were specified).
+
+For example, for `--fields=chrom,start,end,strand`, the GTF line:
+
+    chr1	HAVANA	gene	11869	14412	.	+	.	gene_id "ENSG00000223972.4" ...
+
+will produce the output:
+
+    chr1	11869	14412	+
+
+By default the output of the program is written to stdout; use the -o option to direct
+the output to a named file instead.
 
 Set up and prerequisites
 ------------------------
