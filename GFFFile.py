@@ -1,7 +1,7 @@
 #!/bin/env python
 #
 #     GFFFile.py: classes for reading and manipulating data in GFF files
-#     Copyright (C) University of Manchester 2012 Peter Briggs
+#     Copyright (C) University of Manchester 2012-4 Peter Briggs
 #
 ########################################################################
 #
@@ -146,9 +146,16 @@ class GFFDataLine(TabDataLine):
         return self.__type
 
 class GFFFile(TabFile):
-    """Class for reading GFF files
+    """Class for handling GFF files in-memory
+
+    Subclass of TabFile which uses the GFFIterator to process the
+    contents of a GFF file and store annotation lines as GFFDataLines.
+
+    Data from the file can then be extracted and modified using the
+    methods of the TabFile and GFFDataLine classes.
 
     See http://www.sanger.ac.uk/resources/software/gff/spec.html
+    for the GFF specification.
     """
     def __init__(self,gff_file,fp=None,gffdataline=GFFDataLine):
         # Initialise empty TabFile
@@ -276,6 +283,8 @@ class GFFAttributes(OrderedDictionary):
         # Extract individual data items
         if attribute_data:
             for item in attribute_data.split(';'):
+                if not item:
+                    continue
                 try:
                     i = item.index('=')
                     key = item[:i].strip()
@@ -617,6 +626,14 @@ class TestGFFAttributes(unittest.TestCase):
         self.assertEqual('',str(attr))
         attr['ID'] = 'test'
         self.assertEqual('ID=test',str(attr))
+
+    def test_no_null_attributes_for_trailing_semicolon(self):
+        """Test trailing ';' in attributes doesn't result in empty 'no-key' attribute
+        """
+        attr = GFFAttributes("ID=GOAT_ENSP00000332624;")
+        self.assertEqual(attr.keys(),['ID'])
+        self.assertEqual(attr['ID'],"GOAT_ENSP00000332624")
+        self.assertEqual(attr.nokeys(),[])
 
 class TestGFFID(unittest.TestCase):
     """Unit tests for GFFID class
