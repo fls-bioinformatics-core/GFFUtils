@@ -1,7 +1,7 @@
 #!/bin/env python
 #
 #     GFFcleaner.py: various functions to clean up GFF files
-#     Copyright (C) University of Manchester 2011-2012 Peter Briggs
+#     Copyright (C) University of Manchester 2011-2014 Peter Briggs
 #
 ######################################################################
 #
@@ -539,6 +539,10 @@ def GFFDecodeAttributes(gff_data):
         attributes.encode(False)
     return gff_data
 
+def GFFRemoveAttributes(gff_data,attr_list=()):
+    """Remove the specified attributes from
+    """
+
 #######################################################################
 # Tests
 #######################################################################
@@ -1045,7 +1049,8 @@ if __name__ == "__main__":
                  "of the SGD attribute, if present")
     p.add_option('--clean-exclude-attributes',action='store_true',
                  dest='do_clean_exclude_attributes',
-                 help="Remove the 'kaks', 'kaks2' and 'ncbi' attributes")
+                 help="Remove the 'kaks', 'kaks2' and 'ncbi' attributes (to remove "
+                 "arbitrary attributes, see the --remove-attribute=... option)")
     p.add_option('--clean-group-sgds',action='store_true',dest='do_clean_group_sgds',
                  help="Group features with the same SGD by adding unique numbers to the 'ID' "
                  "attributes; IDs will have the form 'CDS:<SGD>:<n>' (where n is a unique "
@@ -1075,6 +1080,9 @@ if __name__ == "__main__":
                  help="Convert encoded attributes to the correct characters in "
                  "the output GFF. WARNING this may result in a non-cannonical GFF that can't "
                  "be read correctly by this or other programs.")
+    p.add_option('--remove-attribute',action='append',dest='rm_attr',
+                 help="Remove attribute RM_ATTR from the list of attributes for all records "
+                 "in the GFF file (can be specified multiple times)")
     p.add_option('--debug',action='store_true',dest='debug',
                  help="Print debugging information")
     p.add_option('--test',action='store_true',dest='run_tests',
@@ -1373,6 +1381,13 @@ if __name__ == "__main__":
     if add_missing_ids:
         print "Inserting generated IDs for records where IDs are missing"
         gff_data = GFFAddIDAttributes(gff_data)
+
+    # Strip attributes requested for removal
+    if options.rm_attr:
+        print "Removing the following attributes from all records:"
+        for attr in options.rm_attr:
+            print "\t* %s" % attr
+        GFFUpdateAttributes(gff_data,exclude_keys=options.rm_attr)
 
     # Suppress percent encoding of attributes
     if no_attribute_encoding:

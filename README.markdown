@@ -38,11 +38,14 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
                           zeroes
 
     --clean-replace-attributes
-                         Replace 'ID', 'Gene', 'Parent' and 'Name' attributes
-                         with the value of the SGD attribute, if present
+                          Replace 'ID', 'Gene', 'Parent' and 'Name' attributes
+                          with the value of the SGD attribute, if present
 
     --clean-exclude-attributes
-                          Remove the 'kaks', 'kaks2' and 'ncbi' attributes
+                          Remove the 'kaks', 'kaks2' and 'ncbi' attributes (to
+                          remove arbitrary attributes, see the --remove-
+                          attribute=... option)
+
 
     --clean-group-sgds    Group features with the same SGD by adding unique
                           numbers to the 'ID' attributes; IDs will have the form
@@ -83,6 +86,11 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
                           cannonical GFF that can't be read correctly by this or
                           other programs.
 
+    --remove-attribute=RM_ATTR
+                          Remove attribute RM_ATTR from the list of attributes
+                          for all records in the GFF file (can be specified
+                          multiple times)
+
     --debug               Print debugging information
 
     --test                Run unit tests
@@ -114,7 +122,7 @@ a mapping file.
 The following steps outline the procedure for using the program, with each step
 being run on the output from the previous one:
 
-1.   **Clean the chromosome names in the file by adding a prefix (`--prepend option`)**
+1.   **Clean the chromosome names in the file by adding a prefix (`--prepend` option)**
 
      Creates a copy of the input file with the chromosome names updated with a specified
      prefix.
@@ -139,7 +147,8 @@ being run on the output from the previous one:
          Parent and Name values are updated to be the same as the SGD name.
 
      *   `--clean-exclude-attributes`: attributes called `kaks`, `kaks2` and `ncbi` are
-         removed.
+         removed (n.b. to remove arbitrary attributes, use the more general
+	 `--remove-attribute=...` option).
 
      If multiple features share the same SGD name then `--clean-replace-attributes` can
      result in them also sharing the same ID; to deal with this:
@@ -150,7 +159,7 @@ being run on the output from the previous one:
      A single `--clean` can be specified which performs all these operations
      automatically.
 
-3.   **Detect duplicate SGDs (`--report-duplicates option`)**
+3.   **Detect duplicate SGDs (`--report-duplicates` option)**
 
      Report duplicate SGD names found in the input file.
 
@@ -159,7 +168,7 @@ being run on the output from the previous one:
      It also reports the number of 'trivial' duplicates, i.e. lines having the same SGD
      because they are part of the same gene.
 
-4.   **Resolve duplicate SGDs using a mapping file (`--resolve-duplicates option`)**
+4.   **Resolve duplicate SGDs using a mapping file (`--resolve-duplicates` option)**
 
      Attempt to resolve duplicates by referring to a list of "best" genes given in a
      mapping file. For each duplicated name the resolution procedure is:
@@ -183,10 +192,11 @@ being run on the output from the previous one:
      Note that the --discard-unresolved option cannot get rid of 'trivial' duplicates (i.e.
      lines having the same SGD because they are part of the same gene).
 
-5.   **Add missing genes (`--insert-missing option`)**
+5.   **Add missing genes (`--insert-missing` option)**
 
      Adds genes from a list of "best" genes given in a mapping file which have names not
      found in the input GFF.
+     
 
 ### Notes ###
 
