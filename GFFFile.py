@@ -365,8 +365,6 @@ class GFFAttributes(OrderedDictionary):
 
     def __repr__(self):
         items = []
-        for item in self.__nokeys:
-            items.append(item)
         if self.__encode_values:
             # Percent encode the attributes
             for key in self.keys():
@@ -375,6 +373,9 @@ class GFFAttributes(OrderedDictionary):
             # Don't encode the attributes
             for key in self.keys():
                 items.append("%s=%s" % (key,self[key]))
+        # Add nokeys items
+        for item in self.__nokeys:
+            items.append(item)
         return ';'.join(items)
 
 class GFFID:
@@ -633,6 +634,28 @@ class TestGFFAttributes(unittest.TestCase):
         attr = GFFAttributes("ID=GOAT_ENSP00000332624;")
         self.assertEqual(attr.keys(),['ID'])
         self.assertEqual(attr['ID'],"GOAT_ENSP00000332624")
+        self.assertEqual(attr.nokeys(),[])
+
+    def test_nokeys_attributes(self):
+        """Test that 'nokeys' attributes are read
+        """
+        attributes = "ID=GOAT_ENSP00000332668;Shift=2;589008-589009;589535-589539"
+        attr = GFFAttributes(attributes)
+        self.assertEqual(attr.keys(),['ID','Shift'])
+        self.assertEqual(attr['ID'],"GOAT_ENSP00000332668")
+        self.assertEqual(attr['Shift'],"2")
+        self.assertEqual(attr.nokeys(),['589008-589009','589535-589539'])
+        self.assertEqual(str(attr),attributes)
+
+    def test_manipulate_nokeys_attributes(self):
+        """Test that 'nokeys' attributes can be manipulated
+        """
+        attr = GFFAttributes("ID=GOAT_ENSP00000332668;Shift=2;589008-589009;589535-589539")
+        self.assertEqual(attr.nokeys(),['589008-589009','589535-589539'])
+        nokeys = attr.nokeys()
+        nokeys.append('Test')
+        self.assertEqual(attr.nokeys(),['589008-589009','589535-589539','Test'])
+        del(nokeys[:])
         self.assertEqual(attr.nokeys(),[])
 
 class TestGFFID(unittest.TestCase):
