@@ -280,6 +280,8 @@ class GFFAttributes(OrderedDictionary):
                                          'Ontology_term')
         # Flag indicating whether to encode values on output
         self.__encode_values = True
+        # Flag indicating whether data came with trailing semicolon
+        self.__trailing_semicolon = False
         # Extract individual data items
         if attribute_data:
             for item in attribute_data.split(';'):
@@ -302,6 +304,7 @@ class GFFAttributes(OrderedDictionary):
                 else:
                     # Store key-value pair
                     self[key] = value
+            self.__trailing_semicolon = attribute_data.endswith(';')
 
     def nokeys(self):
         return self.__nokeys
@@ -376,6 +379,9 @@ class GFFAttributes(OrderedDictionary):
         # Add nokeys items
         for item in self.__nokeys:
             items.append(item)
+        # Dealing with trailing semicolon
+        if self.__trailing_semicolon:
+            items.append('')
         return ';'.join(items)
 
 class GFFID:
@@ -604,6 +610,13 @@ class TestGFFAttributes(unittest.TestCase):
         """Test that __repr__ returns original string with percent encoding
         """
         attributes = "ID=DDB_G0789012;Name=DDB_G0789012_ps;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0234567%22%3EDDB_G0234567%3C%2Fa%3E"
+        attr = GFFAttributes(attributes)
+        self.assertEqual(attributes,str(attr))
+
+    def test_recover_representation_with_trailing_semicolon(self):
+        """Test that __repr__ returns original string with trailing semicolon
+        """
+        attributes = "ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02;"
         attr = GFFAttributes(attributes)
         self.assertEqual(attributes,str(attr))
 
