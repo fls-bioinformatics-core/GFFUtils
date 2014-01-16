@@ -91,6 +91,9 @@ The GFFcleaner can perform various manipulations on a GFF file to "clean" it.
                           for all records in the GFF file (can be specified
                           multiple times)
 
+    --strict-attributes   Remove attributes that don't conform to the KEY=VALUE
+                          format
+
     --debug               Print debugging information
 
     --test                Run unit tests

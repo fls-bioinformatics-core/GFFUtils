@@ -85,7 +85,8 @@ def GroupGeneSubsets(gff_data):
             logging.debug("\t%s" % GFFID(gene['attributes']['ID']))
     return subsets
 
-def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=True):
+def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=True,
+                        exclude_nokeys=False):
     """Replace and/or exclude data from the GFF attributes
 
     Performs manipulations on the attribute field of a GFF file, which typically
@@ -102,6 +103,7 @@ def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=
         the attribute list
       no_empty_values: if set True (the default) then don't replace existing
         values with blanks (otherwise replacing with blank values is okay)
+      exclude_nokeys: if True then any 'nokeys' attributes will be removed
     """
     for data in gff_data:
         # Process the attributes data
@@ -129,6 +131,9 @@ def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=
             except KeyError:
                 # No mapping found for key, ignore
                 pass
+        # Remove 'nokeys' data
+        if exclude_nokeys:
+            del(attributes.nokeys()[:])
         logging.debug("Updated data for output: %s" % data['attributes'])
 
 def GFFGetDuplicateSGDs(gff_data):
@@ -580,6 +585,9 @@ class TestGFFUpdateAttributes(unittest.TestCase):
         self.fp = cStringIO.StringIO(
 """chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=abc;kaks=-le+100;SGD=YEL0W;ncbi=-1e+100;Name=def;
 """)
+        self.fp2 = cStringIO.StringIO(
+"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=abc;kaks=-le+100;SGD=YEL0W;ncbi=-1e+100;Name=def;123-234;456-567;
+""")
 
     def test_update_attributes_exclude_keys(self):
         """Test excluding specific attributes from the attribute field
@@ -597,6 +605,19 @@ class TestGFFUpdateAttributes(unittest.TestCase):
             self.assertTrue(attr in attributes.keys())
         for attr in ['ncbi','kaks']:
             self.assertTrue(attr not in attributes.keys())
+
+    def test_update_attributes_exclude_nokeys(self):
+        """Test excluding 'nokeys' attributes from the attribute field
+        """
+        gff = GFFFile('test.gff',self.fp2)
+        # Check that nokey attributes are present initially
+        attributes = gff[0]['attributes']
+        self.assertEqual(attributes.nokeys(),['123-234','456-567'])
+        # Do the exclusion operation
+        GFFUpdateAttributes(gff,exclude_nokeys=True)
+        # Check that nokey attributes have been removed
+        attributes = gff[0]['attributes']
+        self.assertEqual(attributes.nokeys(),[])
 
     def test_update_attributes_replace_values(self):
         """Test replacing specific attributes from the attribute field
@@ -1083,6 +1104,8 @@ if __name__ == "__main__":
     p.add_option('--remove-attribute',action='append',dest='rm_attr',
                  help="Remove attribute RM_ATTR from the list of attributes for all records "
                  "in the GFF file (can be specified multiple times)")
+    p.add_option('--strict-attributes',action='store_true',dest='strict_attributes',
+                 help="Remove attributes that don't conform to the KEY=VALUE format")
     p.add_option('--debug',action='store_true',dest='debug',
                  help="Print debugging information")
     p.add_option('--test',action='store_true',dest='run_tests',
@@ -1163,6 +1186,8 @@ if __name__ == "__main__":
     add_missing_ids = options.add_missing_ids
     # Suppress encoding of attributes on output
     no_attribute_encoding = options.no_encoding
+    # Remove attributes that don't conform to KEY=VALUE format
+    strict_attributes = options.strict_attributes
 
     # Name for output files
     ##outext = os.path.splitext(os.path.basename(infile))[1]
@@ -1388,6 +1413,11 @@ if __name__ == "__main__":
         for attr in options.rm_attr:
             print "\t* %s" % attr
         GFFUpdateAttributes(gff_data,exclude_keys=options.rm_attr)
+
+    # Remove attributes that don't conform to KEY=VALUE format
+    if strict_attributes:
+        print "Removing attributes that don't conform to KEY=VALUE format"
+        GFFUpdateAttributes(gff_data,exclude_nokeys=True)
 
     # Suppress percent encoding of attributes
     if no_attribute_encoding:
