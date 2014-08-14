@@ -111,7 +111,7 @@ if __name__ == "__main__":
                             out_line.append(str(line[field]))
                         except KeyError:
                             # Not standard, try as an attribute name
-                            out_line.append(str(line.attribute(field)))
+                            out_line.append(str(line['attributes'][field]))
                     fp.write("%s\n" % '\t'.join(out_line))
 
     # Finished - close output file
