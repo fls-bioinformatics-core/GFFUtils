@@ -52,6 +52,7 @@ __version__ = version.__version__
 
 import optparse
 import GFFFile
+import GTFFile
 import TabFile
 import sys
 import logging
@@ -507,7 +508,11 @@ def main():
 
     # Process GFF data
     print "Reading data from %s" % gff_file
-    gff = GFFFile.GFFFile(gff_file)
+    if gff_file.endswith('.gtf'):
+        print "Input file is GTF format"
+        gff = GTFFile.GTFFile(gff_file)
+    else:
+        gff = GFFFile.GFFFile(gff_file)
 
     # Build lookup
     print "Creating lookup for GFF data"
