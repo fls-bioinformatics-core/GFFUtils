@@ -29,73 +29,7 @@ import os
 import sys
 import optparse
 import GFFFile
-
-#######################################################################
-# Classes
-#######################################################################
-
-class GTFDataLine(GFFFile.GFFDataLine):
-    """Data line specific to GTF files
-
-    Subclass of GFFDataLine which adds two properties:
-
-    gene_id: returns the gene_id value stored in the attributes
-    transcript_id: returns the transcript_id value stored in the attributes
-    """
-
-    def __init__(self,line=None,column_names=GFFFile.GFF_COLUMNS,lineno=None,delimiter='\t',
-                 gff_line_type=None):
-        GFFFile.GFFDataLine.__init__(self,line=line,column_names=column_names,
-                                     lineno=lineno,delimiter=delimiter,gff_line_type=gff_line_type)
-        self.__attributes = {}
-
-    def attribute(self,name):
-        """
-        """
-        if name in self.__attributes:
-            return self.__attributes[name]
-        else:
-            for attr in self['attributes'].nokeys():
-                if attr.startswith("%s " % name):
-                    self.__attributes[name] = attr.split(' ')[1].strip('"')
-                    return self.__attributes[name]
-        return None
-
-#######################################################################
-# Tests
-#######################################################################
-
-import unittest
-import cStringIO
-
-class TestGTFDataLine(unittest.TestCase):
-
-    def setUp(self):
-        # Example GTF data line
-        self.gtf_line = """chr1	HAVANA	gene	11869	14412	.	+	.	gene_id "ENSG00000223972.4"; transcript_id "ENSG00000223972.4"; gene_type "pseudogene"; gene_status "KNOWN"; gene_name "DDX11L1"; transcript_type "pseudogene"; transcript_status "KNOWN"; transcript_name "DDX11L1"; level 2; havana_gene "OTTHUMG00000000961.2";"""
-
-    def test_gtf_data_line(self):
-        line = GTFDataLine(self.gtf_line)
-        # Check basic data items
-        self.assertEqual("chr1",line['seqname'])
-        self.assertEqual("HAVANA",line['source'])
-        self.assertEqual("gene",line['feature'])
-        self.assertEqual(11869,line['start'])
-        self.assertEqual(14412,line['end'])
-        self.assertEqual(".",line['score'])
-        self.assertEqual("+",line['strand'])
-        self.assertEqual(".",line['frame'])
-        # Check attributes
-        self.assertEqual("ENSG00000223972.4",line.attribute('gene_id'))
-        self.assertEqual("ENSG00000223972.4",line.attribute('transcript_id'))
-        self.assertEqual("pseudogene",line.attribute('gene_type'))
-        self.assertEqual("KNOWN",line.attribute('gene_status'))
-        self.assertEqual("DDX11L1",line.attribute('gene_name'))
-        self.assertEqual("pseudogene",line.attribute('transcript_type'))
-        self.assertEqual("KNOWN",line.attribute('transcript_status'))
-        self.assertEqual("DDX11L1",line.attribute('transcript_name'))
-        self.assertEqual("2",line.attribute('level'))
-        self.assertEqual("OTTHUMG00000000961.2",line.attribute('havana_gene'))
+import GTFFile
 
 #######################################################################
 # Main program
@@ -160,7 +94,7 @@ if __name__ == "__main__":
         fp = open(opts.outfile,'w')
 
     # Iterate through the GTF file line-by-line
-    for line in GFFFile.GFFIterator(args[0],gffdataline=GTFDataLine):
+    for line in GTFFile.GTFIterator(args[0]):
         this_gene = None
         start = 0
         stop = 0
