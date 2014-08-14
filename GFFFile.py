@@ -382,7 +382,7 @@ class GFFAttributes(OrderedDictionary):
         # Dealing with trailing semicolon
         if self.__trailing_semicolon:
             items.append('')
-        return ';'.join(items)
+        return '; '.join(items)
 
 class GFFID:
     """Class for handling ID attribute in GFF data
