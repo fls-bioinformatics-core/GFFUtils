@@ -1,0 +1,8 @@
+DDB0166998	2
+DDB0167147	0
+DDB0167277	16
+no_feature	120515
+ambiguous	422601
+too_low_aQual	0
+not_aligned	19996043
+alignment_not_unique	0
