@@ -133,7 +133,7 @@ class GTFFile(GFFFile.GFFFile):
     """
     def __init__(self,gtf_file,fp=None,**args):
         args['gffdataline'] = GTFDataLine
-        GFFFile.GFFFile.__init__(self,gtf_file,fp=fp,**args)
+        GFFFile.GFFFile.__init__(self,gtf_file,fp=fp,format='gtf',**args)
 
 class GTFIterator(GFFFile.GFFIterator):
     def __init__(self,gtf_file=None,fp=None,**args):
@@ -243,6 +243,9 @@ chr1	ENSEMBL	transcript	11872	14412	.	+	.	gene_id "ENSG00000223972.4"; transcrip
         """Test that the GTF data can be read in
         """
         gtf = GTFFile("test.gtf",self.fp)
+        # Check format and version
+        self.assertEqual(gtf.format,'gtf')
+        self.assertEqual(gtf.version,None)
         # There should be 6 lines of data
         self.assertEqual(len(gtf),6)
         # Check the feature names are correct
