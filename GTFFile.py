@@ -103,6 +103,12 @@ class GTFDataLine(GFFFile.GFFDataLine):
         self['attributes'] = GTFAttributes(str(self['attributes']))
 
 class GTFAttributes:
+    """Class for handling GTF 'attribute' data
+
+    The GTF 'attribute' data consists of semi-colon separated
+    data items, each of which is a 'key value' pair.
+
+    """
     def __init__(self,attribute_data=None):
         self.__attributes = GFFFile.OrderedDictionary()
         for attr in GFFFile.GFFAttributes(attribute_data=attribute_data).nokeys():
@@ -115,6 +121,8 @@ class GTFAttributes:
             return None
     def __contains__(self,name):
         return self[name] is not None
+    def __iter__(self):
+        return iter(self.__attributes.keys())
 
 class GTFFile(GFFFile.GFFFile):
     """Class for handling GTF files in-memory
@@ -176,6 +184,46 @@ class TestGTFDataLine(unittest.TestCase):
         self.assertEqual("2",line['attributes']['level'])
         self.assertEqual("OTTHUMG00000000961.2",line['attributes']['havana_gene'])
         self.assertEqual(None,line['attributes']['missing'])
+
+class TestGTFAttributes(unittest.TestCase):
+
+    def setUp(self):
+        #Example GTF data line
+        self.gtf_line = """chr1	HAVANA	gene	11869	14412	.	+	.	gene_id "ENSG00000223972.4"; transcript_id "ENSG00000223972.4"; gene_type "pseudogene"; gene_status "KNOWN"; gene_name "DDX11L1"; transcript_type "pseudogene"; transcript_status "KNOWN"; transcript_name "DDX11L1"; level 2; havana_gene "OTTHUMG00000000961.2";"""
+
+    def test_gtf_attributes(self):
+        line = GTFDataLine(self.gtf_line)
+        attributes = line['attributes']
+        # Check the contents
+        self.assertEqual(attributes['gene_id'],'ENSG00000223972.4')
+        self.assertEqual(attributes['transcript_id'],'ENSG00000223972.4')
+        self.assertEqual(attributes['gene_type'],'pseudogene')
+        self.assertEqual(attributes['gene_status'],'KNOWN')
+        self.assertEqual(attributes['gene_name'],'DDX11L1')
+        self.assertEqual(attributes['transcript_type'],'pseudogene')
+        self.assertEqual(attributes['transcript_status'],'KNOWN')
+        self.assertEqual(attributes['transcript_name'],'DDX11L1')
+        self.assertEqual(attributes['level'],'2')
+        self.assertEqual(attributes['havana_gene'],'OTTHUMG00000000961.2')
+
+    def test_gtf_contains(self):
+        line = GTFDataLine(self.gtf_line)
+        self.assertTrue('gene_id' in line['attributes'])
+        self.assertTrue('transcript_id' in line['attributes'])
+        self.assertTrue('gene_type' in line['attributes'])
+        self.assertTrue('gene_status' in line['attributes'])
+        self.assertTrue('gene_name' in line['attributes'])
+        self.assertTrue('transcript_type' in line['attributes'])
+        self.assertTrue('transcript_status' in line['attributes'])
+        self.assertTrue('transcript_name' in line['attributes'])
+        self.assertTrue('level' in line['attributes'])
+        self.assertTrue('havana_gene' in line['attributes'])
+        self.assertFalse('NONEXISTENT' in line['attributes'])
+
+    def test_gtf_iteration(self):
+        line = GTFDataLine(self.gtf_line)
+        for attr in line['attributes']:
+            self.assertNotEqual(line['attributes'][attr],None)
 
 class TestGTFIterator(unittest.TestCase):
     """Basic tests for iterating through a GTF file
