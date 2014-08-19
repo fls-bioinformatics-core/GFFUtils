@@ -76,23 +76,59 @@ class GFFAnnotationLookup:
 
         Arguments:
           gff_data: a GFFFile.GFFFile object populated from a GFF file
+
         """
+        self.__feature_data_format = gff_data.format
         self.__lookup_id = {}
         self.__lookup_parent = {}
+        print "Input file is '%s' format" % self.__feature_data_format
+        if self.__feature_data_format == 'gff':
+            self._load_from_gff(gff_data)
+        elif self.__feature_data_format == 'gtf':
+            self._load_from_gtf(gff_data)
+        else:
+            raise Exception("Unknown format for feature data: '%s'" % gff_data.format)
+
+    def _load_from_gff(self,gff_data):
+        """Create the lookup tables from GFF input
+        """
+        id_attr = 'ID'
+        parent_attr = 'Parent'
         for line in gff_data:
-            if 'ID' in line['attributes']:
+            if id_attr in line['attributes']:
+                # Check that the ID is unique
+                idx = line['attributes'][id_attr]
+                if idx in self.__lookup_id:
+                    logging.warning("Identifier '%s' is not unique: "
+                                    "feature '%s' already found" % (id_attr,idx))
                 # Store reference to data by ID
-                idx = line['attributes']['ID']
                 self.__lookup_id[idx] = line
-                if 'Parent' in line['attributes']:
+                if parent_attr in line['attributes']:
                     # Store reference to parent by ID
-                    parent = line['attributes']['Parent']
+                    parent = line['attributes'][parent_attr]
                     self.__lookup_parent[idx] = parent
                     # Check for multiple parents
                     if len(parent.split(',')) > 1:
                         # Issue a warning but continue for now
                         logging.warning("Multiple parents found on line %d: %s" % (line.lineno(),
                                                                                    parent))
+            else:
+                logging.warning("No identifier attribute (%s) on line %d" % 
+                                (id_attr,line.lineno()))
+
+    def _load_from_gtf(self,gtf_data):
+        """Create the lookup tables from GTF input
+        """
+        for line in gtf_data:
+            # Only interested in 'gene' features
+            if line['feature'] == 'gene':
+                if 'gene_id' in line['attributes']:
+                    idx = line['attributes']['gene_id']
+                    self.__lookup_id[idx] = line
+                    ##self.__lookup_parent[idx] = idx
+                else:
+                    logging.warning("No 'gene_id' attribute found on line %d: %s" %
+                                    (line.lineno(),line))
 
     def getDataFromID(self,idx):
         """Return line of data from GFF file matching the ID attribute
@@ -153,6 +189,7 @@ class GFFAnnotationLookup:
           for the feature identified by the supplied ID attribute.
         """
         # Return annotation for an ID
+        print "Getting annotation for %s" % idx
         annotation = GFFAnnotation()
         # Parent feature data
         try:
@@ -165,9 +202,14 @@ class GFFAnnotationLookup:
         annotation.parent_feature_type = parent_feature['feature']
         annotation.parent_feature_parent = parent_feature['attributes']['Parent']
         # Parent gene data
-        gene = self.getAncestorGene(idx)
-        if not gene: return annotation
-        annotation.parent_gene_name = gene['attributes']['Name']
+        if self.__feature_data_format != 'gtf':
+            gene = self.getAncestorGene(idx)
+            if not gene:
+                return annotation
+            annotation.parent_gene_name = gene['attributes']['Name']
+        else:
+            gene = parent_feature
+            annotation.parent_gene_name = gene['attributes']['gene_name']
         annotation.chr = gene['seqname']
         annotation.start = gene['start']
         annotation.end = gene['end']
@@ -373,8 +415,9 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
     # Output files
     annotated_counts_out_file = out_file
     tables_out_file = \
-        os.path.splitext(os.path.basename(annotated_counts_out_file))[0]+\
-        "_stats"+os.path.splitext(annotated_counts_out_file)[1]
+        os.path.join(os.path.dirname(annotated_counts_out_file),
+                     os.path.splitext(os.path.basename(annotated_counts_out_file))[0]+\
+                     "_stats"+os.path.splitext(annotated_counts_out_file)[1])
 
     # Process the HTSeq-count files
     print "Processing HTSeq-count files"
@@ -475,12 +518,12 @@ def main():
 
     # Initial check on arguments
     if len(arguments) < 2:
-        p.error("Expected GFF file and at least one feature data file")
+        p.error("Expected GFF/GTF file and at least one feature data file")
 
     # Input GFF file
     gff_file = arguments[0]
     if not os.path.exists(gff_file):
-        p.error("Input GFF file %s not found" % gff_file)
+        p.error("Input GFF/GTF file %s not found" % gff_file)
 
     # Check for wildcards in feature data file names, to emulate linux shell globbing
     # on platforms such as Windows which don't have this built in
@@ -495,7 +538,7 @@ def main():
 
     # Final check on number of input files
     if not htseq_count_mode and len(feature_data_files) > 1:  
-        p.error("Expected GFF file and a single feature data file")
+        p.error("Expected GFF/GTF file and a single feature data file")
 
     # Feature type being considered
     feature_type = options.feature_type
@@ -506,27 +549,27 @@ def main():
     else:
         out_file = os.path.splitext(os.path.basename(gff_file))[0] + "_annot.txt"
 
-    # Process GFF data
+    # Process GFF/GTF data
     print "Reading data from %s" % gff_file
     if gff_file.endswith('.gtf'):
-        print "Input file is GTF format"
         gff = GTFFile.GTFFile(gff_file)
     else:
         gff = GFFFile.GFFFile(gff_file)
+    feature_format = gff.format.upper()
 
     # Build lookup
-    print "Creating lookup for GFF data"
-    gff_lookup = GFFAnnotationLookup(gff)
+    print "Creating lookup for %s" % feature_format
+    feature_lookup = GFFAnnotationLookup(gff)
 
     # Annotate input data
     if htseq_count_mode:
         # HTSeq-count mode
-        annotate_htseq_count_data(gff_lookup,
+        annotate_htseq_count_data(feature_lookup,
                                   feature_data_files,
                                   out_file)
     else:
         # Standard mode
-        annotate_feature_data(gff_lookup,
+        annotate_feature_data(feature_lookup,
                               feature_data_files[0],
                               out_file)
 
