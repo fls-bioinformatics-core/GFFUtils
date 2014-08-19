@@ -157,7 +157,10 @@ class GFFFile(TabFile):
     See http://www.sanger.ac.uk/resources/software/gff/spec.html
     for the GFF specification.
     """
-    def __init__(self,gff_file,fp=None,gffdataline=GFFDataLine):
+    def __init__(self,gff_file,fp=None,gffdataline=GFFDataLine,format='gff'):
+        # Storage for format info
+        self._format = format
+        self._version = None
         # Initialise empty TabFile
         TabFile.__init__(self,None,fp=None,
                          tab_data_line=GFFDataLine,
@@ -169,8 +172,10 @@ class GFFFile(TabFile):
                 # Append to TabFile
                 self.append(tabdataline=line)
            elif line.type == PRAGMA:
-               # Ignore pragma for now
-               pass
+               # Try to extract relevant data
+               pragma = str(line)[2:].split()
+               if pragma[0] == 'gff-version':
+                   self._version = pragma[1]
 
     def write(self,filen):
         """Write the GFF data to an output GFF
@@ -179,9 +184,24 @@ class GFFFile(TabFile):
           filen: name of file to write to
         """
         fp = open(filen,'w')
-        fp.write("##gff-version 3\n")
+        if self.format == 'gff':
+            fp.write("##gff-version 3\n")
         TabFile.write(self,fp=fp)
         fp.close()
+
+    @property
+    def format(self):
+        """Return the format e.g. 'gff'
+
+        """
+        return self._format
+
+    @property
+    def version(self):
+        """Return the version e.g. '3'
+
+        """
+        return self._version
 
 class OrderedDictionary:
     """Augumented dictionary which keeps keys in order
@@ -382,7 +402,7 @@ class GFFAttributes(OrderedDictionary):
         # Dealing with trailing semicolon
         if self.__trailing_semicolon:
             items.append('')
-        return '; '.join(items)
+        return ';'.join(items)
 
 class GFFID:
     """Class for handling ID attribute in GFF data
@@ -551,6 +571,9 @@ DDB0232428	Sequencing Center	CDS	1890	3287	.	+	.	Parent=DDB0216437
         """Test that the GFF data can be read in
         """
         gff = GFFFile("test.gff",self.fp)
+        # Check format and version
+        self.assertEqual(gff.format,'gff')
+        self.assertEqual(gff.version,'3')
         # There should be 6 lines of data
         self.assertEqual(len(gff),6)
         # Check the feature names are correct
