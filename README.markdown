@@ -298,6 +298,8 @@ GTF_extract.py
 --------------
 
 Extract selected data items from a GTF file and output in tab-delimited format.
+The program can also operate on GFF files provided the --gff option is specified.
+
 
 ### Usage ###
 
@@ -320,6 +322,8 @@ Extract selected data items from a GTF file and output in tab-delimited format.
                           FIELD_LIST.
     -o OUTFILE            write output to OUTFILE (default is to write to
                           stdout)
+    --gff                 specify that the input file is GFF rather than GTF
+                          format
     --test                run unit tests (developers only)
 
 ### Output ###

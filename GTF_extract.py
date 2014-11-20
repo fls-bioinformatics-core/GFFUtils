@@ -41,7 +41,8 @@ if __name__ == "__main__":
     p = optparse.OptionParser(usage="%prog OPTIONS <gft_file>",
                               version="%prog "+__version__,
                               description="Extract selected data items from a GTF file and "
-                              "output in tab-delimited format.")
+                              "output in tab-delimited format. The program can also operate "
+                              "on GFF files provided the --gff option is specified.")
     p.add_option('-f','--feature',action="store",dest="feature_type",default=None,
                  help="only extract data for lines where feature is FEATURE_TYPE")
     p.add_option('--fields',action="store",dest="field_list",default=None,
@@ -53,6 +54,8 @@ if __name__ == "__main__":
                  "FIELD_LIST.")
     p.add_option('-o',action="store",dest="outfile",default=None,
                  help="write output to OUTFILE (default is to write to stdout)")
+    p.add_option('--gff',action="store_true",dest="is_gff",default=False,
+                 help="specify that the input file is GFF rather than GTF format")
     p.add_option('--test',action="store_true",dest="run_tests",default=False,
                  help="run unit tests (developers only)")
 
@@ -87,18 +90,28 @@ if __name__ == "__main__":
             else:
                 field_list.append(field)
 
+    # Input file type
+    if opts.is_gff:
+        file_iterator =  GFFFile.GFFIterator
+    else:
+        file_iterator =  GTFFile.GTFIterator
+
     # Output stream
     if opts.outfile is None:
         fp = sys.stdout
     else:
         fp = open(opts.outfile,'w')
 
-    # Iterate through the GTF file line-by-line
-    for line in GTFFile.GTFIterator(args[0]):
+    # Iterate through the file line-by-line
+    for line in file_iterator(args[0]):
         this_gene = None
         start = 0
         stop = 0
-        if line.type == GFFFile.ANNOTATION:
+        if line.type == GFFFile.PRAGMA:
+            if line[0].startswith('##gff-version') and not opts.is_gff:
+                sys.stderr.write("Input file is GFF not GTF? Rerun using --gff option\n")
+                sys.exit(1)
+        elif line.type == GFFFile.ANNOTATION:
             if feature_type is None or line['feature'] == feature_type:
                 # Extract and report data
                 if field_list is None:
