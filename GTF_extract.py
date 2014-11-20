@@ -51,7 +51,8 @@ if __name__ == "__main__":
                  "GTF field name (i.e. 'chrom', 'source', 'feature', 'start', 'end', 'score', "
                  "'strand' and 'frame') or the name of an attribute (e.g. 'gene_name', "
                  "'gene_id' etc). Data items are output in the order they appear in "
-                 "FIELD_LIST.")
+                 "FIELD_LIST. If a field doesn't exist for a line then '.' will be output "
+                 "as the value.")
     p.add_option('-o',action="store",dest="outfile",default=None,
                  help="write output to OUTFILE (default is to write to stdout)")
     p.add_option('--gff',action="store_true",dest="is_gff",default=False,
@@ -102,6 +103,9 @@ if __name__ == "__main__":
     else:
         fp = open(opts.outfile,'w')
 
+    # Null character (used when values are empty)
+    null = '.'
+
     # Iterate through the file line-by-line
     for line in file_iterator(args[0]):
         this_gene = None
@@ -124,7 +128,11 @@ if __name__ == "__main__":
                             out_line.append(str(line[field]))
                         except KeyError:
                             # Not standard, try as an attribute name
-                            out_line.append(str(line['attributes'][field]))
+                            try:
+                                out_line.append(str(line['attributes'][field]))
+                            except KeyError:
+                                # Not an attribute either
+                                out_line.append(str(null))
                     fp.write("%s\n" % '\t'.join(out_line))
 
     # Finished - close output file

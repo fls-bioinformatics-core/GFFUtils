@@ -319,7 +319,8 @@ The program can also operate on GFF files provided the --gff option is specified
                           'end', 'score', 'strand' and 'frame') or the name of
                           an attribute (e.g. 'gene_name', 'gene_id' etc). Data
                           items are output in the order they appear in
-                          FIELD_LIST.
+                          FIELD_LIST. If a field doesn't exist for a line then
+                          '.' will be output as the value.
     -o OUTFILE            write output to OUTFILE (default is to write to
                           stdout)
     --gff                 specify that the input file is GFF rather than GTF
