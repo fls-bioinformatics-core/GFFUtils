@@ -85,7 +85,10 @@ To iterate over all lines and print just the 'name' part of the
 # Import modules that this module depends on
 #######################################################################
 
-from TabFile import TabFile,TabDataLine
+try:
+    from TabFile import TabFile,TabDataLine
+except ImportError:
+    from bcftbx.TabFile import TabFile,TabDataLine
 import logging
 import copy
 import urllib
