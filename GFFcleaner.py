@@ -34,7 +34,10 @@ SHARE_DIR = os.path.abspath(
     os.path.normpath(
         os.path.join(os.path.dirname(sys.argv[0]),'..','share')))
 sys.path.append(SHARE_DIR)
-from TabFile import TabFile
+try:
+    from TabFile import TabFile
+except ImportError:
+    from bcftbx.TabFile import TabFile
 from GFFFile import GFFFile,GFFAttributes,GFFID,OrderedDictionary
 
 #######################################################################

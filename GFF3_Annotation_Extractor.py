@@ -53,7 +53,10 @@ __version__ = version.__version__
 import optparse
 import GFFFile
 import GTFFile
-import TabFile
+try:
+    from TabFile import TabFile
+except ImportError:
+    from bcftbx.TabFile import TabFile
 import sys
 import logging
 import os
