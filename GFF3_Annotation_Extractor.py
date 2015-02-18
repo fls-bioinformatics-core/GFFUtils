@@ -54,9 +54,9 @@ import optparse
 import GFFFile
 import GTFFile
 try:
-    from TabFile import TabFile
+    import TabFile
 except ImportError:
-    from bcftbx.TabFile import TabFile
+    import bcftbx.TabFile as TabFile
 import sys
 import logging
 import os
