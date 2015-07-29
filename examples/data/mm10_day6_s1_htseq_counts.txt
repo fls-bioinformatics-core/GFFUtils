@@ -1,0 +1,10 @@
+Gm10327	38
+Gm10334	5
+Gm10335	4
+snoZ196	0
+snopsi28S-3327	0
+__no_feature	2740551
+__ambiguous	242511
+__too_low_aQual	0
+__not_aligned	0
+__alignment_not_unique	3912351
