@@ -74,7 +74,7 @@ class GFFAnnotationLookup:
     genes and associated data from the IDs of "feature parents".
     """
 
-    def __init__(self,gff_data):
+    def __init__(self,gff_data,id_attr=None):
         """Create a new GFFAnnotationLookup instance
 
         Arguments:
@@ -86,16 +86,17 @@ class GFFAnnotationLookup:
         self.__lookup_parent = {}
         print "Input file is '%s' format" % self.__feature_data_format
         if self.__feature_data_format == 'gff':
-            self._load_from_gff(gff_data)
+            self._load_from_gff(gff_data,id_attr=id_attr)
         elif self.__feature_data_format == 'gtf':
-            self._load_from_gtf(gff_data)
+            self._load_from_gtf(gff_data,id_attr=id_attr)
         else:
             raise Exception("Unknown format for feature data: '%s'" % gff_data.format)
 
-    def _load_from_gff(self,gff_data):
+    def _load_from_gff(self,gff_data,id_attr=None):
         """Create the lookup tables from GFF input
         """
-        id_attr = 'ID'
+        if id_attr is None:
+            id_attr = 'ID'
         parent_attr = 'Parent'
         for line in gff_data:
             if id_attr in line['attributes']:
@@ -119,19 +120,22 @@ class GFFAnnotationLookup:
                 logging.warning("No identifier attribute (%s) on line %d" % 
                                 (id_attr,line.lineno()))
 
-    def _load_from_gtf(self,gtf_data):
+    def _load_from_gtf(self,gtf_data,id_attr=None):
         """Create the lookup tables from GTF input
         """
+        if id_attr is None:
+            id_attr = 'gene_id'
+        #id_attr = 'gene_name'
         for line in gtf_data:
             # Only interested in 'gene' features
             if line['feature'] == 'gene':
-                if 'gene_id' in line['attributes']:
-                    idx = line['attributes']['gene_id']
+                if id_attr in line['attributes']:
+                    idx = line['attributes'][id_attr]
                     self.__lookup_id[idx] = line
                     ##self.__lookup_parent[idx] = idx
                 else:
-                    logging.warning("No 'gene_id' attribute found on line %d: %s" %
-                                    (line.lineno(),line))
+                    logging.warning("No '%s' attribute found on line %d: %s" %
+                                    (id_attr,line.lineno(),line))
 
     def getDataFromID(self,idx):
         """Return line of data from GFF file matching the ID attribute
@@ -510,7 +514,12 @@ def main():
     p.add_option('-o',action="store",dest="out_file",default=None,
                  help="specify output file name")
     p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
-                 help="feature type listed in input count files (default 'exon')")
+                 help="feature type listed in input count files (default 'exon'; if used in "
+                 "conjunction with --htseq-count option then should be the same as that specified "
+                 "when running htseq-count)")
+    p.add_option('-i','--id-attribute',action="store",dest="id_attribute",default=None,
+                 help="explicitly specify the name of the attribute to get the feature IDs from "
+                 "(defaults to 'ID' for GFF input, 'gene_id' for GTF input)")
     p.add_option('--htseq-count',action="store_true",dest="htseq_count",default=False,
                  help="htseq-count mode: input is one or more output FEATURE_COUNT files from "
                  "the htseq-count program")
@@ -562,7 +571,7 @@ def main():
 
     # Build lookup
     print "Creating lookup for %s" % feature_format
-    feature_lookup = GFFAnnotationLookup(gff)
+    feature_lookup = GFFAnnotationLookup(gff,id_attr=options.id_attribute)
 
     # Annotate input data
     if htseq_count_mode:
