@@ -304,7 +304,7 @@ class HTSeqCountFile:
             name = line.split('\t')[0]
             count = line.strip('\n').split('\t')[1]
             # Check if we've encountered the trailing table
-            if line.startswith('no_feature'):
+            if line.startswith('no_feature') or line.startswith('__no_feature'):
                 reading_feature_counts = False
             # Determine what type of data we're storing
             if reading_feature_counts:
