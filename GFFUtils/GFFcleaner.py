@@ -542,10 +542,6 @@ def GFFDecodeAttributes(gff_data):
         attributes.encode(False)
     return gff_data
 
-def GFFRemoveAttributes(gff_data,attr_list=()):
-    """Remove the specified attributes from
-    """
-
 #######################################################################
 # Tests
 #######################################################################
