@@ -5,7 +5,7 @@ Utilities for working with GFF and GTF files:
 
 * ``GFFcleaner.py``: perform various "cleaning" manipulations on a GFF file
 * ``GFF3_Annotation_Extractor``: combine and annotate feature counts with data
-   from a GFF or GTF file
+  from a GFF or GTF file
 * ``GTF_extract``: extract selected data items from a GTF file
 
 Installation
