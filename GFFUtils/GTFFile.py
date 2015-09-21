@@ -9,9 +9,6 @@
 #
 #########################################################################
 
-import version
-__version__ = version.__version__
-
 """GTFFile
 
 Classes for reading data from GTF (Gene Transfer Format/General Transfer

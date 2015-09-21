@@ -9,9 +9,6 @@
 #
 #########################################################################
 
-import version
-__version__ = version.__version__
-
 """GFFFile
 
 Classes for reading data from GFF (Gene-Finding Format/General Feature

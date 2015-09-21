@@ -18,8 +18,8 @@ file.
 # Module metadata
 #######################################################################
 
-import version
-__version__ = version.__version__
+from . import get_version
+__version__ = get_version()
 
 #######################################################################
 # Import modules
@@ -1042,14 +1042,12 @@ chr1\t.\tgene\t21490\t23468\t.\t+\t.\tID=DDB_G0267204;Name=DDB_G0123456;descript
         # Check decoding
         self.assertEqual("%s" % gff[0]['attributes'],"ID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon; refer to Genbank M11339 for full-length element")
         self.assertEqual("%s" % gff[1]['attributes'],"ID=DDB_G0267204;Name=DDB_G0123456;description=putative pseudogene; similar to a family of genes, including <a href=\"/gene/DDB_G0267252\">DDB_G0267252</a>")
-    
 
-#######################################################################
 # Main program
-#######################################################################
-
-if __name__ == "__main__":
-
+#
+def main():
+    """Main program
+    """
     # Set up logging format
     logging.basicConfig(format='%(levelname)s: %(message)s')
 
@@ -1432,5 +1430,13 @@ if __name__ == "__main__":
     # Write to output file
     print "Writing output file %s" % outfile
     gff_data.write(outfile)
+
+#######################################################################
+# Main program
+#######################################################################
+
+if __name__ == "__main__":
+    logging.basicConfig(format="%(levelname)s: %(message)s")
+    main()
 
 

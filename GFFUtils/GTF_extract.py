@@ -18,8 +18,8 @@ Utility program to extract selected data items from a GTF file.
 # Module metadata
 #######################################################################
 
-import version
-__version__ = version.__version__
+from . import get_version
+__version__ = get_version()
 
 #######################################################################
 # Import modules
@@ -31,12 +31,11 @@ import optparse
 import GFFFile
 import GTFFile
 
-#######################################################################
 # Main program
-#######################################################################
-
-if __name__ == "__main__":
-
+#
+def main():
+    """Main program
+    """
     # Command line parser
     p = optparse.OptionParser(usage="%prog OPTIONS <gft_file>",
                               version="%prog "+__version__,
@@ -138,5 +137,13 @@ if __name__ == "__main__":
     # Finished - close output file
     if opts.outfile is not None:
         fp.close()
-                    
-        
+
+#######################################################################
+# Main program
+#######################################################################
+
+if __name__ == "__main__":
+    logging.basicConfig(format="%(levelname)s: %(message)s")
+    main()
+
+
