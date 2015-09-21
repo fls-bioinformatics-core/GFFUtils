@@ -29,11 +29,6 @@ import os,sys
 import logging
 import optparse
 
-# Set up for local modules in "share"
-SHARE_DIR = os.path.abspath(
-    os.path.normpath(
-        os.path.join(os.path.dirname(sys.argv[0]),'..','share')))
-sys.path.append(SHARE_DIR)
 try:
     from TabFile import TabFile
 except ImportError:
