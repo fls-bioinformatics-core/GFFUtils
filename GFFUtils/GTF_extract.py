@@ -18,8 +18,8 @@ Utility program to extract selected data items from a GTF file.
 # Module metadata
 #######################################################################
 
-import version
-__version__ = version.__version__
+from . import get_version
+__version__ = get_version()
 
 #######################################################################
 # Import modules
@@ -31,12 +31,11 @@ import optparse
 import GFFFile
 import GTFFile
 
-#######################################################################
 # Main program
-#######################################################################
-
-if __name__ == "__main__":
-
+#
+def main():
+    """Main program
+    """
     # Command line parser
     p = optparse.OptionParser(usage="%prog OPTIONS <gft_file>",
                               version="%prog "+__version__,
@@ -57,20 +56,8 @@ if __name__ == "__main__":
                  help="write output to OUTFILE (default is to write to stdout)")
     p.add_option('--gff',action="store_true",dest="is_gff",default=False,
                  help="specify that the input file is GFF rather than GTF format")
-    p.add_option('--test',action="store_true",dest="run_tests",default=False,
-                 help="run unit tests (developers only)")
 
     opts,args = p.parse_args()
-
-    # Check for unit testing
-    if opts.run_tests:
-        print "Running unit tests"
-        suite = unittest.TestSuite(unittest.TestLoader().\
-                                       discover(os.path.dirname(sys.argv[0]), \
-                                                    pattern=os.path.basename(sys.argv[0])))
-        unittest.TextTestRunner(verbosity=2).run(suite)
-        print "Tests finished"
-        sys.exit()
 
     # Check number of arguments
     if len(args) != 1:
@@ -138,5 +125,13 @@ if __name__ == "__main__":
     # Finished - close output file
     if opts.outfile is not None:
         fp.close()
-                    
-        
+
+#######################################################################
+# Main program
+#######################################################################
+
+if __name__ == "__main__":
+    logging.basicConfig(format="%(levelname)s: %(message)s")
+    main()
+
+

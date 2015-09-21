@@ -43,8 +43,8 @@ in this case, and so will issue a warning and continue.
 # Module metadata
 #######################################################################
 
-import version
-__version__ = version.__version__
+from . import get_version
+__version__ = get_version()
 
 #######################################################################
 # Import modules that this module depends on
