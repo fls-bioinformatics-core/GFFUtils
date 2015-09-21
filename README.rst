@@ -57,8 +57,7 @@ Note that this requires the ``nose`` package.
 In addition the tests are run via TravisCI whenever this GitHub repository
 is updated:
 
-.. image:: https://travis-ci.org/fls-bioinformatics-core/GFFUtils.png?branch=mas
-ter
+.. image:: https://travis-ci.org/fls-bioinformatics-core/GFFUtils.png?branch=master
    :alt: Current status of TravisCI build for master branch
    :target: https://travis-ci.org/fls-bioinformatics-core/genomics/builds
 
