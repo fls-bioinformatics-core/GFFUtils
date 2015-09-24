@@ -25,7 +25,8 @@ setup(
     entry_points = { 'console_scripts': [
         'GFF3_Annotation_Extractor = GFFUtils.GFF3_Annotation_Extractor:main',
         'GFFcleaner = GFFUtils.GFFcleaner:main',
-        'GTF_extract = GFFUtils.GTF_extract:main',]
+        'GTF_extract = GFFUtils.GTF_extract:main',
+        'gtf2bed = GFFUtils.gtf2bed:main',]
     },
     license = 'Artistic License',
     install_requires = ['genomics'],
