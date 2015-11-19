@@ -29,7 +29,7 @@ setup(
         'gtf2bed = GFFUtils.gtf2bed:main',]
     },
     license = 'Artistic License',
-    install_requires = ['genomics'],
+    install_requires = ['genomics-bcftbx'],
     test_suite = 'nose.collector',
     tests_require = ['nose'],
     include_package_data=True,
