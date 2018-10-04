@@ -32,6 +32,7 @@ setup(
     install_requires = ['genomics-bcftbx'],
     test_suite = 'nose.collector',
     tests_require = ['nose'],
+    python_requires = '>=2.6, <3',
     include_package_data=True,
     zip_safe = False
 )
