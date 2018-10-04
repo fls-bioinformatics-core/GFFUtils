@@ -56,6 +56,8 @@ def main():
                  help="write output to OUTFILE (default is to write to stdout)")
     p.add_option('--gff',action="store_true",dest="is_gff",default=False,
                  help="specify that the input file is GFF rather than GTF format")
+    p.add_option('-k','--keep-headers',action="store_true",dest="keep_header",default=False,
+                 help="copy headers from input file to output")
 
     opts,args = p.parse_args()
 
@@ -102,6 +104,8 @@ def main():
             if line[0].startswith('##gff-version') and not opts.is_gff:
                 sys.stderr.write("Input file is GFF not GTF? Rerun using --gff option\n")
                 sys.exit(1)
+            if opts.keep_header:
+                fp.write("%s\n" % line)
         elif line.type == GFFFile.ANNOTATION:
             if feature_type is None or line['feature'] == feature_type:
                 # Extract and report data
