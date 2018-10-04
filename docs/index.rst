@@ -18,9 +18,13 @@ Installation
 
 To install from github, do::
 
-    pip install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/refactor/requirements.txt
-    pip install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
+    pip2 install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/refactor/requirements.txt
+    pip2 install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
 
+.. note::
+
+   ``GFFUtils`` requires Python 2 and doesn't currently work with
+   Python 3.
 
 Contents
 ********
