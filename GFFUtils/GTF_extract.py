@@ -106,7 +106,7 @@ def main():
             if feature_type is None or line['feature'] == feature_type:
                 # Extract and report data
                 if field_list is None:
-                    print "%s" % line
+                    fp.write("%s\n" % line)
                 else:
                     out_line = []
                     for field in field_list:
