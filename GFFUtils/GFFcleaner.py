@@ -125,7 +125,9 @@ def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=
                     else:
                         attributes[key] = new_value
                 except KeyError:
-                    logging.warning("No value for '%s' ('%s')" % (lookup_key,key))
+                    logging.warning("Cannot update value of attribute '%s': "
+                                    "replacement attribute '%s' not found" %
+                                    (key,lookup_key))
             except KeyError:
                 # No mapping found for key, ignore
                 pass
