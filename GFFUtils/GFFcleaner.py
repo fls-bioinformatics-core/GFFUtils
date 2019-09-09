@@ -354,7 +354,11 @@ def GFFGroupSGDs(gff_data):
         # Process the attributes data
         attributes = data['attributes']
         # Get the SGD value
-        sgd = attributes['SGD']
+        try:
+            sgd = attributes['SGD']
+        except KeyError:
+            # SGD not in the attributes, treat as blank
+            sgd = ''
         if sgd != '':
             # Check the ID
             idx = GFFID(attributes['ID'])
