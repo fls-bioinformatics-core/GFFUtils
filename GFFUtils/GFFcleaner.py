@@ -712,11 +712,13 @@ def main():
                     score_unexpected_values.append(data['score'])
             except ValueError:
                 # String value
-                if data['score'].strip() != '' and not data['score'].startswith('Anc_'):
+                if data['score'].startswith('Anc_') or \
+                   data['score'].strip() == '':
+                    # Replace "Anc_*" or blank values in "score"
+                    # column with zero
+                    data['score'] = '0'
+                else:
                     score_unexpected_values.append(data['score'])
-            # Replace "Anc_*" or blank values in "score" column with zero
-            if data['score'].startswith('Anc_') or data['score'].strip() == '':
-                data['score'] = '0'
         # Report unexpected values
         n = len(score_unexpected_values)
         if n > 0:
