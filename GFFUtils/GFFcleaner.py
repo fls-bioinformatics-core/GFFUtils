@@ -703,13 +703,13 @@ def main():
     # Check/clean score column values
     if clean_score:
         print "Replacing 'Anc_*' and blanks with '0's in 'score' column"
-        score_unexpected_values = []
+        score_unexpected_values = set()
         for data in gff_data:
             try:
                 # Numerical value
                 score = float(data['score'])
                 if score != 0:
-                    score_unexpected_values.append(data['score'])
+                    score_unexpected_values.add(data['score'])
             except ValueError:
                 # String value
                 if data['score'].startswith('Anc_') or \
@@ -718,12 +718,15 @@ def main():
                     # column with zero
                     data['score'] = '0'
                 else:
-                    score_unexpected_values.append(data['score'])
+                    score_unexpected_values.add(data['score'])
         # Report unexpected values
+        score_unexpected_values = sorted(list(score_unexpected_values))
         n = len(score_unexpected_values)
         if n > 0:
             logging.warning("%d 'score' values that are not '', 0 or 'Anc_*'" % n)
-            logging.warning("Other values: %s" % score_unexpected_values)
+            logging.warning("Other values: %s" %
+                            ', '.join([str(x)
+                                       for x in score_unexpected_values]))
 
     # Clean up the data in "attributes" column: replace keys
     if clean_replace_attributes:
