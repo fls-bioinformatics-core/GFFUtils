@@ -125,7 +125,9 @@ def GFFUpdateAttributes(gff_data,update_keys={},exclude_keys=[],no_empty_values=
                     else:
                         attributes[key] = new_value
                 except KeyError:
-                    logging.warning("No value for '%s' ('%s')" % (lookup_key,key))
+                    logging.warning("Cannot update value of attribute '%s': "
+                                    "replacement attribute '%s' not found" %
+                                    (key,lookup_key))
             except KeyError:
                 # No mapping found for key, ignore
                 pass
@@ -352,7 +354,11 @@ def GFFGroupSGDs(gff_data):
         # Process the attributes data
         attributes = data['attributes']
         # Get the SGD value
-        sgd = attributes['SGD']
+        try:
+            sgd = attributes['SGD']
+        except KeyError:
+            # SGD not in the attributes, treat as blank
+            sgd = ''
         if sgd != '':
             # Check the ID
             idx = GFFID(attributes['ID'])
