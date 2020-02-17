@@ -16,8 +16,8 @@ Installation
 
 It is recommended to use::
 
-    pip2 install -r requirements.txt
-    pip2 install .
+    pip install -r requirements.txt
+    pip install .
 
 from within the top-level source directory to install the package.
 
@@ -26,15 +26,20 @@ directory to your ``PYTHONPATH`` environment.
 
 To install directly from github using ``pip``::
 
-    pip2 install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/master/requirements.txt
-    pip2 install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
+    pip install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/master/requirements.txt
+    pip install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
 
 (In either of these latter two cases you will also need to install the
 ``genomics-bcftbx`` package from
 https://github.com/fls-bioinformatics-core/genomics)
 
-Note that ``GFFUtils`` requires Python 2 and doesn't currently work with
-Python 3.
+Note that ``GFFUtils`` is currently supported for the following Python
+versions:
+
+* 2.7
+* 3.7
+
+but support for Python 2.7 is likely to be dropped in the near future.
 
 Documentation
 -------------
