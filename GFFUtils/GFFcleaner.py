@@ -836,7 +836,7 @@ def main():
                 print("\t%s" % sgd)
             print("")
         if len(unresolved_sgds_multiple_matches) > 0:
-            print "Multiple matching mapping genes:"
+            print("Multiple matching mapping genes:")
             for sgd in unresolved_sgds_multiple_matches:
                 print("\t%s" % sgd)
             print("")
