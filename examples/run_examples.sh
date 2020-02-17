@@ -197,17 +197,20 @@ run_test "gtf2bed" \
 # GFF3_Annotation_Extractor with GFF input
 run_test "GFF3_Annotation_Extractor with GFF input" \
     --expected "test_dicty.out test_dicty_stats.out" \
-    --command "GFF3_Annotation_Extractor -o test_dicty.out --htseq-count ${DATA_DIR}/dicty.gff ${DATA_DIR}/dicty_htseq_counts.dimA.txt ${DATA_DIR}/dicty_htseq_counts.AXA4.txt"
+    --command "GFF3_Annotation_Extractor -o test_dicty.out --htseq-count ${DATA_DIR}/dicty.gff ${DATA_DIR}/dicty_htseq_counts.dimA.txt ${DATA_DIR}/dicty_htseq_counts.AXA4.txt" \
+    --strip-paths
 #
 # GFF3_Annotation_Extractor with GTF input
 run_test "GFF3_Annotation_Extractor with GTF input" \
     --expected "test_mm10.out test_mm10_stats.out" \
-    --command "GFF3_Annotation_Extractor -o test_mm10.out --htseq-count ${DATA_DIR}/mm10.gtf ${DATA_DIR}/mm10_htseq_counts.txt"
+    --command "GFF3_Annotation_Extractor -o test_mm10.out --htseq-count ${DATA_DIR}/mm10.gtf ${DATA_DIR}/mm10_htseq_counts.txt" \
+    --strip-paths
 #
 # GFF3_Annotation_Extractor with GTF input with -i gene_name
 run_test "GFF3_Annotation_Extractor with GTF input using 'gene_name' for ID" \
     --expected "test_mm10_gencode_vM5.out test_mm10_gencode_vM5_stats.out" \
-    --command "GFF3_Annotation_Extractor -o test_mm10_gencode_vM5.out --htseq-count -i gene_name ${DATA_DIR}/mm10_gencode_vM5.gtf ${DATA_DIR}/mm10_day6_s1_htseq_counts.txt"
+    --command "GFF3_Annotation_Extractor -o test_mm10_gencode_vM5.out --htseq-count -i gene_name ${DATA_DIR}/mm10_gencode_vM5.gtf ${DATA_DIR}/mm10_day6_s1_htseq_counts.txt" \
+    --strip-paths
 #
 # Finished
 report_tests
