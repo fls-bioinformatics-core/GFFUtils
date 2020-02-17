@@ -203,7 +203,7 @@ class GFFFile(TabFile):
         """
         return self._version
 
-class OrderedDictionary:
+class OrderedDictionary(object):
     """Augumented dictionary which keeps keys in order
 
     OrderedDictionary provides an augmented Python dictionary
@@ -404,7 +404,7 @@ class GFFAttributes(OrderedDictionary):
             items.append('')
         return ';'.join(items)
 
-class GFFID:
+class GFFID(object):
     """Class for handling ID attribute in GFF data
 
     The GFFID class takes an ID string which is expected to be of
