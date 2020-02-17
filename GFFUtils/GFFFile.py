@@ -84,7 +84,12 @@ To iterate over all lines and print just the 'name' part of the
 
 import logging
 import copy
-import urllib
+try:
+    # Python 3
+    from urllib.parse import quote,unquote
+except ImportError:
+    # Python 2
+    from urllib import quote,unquote
 from collections import Iterator
 from bcftbx.TabFile import TabFile
 from bcftbx.TabFile import TabDataLine
@@ -314,7 +319,7 @@ class GFFAttributes(OrderedDictionary):
                     key = ''
                     value = item.strip()
                 # Percent-decode value
-                value = urllib.unquote(value)
+                value = unquote(value)
                 # Store data
                 if key == '':
                     # No key: store in a list
@@ -381,9 +386,9 @@ class GFFAttributes(OrderedDictionary):
           value: the string to be encoded
         """
         if key in self.__multivalued_attributes:
-            return urllib.quote(value,safe=" ,:^*$@!+?|")
+            return quote(value,safe=" ,:^*$@!+?|")
         else:
-            return urllib.quote(self[key],safe=" :^*$@!+?|")
+            return quote(self[key],safe=" :^*$@!+?|")
 
     def __repr__(self):
         items = []
