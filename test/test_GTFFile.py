@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-import cStringIO
+from io import StringIO
 from GFFUtils.GTFFile import *
 
 class TestGTFDataLine(unittest.TestCase):
@@ -80,7 +80,7 @@ class TestGTFIterator(unittest.TestCase):
 
     def setUp(self):
         # Example GTF file fragment
-        self.fp = cStringIO.StringIO(
+        self.fp = StringIO(
 """##description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
 ##provider: GENCODE
 ##contact: gencode@sanger.ac.uk
@@ -122,7 +122,7 @@ class TestGTFFile(unittest.TestCase):
 
     def setUp(self):
         # Example GTF file fragment
-        self.fp = cStringIO.StringIO(
+        self.fp = StringIO(
 """##description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
 ##provider: GENCODE
 ##contact: gencode@sanger.ac.uk
