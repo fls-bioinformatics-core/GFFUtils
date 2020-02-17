@@ -4,7 +4,7 @@ Description
 Setup script to install GFFUtils: utilities for working with
 GFF and GTF files
 
-Copyright (C) University of Manchester 2011-2015 Peter Briggs
+Copyright (C) University of Manchester 2011-2015,2020 Peter Briggs
 
 """
 
@@ -32,7 +32,7 @@ setup(
     install_requires = ['genomics-bcftbx'],
     test_suite = 'nose.collector',
     tests_require = ['nose'],
-    python_requires = '>=2.6, <3',
+    python_requires = '>=2.7',
     include_package_data=True,
     zip_safe = False
 )
