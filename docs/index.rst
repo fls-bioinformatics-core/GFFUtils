@@ -56,8 +56,8 @@ Credits
 
 These utilities have been developed by Peter Briggs with input from
 Leo Zeef, to support the activities of the Bioinformatics Core Facility
-(BCF) in the Faculty of Life Sciences (FLS) at the University of
-Manchester (UoM).
+(BCF) in the Faculty of Biology Medicine and Health (FBMH) at the
+University of Manchester (UoM).
 
 
 Indices and tables
