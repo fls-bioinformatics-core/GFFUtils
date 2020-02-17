@@ -28,8 +28,10 @@ __version__ = get_version()
 import os
 import sys
 import optparse
-import GFFFile
-import GTFFile
+from .GFFFile import GFFIterator
+from .GFFFile import PRAGMA
+from .GFFFile import ANNOTATION
+from .GTFFile import GTFIterator
 
 # Main program
 #
@@ -82,9 +84,9 @@ def main():
 
     # Input file type
     if opts.is_gff:
-        file_iterator =  GFFFile.GFFIterator
+        file_iterator =  GFFIterator
     else:
-        file_iterator =  GTFFile.GTFIterator
+        file_iterator =  GTFIterator
 
     # Output stream
     if opts.outfile is None:
@@ -100,13 +102,13 @@ def main():
         this_gene = None
         start = 0
         stop = 0
-        if line.type == GFFFile.PRAGMA:
+        if line.type == PRAGMA:
             if line[0].startswith('##gff-version') and not opts.is_gff:
                 sys.stderr.write("Input file is GFF not GTF? Rerun using --gff option\n")
                 sys.exit(1)
             if opts.keep_header:
                 fp.write("%s\n" % line)
-        elif line.type == GFFFile.ANNOTATION:
+        elif line.type == ANNOTATION:
             if feature_type is None or line['feature'] == feature_type:
                 # Extract and report data
                 if field_list is None:

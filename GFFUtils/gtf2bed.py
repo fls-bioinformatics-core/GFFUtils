@@ -5,8 +5,8 @@
 #
 import sys
 import optparse
-import GFFFile
-import GTFFile
+from GTFFile import GTFIterator
+from GFFFile import ANNOTATION
 
 def warning(msg):
     """
@@ -24,12 +24,12 @@ def main():
     opts,args = p.parse_args()
     if len(args) != 1:
         p.error("Expected single argument (GTF file)")
-    for line in GTFFile.GTFIterator(args[0]):
+    for line in GTFIterator(args[0]):
         this_gene = None
         start = 0
         stop = 0
         attributes = line['attributes']
-        if line.type == GFFFile.ANNOTATION:
+        if line.type == ANNOTATION:
             if line['feature'] == 'gene':
                 # Encountered gene feature
                 if this_gene != attributes['gene_name']:

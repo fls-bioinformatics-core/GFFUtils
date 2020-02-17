@@ -51,16 +51,14 @@ __version__ = get_version()
 #######################################################################
 
 import optparse
-import GFFFile
-import GTFFile
-try:
-    import TabFile
-except ImportError:
-    import bcftbx.TabFile as TabFile
 import sys
 import logging
 import os
 import glob
+from .GFFFile import GFFFile
+from .GFFFile import OrderedDictionary
+from .GTFFile import GTFFile
+from bcftbx.TabFile import TabFile
 
 #######################################################################
 # Class definitions
@@ -78,7 +76,7 @@ class GFFAnnotationLookup(object):
         """Create a new GFFAnnotationLookup instance
 
         Arguments:
-          gff_data: a GFFFile.GFFFile object populated from a GFF file
+          gff_data: a GFFFile object populated from a GFF file
 
         """
         self.__feature_data_format = gff_data.format
@@ -293,8 +291,8 @@ class HTSeqCountFile(object):
             leading path) to process
         """
         # Create dictionaries to store data
-        self.__htseq_counts = GFFFile.OrderedDictionary()
-        self.__htseq_table = GFFFile.OrderedDictionary()
+        self.__htseq_counts = OrderedDictionary()
+        self.__htseq_table = OrderedDictionary()
         # Total reads counted
         self.__total_reads = 0
         # Read in data from file
@@ -365,8 +363,8 @@ def annotate_feature_data(gff_lookup,feature_data_file,out_file):
     """
     # Read the feature data into a TabFile
     print "Reading in data from %s" % feature_data_file
-    feature_data = TabFile.TabFile(filen=feature_data_file,
-                                   first_line_is_header=True)
+    feature_data = TabFile(filen=feature_data_file,
+                           first_line_is_header=True)
 
     # Append columns for annotation
     print "Appending columns for annotation"
@@ -435,17 +433,17 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
 
     # Create a TabFile for output
     print "Building annotated count file for output"
-    annotated_counts = TabFile.TabFile(column_names=['exon_parent',
-                                                     'feature_type_exon_parent',
-                                                     'gene_ID',
-                                                     'gene_name',
-                                                     'chr',
-                                                     'start',
-                                                     'end',
-                                                     'strand',
-                                                     'gene_length',
-                                                     'locus',
-                                                     'description'])
+    annotated_counts = TabFile(column_names=['exon_parent',
+                                             'feature_type_exon_parent',
+                                             'gene_ID',
+                                             'gene_name',
+                                             'chr',
+                                             'start',
+                                             'end',
+                                             'strand',
+                                             'gene_length',
+                                             'locus',
+                                             'description'])
     for htseqfile in htseq_files:
         annotated_counts.appendColumn(htseqfile)
 
@@ -477,7 +475,7 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
 
     # Make second file for the trailing table data
     print "Building trailing tables data file for output"
-    table_counts = TabFile.TabFile(column_names=['count'])
+    table_counts = TabFile(column_names=['count'])
     for htseqfile in htseq_files:
         table_counts.appendColumn(htseqfile)
     for name in htseq_data[htseq_files[0]].table():
@@ -564,9 +562,9 @@ def main():
     # Process GFF/GTF data
     print "Reading data from %s" % gff_file
     if gff_file.endswith('.gtf'):
-        gff = GTFFile.GTFFile(gff_file)
+        gff = GTFFile(gff_file)
     else:
-        gff = GFFFile.GFFFile(gff_file)
+        gff = GFFFile(gff_file)
     feature_format = gff.format.upper()
 
     # Build lookup
