@@ -82,7 +82,7 @@ class GFFAnnotationLookup(object):
         self.__feature_data_format = gff_data.format
         self.__lookup_id = {}
         self.__lookup_parent = {}
-        print "Input file is '%s' format" % self.__feature_data_format
+        print("Input file is '%s' format" % self.__feature_data_format)
         if self.__feature_data_format == 'gff':
             self._load_from_gff(gff_data,id_attr=id_attr)
         elif self.__feature_data_format == 'gtf':
@@ -194,7 +194,7 @@ class GFFAnnotationLookup(object):
           for the feature identified by the supplied ID attribute.
         """
         # Return annotation for an ID
-        print "Getting annotation for %s" % idx
+        print("Getting annotation for %s" % idx)
         annotation = GFFAnnotation()
         # Parent feature data
         try:
@@ -362,12 +362,12 @@ def annotate_feature_data(gff_lookup,feature_data_file,out_file):
       out_file           name of output file
     """
     # Read the feature data into a TabFile
-    print "Reading in data from %s" % feature_data_file
+    print("Reading in data from %s" % feature_data_file)
     feature_data = TabFile(filen=feature_data_file,
                            first_line_is_header=True)
 
     # Append columns for annotation
-    print "Appending columns for annotation"
+    print("Appending columns for annotation")
     for colname in ('exon_parent',
                     'feature_type_exon_parent',
                     'gene_ID',
@@ -397,7 +397,7 @@ def annotate_feature_data(gff_lookup,feature_data_file,out_file):
         line['description'] = annotation.description
 
     # Output
-    print "Writing output file %s" % out_file
+    print("Writing output file %s" % out_file)
     feature_data.write(out_file,include_header=True,no_hash=True)
 
 # annotate_htseq_count_data
@@ -425,13 +425,14 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
                      "_stats"+os.path.splitext(annotated_counts_out_file)[1])
 
     # Process the HTSeq-count files
-    print "Processing HTSeq-count files"
+    print("Processing HTSeq-count files")
     htseq_data = {}
     for htseqfile in htseq_files:
-        print "\t%s" % htseqfile
+        print("\t%s" % htseqfile)
         htseq_data[htseqfile] = HTSeqCountFile(htseqfile)
 
     # Create a TabFile for output
+<<<<<<< HEAD
     print "Building annotated count file for output"
     annotated_counts = TabFile(column_names=['exon_parent',
                                              'feature_type_exon_parent',
@@ -444,6 +445,20 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
                                              'gene_length',
                                              'locus',
                                              'description'])
+=======
+    print("Building annotated count file for output")
+    annotated_counts = TabFile.TabFile(column_names=['exon_parent',
+                                                     'feature_type_exon_parent',
+                                                     'gene_ID',
+                                                     'gene_name',
+                                                     'chr',
+                                                     'start',
+                                                     'end',
+                                                     'strand',
+                                                     'gene_length',
+                                                     'locus',
+                                                     'description'])
+>>>>>>> Update 'print' statements to use the 'print()' function, for Python 3 compatibility.
     for htseqfile in htseq_files:
         annotated_counts.appendColumn(htseqfile)
 
@@ -470,12 +485,17 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
         annotated_counts.append(data=data)
 
     # Write the file
-    print "Writing output file %s" % annotated_counts_out_file
+    print("Writing output file %s" % annotated_counts_out_file)
     annotated_counts.write(annotated_counts_out_file,include_header=True,no_hash=True)
 
     # Make second file for the trailing table data
+<<<<<<< HEAD
     print "Building trailing tables data file for output"
     table_counts = TabFile(column_names=['count'])
+=======
+    print("Building trailing tables data file for output")
+    table_counts = TabFile.TabFile(column_names=['count'])
+>>>>>>> Update 'print' statements to use the 'print()' function, for Python 3 compatibility.
     for htseqfile in htseq_files:
         table_counts.appendColumn(htseqfile)
     for name in htseq_data[htseq_files[0]].table():
@@ -484,7 +504,7 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
         for htseqfile in htseq_files:
             data.append(htseq_data[htseqfile].table()[name])
         table_counts.append(data=data)
-    print "Writing output file %s" % tables_out_file
+    print("Writing output file %s" % tables_out_file)
     table_counts.write(tables_out_file,include_header=True,no_hash=True)
 
 # Main program
@@ -560,7 +580,7 @@ def main():
         out_file = os.path.splitext(os.path.basename(gff_file))[0] + "_annot.txt"
 
     # Process GFF/GTF data
-    print "Reading data from %s" % gff_file
+    print("Reading data from %s" % gff_file)
     if gff_file.endswith('.gtf'):
         gff = GTFFile(gff_file)
     else:
@@ -568,7 +588,7 @@ def main():
     feature_format = gff.format.upper()
 
     # Build lookup
-    print "Creating lookup for %s" % feature_format
+    print("Creating lookup for %s" % feature_format)
     feature_lookup = GFFAnnotationLookup(gff,id_attr=options.id_attribute)
 
     # Annotate input data

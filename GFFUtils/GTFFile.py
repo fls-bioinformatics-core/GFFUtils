@@ -44,14 +44,14 @@ To iterate over all lines in the GTFFile object and print the
 feature type:
 
 >>> for line in gtf:
->>>    print line['feature']
+>>>    print(line['feature'])
 
 (To iterate over all lines in the GTF without caching in memory,
 printing feature types for annotation records:
 
 >>> for line in GTFIterator('my.gtf'):
 >>>    if line.type == ANNOTATION:
->>>       print line['feature']
+>>>       print(line['feature'])
 
 )
 
@@ -63,20 +63,20 @@ referenced directly. For example, if the attributes string is:
 
 then the value of the 'Parent' attribute can be obtained using
 
->>> print line['attributes']['Parent']
+>>> print(line['attributes']['Parent'])
 
 To iterate over all lines and extract 'ID' field from attributes:
 
 >>> for line in gff:
 >>>    if 'ID' in line['attributes']['ID']:
->>>       print line['attributes']['ID']
+>>>       print(line['attributes']['ID'])
 
 To iterate over all lines and print just the 'name' part of the
 'ID' attribute:
 
 >>> for line in gff:
 >>>    if 'ID' in line['attributes']
->>>       print GFFID(line['attributes']['ID']).name
+>>>       print(GFFID(line['attributes']['ID']).name)
 
 """
 
