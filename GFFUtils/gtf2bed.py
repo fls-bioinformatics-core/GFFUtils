@@ -36,12 +36,12 @@ def main():
                     this_gene = attributes['gene_name']
                     start = line['start']
                     stop = line['end']
-                    print "%s\t%s\t%d\t%d\t%s\t%s" % (attributes['gene_name'],
+                    print("%s\t%s\t%d\t%d\t%s\t%s" % (attributes['gene_name'],
                                                       line['seqname'],
                                                       line['start'],
                                                       line['end'],
                                                       line['strand'],
-                                                      line['feature'])
+                                                      line['feature']))
             else:
                 # Non-gene feature
                 if this_gene == attributes['gene_name']:

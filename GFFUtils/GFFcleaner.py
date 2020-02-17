@@ -691,8 +691,8 @@ def main():
     else:
         outbase = os.path.splitext(os.path.basename(options.output_gff))[0]
         outfile = options.output_gff
-    print "Input : %s" % infile
-    print "Output: %s" % outfile
+    print("Input : %s" % infile)
+    print("Output: %s" % outfile)
     dupfile = outbase+'_duplicates.txt'
     delfile = outbase+'_discarded.gff'
     unresfile = outbase+'_unresolved.gff'
@@ -702,13 +702,13 @@ def main():
 
     # Prepend string to seqname column
     if prepend_str is not None:
-        print "Prepending '%s' to values in 'seqname' column" % prepend_str
+        print("Prepending '%s' to values in 'seqname' column" % prepend_str)
         for data in gff_data:
             data['seqname'] = prepend_str+str(data['seqname'])
 
     # Check/clean score column values
     if clean_score:
-        print "Replacing 'Anc_*' and blanks with '0's in 'score' column"
+        print("Replacing 'Anc_*' and blanks with '0's in 'score' column")
         score_unexpected_values = set()
         for data in gff_data:
             try:
@@ -744,11 +744,11 @@ def main():
         attributes_key_map['Parent'] = 'SGD'
         attributes_key_map['Name'] = 'SGD'
         attributes_dont_replace_with_empty_data = True
-        print "Cleaning up attributes: replacing keys:"
+        print("Cleaning up attributes: replacing keys:")
         for key in attributes_key_map.keys():
-            print "\t%s -> %s" % (key,attributes_key_map[key])
+            print("\t%s -> %s" % (key,attributes_key_map[key]))
         if attributes_dont_replace_with_empty_data:
-            print "(Replacement will be skipped if new data is missing/blank)"
+            print("(Replacement will be skipped if new data is missing/blank)")
         GFFUpdateAttributes(gff_data,attributes_key_map,[],
                             attributes_dont_replace_with_empty_data)
 
@@ -756,15 +756,16 @@ def main():
     if clean_exclude_attributes:
         # List of keys to exclude
         attributes_exclude_keys = ['kaks','kaks2','ncbi']
-        print "Excluding keys:"
+        print("Excluding keys:")
         for key in attributes_exclude_keys:
-            print "\t%s" % key
+            print("\t%s" % key)
         GFFUpdateAttributes(gff_data,{},attributes_exclude_keys,True)
 
-    # Set the IDs for consecutive lines with matching SGD names, to indicate that
-    # they're in the same gene
+    # Set the IDs for consecutive lines with matching SGD names, to
+    # indicate that they're in the same gene
     if group_SGDs:
-        print "Grouping SGDs by setting ID's for consecutive lines with the same SGD values"
+        print("Grouping SGDs by setting ID's for consecutive lines "
+              "with the same SGD values")
         GFFGroupSGDs(gff_data)
 
     # Find duplicates in input file
@@ -773,7 +774,7 @@ def main():
                 
     if report_duplicates:
         # Write to duplicates file
-        print "Writing duplicate SGD names to %s" % dupfile
+        print("Writing duplicate SGD names to %s" % dupfile)
         fd = open(dupfile,'w')
         ndup = 0
         ngroups = 0
@@ -793,11 +794,12 @@ def main():
         if ndup == 0:
             fd.write("No duplicate SGDs\n")
         fd.close()
-        print "%d duplicates found (of which %d are trivial)" % (ndup,ngroups)
+        print("%d duplicates found (of which %d are trivial)" %
+              (ndup,ngroups))
 
     if resolve_duplicates:
-        print "Resolving duplicate SGDs using data from %s" % cdsfile
-        print "Discarded genes will be written to %s" % delfile
+        print("Resolving duplicate SGDs using data from %s" % cdsfile)
+        print("Discarded genes will be written to %s" % delfile)
         # Get data on best gene mappings from CDS file
         # Format is tab-delimited, each line has:
         # orf      chr      start     end      strand
@@ -819,36 +821,42 @@ def main():
         discard = result['discard']
         # Remaining unresolved cases
         if len(unresolved_sgds_no_mapping_genes) > 0:
-            print "No mapping genes with same SGDs found in %s:" % cdsfile
+            print("No mapping genes with same SGDs found in %s:" % cdsfile)
             for sgd in unresolved_sgds_no_mapping_genes:
-                print "\t%s" % sgd
-            print
+                print("\t%s" % sgd)
+            print("")
         if len(unresolved_sgds_no_mapping_genes_after_filter) > 0:
-            print "No mapping genes with same chromosome and/or strand:"
+            print("No mapping genes with same chromosome and/or strand:")
             for sgd in unresolved_sgds_no_mapping_genes_after_filter:
-                print "\t%s" % sgd
-            print
+                print("\t%s" % sgd)
+            print("")
         if len(unresolved_sgds_no_overlaps) > 0:
-            print "No mapping genes with overlaps:"
+            print("No mapping genes with overlaps:")
             for sgd in unresolved_sgds_no_overlaps:
-                print "\t%s" % sgd
-            print
+                print("\t%s" % sgd)
+            print("")
         if len(unresolved_sgds_multiple_matches) > 0:
             print "Multiple matching mapping genes:"
             for sgd in unresolved_sgds_multiple_matches:
-                print "\t%s" % sgd
-            print
+                print("\t%s" % sgd)
+            print("")
         # Summary counts for each case
-        print "Total number of duplicated indexes   : %d" % len(duplicate_sgds.keys())
-        print "Number of resolved duplicate SGDs    : %d" % len(resolved_sgds)
-        print "Unresolved duplicates:"
-        print "* No mapping genes with same SGD     : %d" % len(unresolved_sgds_no_mapping_genes)
-        print "* No mapping genes with same chr/str : %d" % len(unresolved_sgds_no_mapping_genes_after_filter)
-        print "* No mapping genes with overlap      : %d" % len(unresolved_sgds_no_overlaps)
-        print "* Multiple mapping genes match       : %d" % len(unresolved_sgds_multiple_matches)
+        print("Total number of duplicated indexes   : %d" %
+              len(duplicate_sgds.keys()))
+        print("Number of resolved duplicate SGDs    : %d" %
+              len(resolved_sgds))
+        print("Unresolved duplicates:")
+        print("* No mapping genes with same SGD     : %d" %
+              len(unresolved_sgds_no_mapping_genes))
+        print("* No mapping genes with same chr/str : %d" %
+              len(unresolved_sgds_no_mapping_genes_after_filter))
+        print("* No mapping genes with overlap      : %d" %
+              len(unresolved_sgds_no_overlaps))
+        print("* Multiple mapping genes match       : %d" %
+              len(unresolved_sgds_multiple_matches))
 
         # Remove discarded duplicates from the data
-        print "Removing discarded duplicates and writing to %s" % delfile
+        print("Removing discarded duplicates and writing to %s" % delfile)
         fd = open(delfile,'w')
         for discard_data in discard:
             try:
@@ -856,12 +864,14 @@ def main():
                 del(gff_data[ip])
                 fd.write("%s\n" % discard_data)
             except IndexError:
-                logging.warning("Failed to delete line %d: not found" % discard_data.lineno())
+                logging.warning("Failed to delete line %d: not found" %
+                                discard_data.lineno())
         fd.close()
 
         # Remove unresolved duplicates if requested
         if discard_unresolved:
-            print "Removing unresolved duplicates and writing to %s" % unresfile
+            print("Removing unresolved duplicates and writing to %s" %
+                  unresfile)
             # Get list of unresolved SGDs
             all_unresolved = result['unresolved_sgds']
             # Get list of unresolved duplicates
@@ -887,46 +897,50 @@ def main():
         # Get name for file with gene list
         if genefile is None:
             genefile = cdsfile
-        print "Inserting unmatched genes from %s" % genefile
+        print("Inserting unmatched genes from %s" % genefile)
         # Get gene data from CDS file
         # Format is tab-delimited, each line has:
         # orf      chr      start     end      strand
         mapping = TabFile(genefile,column_names=('name','chr','start','end','strand'))
         n_genes_before_insert = len(gff_data)
         gff_data = GFFInsertMissingGenes(gff_data,mapping)
-        print "Inserted %d missing genes" % (len(gff_data) - n_genes_before_insert)
+        print("Inserted %d missing genes" %
+              (len(gff_data) - n_genes_before_insert))
 
     # Construct and insert ID for exons
     if add_exon_ids:
-        print "Inserting artificial IDs for exon records"
+        print("Inserting artificial IDs for exon records")
         gff_data = GFFAddExonIDs(gff_data)
 
     # Construct and insert missing ID attributes
     if add_missing_ids:
-        print "Inserting generated IDs for records where IDs are missing"
+        print("Inserting generated IDs for records where IDs are missing")
         gff_data = GFFAddIDAttributes(gff_data)
 
     # Strip attributes requested for removal
     if options.rm_attr:
-        print "Removing the following attributes from all records:"
+        print("Removing the following attributes from all records:")
         for attr in options.rm_attr:
-            print "\t* %s" % attr
+            print("\t* %s" % attr)
         GFFUpdateAttributes(gff_data,exclude_keys=options.rm_attr)
 
     # Remove attributes that don't conform to KEY=VALUE format
     if strict_attributes:
-        print "Removing attributes that don't conform to KEY=VALUE format"
+        print("Removing attributes that don't conform to KEY=VALUE format")
         GFFUpdateAttributes(gff_data,exclude_nokeys=True)
 
     # Suppress percent encoding of attributes
     if no_attribute_encoding:
-        print "Converting encoded special characters in attribute data to non-encoded form"
-        logging.warning("!!! Special characters will not be correctly encoded in the output  !!!")
-        logging.warning("!!! The resulting GFF may not be readable by this or other programs !!!")
+        print("Converting encoded special characters in attribute data to "
+              "non-encoded form")
+        logging.warning("!!! Special characters will not be correctly "
+                        "encoded in the output  !!!")
+        logging.warning("!!! The resulting GFF may not be readable by this "
+                        "or other programs !!!")
         gff_data = GFFDecodeAttributes(gff_data)
 
     # Write to output file
-    print "Writing output file %s" % outfile
+    print("Writing output file %s" % outfile)
     gff_data.write(outfile)
 
 #######################################################################
