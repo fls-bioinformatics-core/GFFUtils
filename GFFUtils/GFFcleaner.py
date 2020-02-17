@@ -28,12 +28,11 @@ __version__ = get_version()
 import os,sys
 import logging
 import optparse
-
-try:
-    from TabFile import TabFile
-except ImportError:
-    from bcftbx.TabFile import TabFile
-from GFFFile import GFFFile,GFFAttributes,GFFID,OrderedDictionary
+from .GFFFile import GFFFile
+from .GFFFile import GFFAttributes
+from .GFFFile import GFFID
+from .GFFFile import OrderedDictionary
+from bcftbx.TabFile import TabFile
 
 #######################################################################
 # Classes
