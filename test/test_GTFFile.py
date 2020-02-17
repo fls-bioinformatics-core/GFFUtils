@@ -81,7 +81,7 @@ class TestGTFIterator(unittest.TestCase):
     def setUp(self):
         # Example GTF file fragment
         self.fp = StringIO(
-"""##description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
+u"""##description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
 ##provider: GENCODE
 ##contact: gencode@sanger.ac.uk
 ##format: gtf
@@ -123,7 +123,7 @@ class TestGTFFile(unittest.TestCase):
     def setUp(self):
         # Example GTF file fragment
         self.fp = StringIO(
-"""##description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
+u"""##description: evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
 ##provider: GENCODE
 ##contact: gencode@sanger.ac.uk
 ##format: gtf
