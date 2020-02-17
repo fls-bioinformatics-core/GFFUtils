@@ -480,7 +480,7 @@ class GFFIterator(Iterator):
         self.__gffdataline = gffdataline
         self.__lineno = 0
 
-    def next(self):
+    def __next__(self):
         """Return next record from GFF file as a GFFDataLine object
         """
         line = self.__fp.readline()
@@ -502,3 +502,8 @@ class GFFIterator(Iterator):
             # Reached EOF
             if self.__close_fp: self.__fp.close()
             raise StopIteration
+
+    def next(self):
+        """Return next record from GFF file (Python 2)
+        """
+        return self.__next__()
