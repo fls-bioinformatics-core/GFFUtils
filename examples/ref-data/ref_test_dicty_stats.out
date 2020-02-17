@@ -1,0 +1,7 @@
+count	/home/pjb/projects/python3/GFFUtils/examples/data/dicty_htseq_counts.dimA.txt	/home/pjb/projects/python3/GFFUtils/examples/data/dicty_htseq_counts.AXA4.txt
+total_counted_into_genes	39	18
+no_feature	311621	120515
+ambiguous	1185934	422601
+too_low_aQual	0	0
+not_aligned	24664160	19996043
+alignment_not_unique	0	0
