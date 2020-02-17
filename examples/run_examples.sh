@@ -212,6 +212,11 @@ run_test "GFF3_Annotation_Extractor with GTF input using 'gene_name' for ID" \
     --command "GFF3_Annotation_Extractor -o test_mm10_gencode_vM5.out --htseq-count -i gene_name ${DATA_DIR}/mm10_gencode_vM5.gtf ${DATA_DIR}/mm10_day6_s1_htseq_counts.txt" \
     --strip-paths
 #
+# GFFcleaner
+run_test "GFFcleaner" \
+    --expected "dicty_cleaned.gff" \
+    --command "GFFcleaner -o dicty_cleaned.gff ${DATA_DIR}/dicty.gff"
+#
 # Finished
 report_tests
 exit $?
