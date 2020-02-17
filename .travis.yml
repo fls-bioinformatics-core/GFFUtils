@@ -12,4 +12,7 @@ install:
 script:
 # Run the unit tests for GFFUtils
   - "python setup.py test"
+# Run the example scripts
+  - "cd examples/"
+  - ./run_examples.sh
 
