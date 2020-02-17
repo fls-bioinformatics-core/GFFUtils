@@ -80,23 +80,29 @@ To iterate over all lines and print just the 'name' part of the
 
 """
 
-import GFFFile
+from .GFFFile import GFFFile
+from .GFFFile import GFFDataLine
+from .GFFFile import GFFAttributes
+from .GFFFile import GFFIterator
+from .GFFFile import OrderedDictionary
+from .GFFFile import GFF_COLUMNS
 
 #######################################################################
 # Classes
 #######################################################################
 
-class GTFDataLine(GFFFile.GFFDataLine):
+class GTFDataLine(GFFDataLine):
     """Data line specific to GTF files
 
     Subclass of GFFDataLine specifically for handling GTF data.
 
     """
 
-    def __init__(self,line=None,column_names=GFFFile.GFF_COLUMNS,lineno=None,delimiter='\t',
-                 gff_line_type=None):
-        GFFFile.GFFDataLine.__init__(self,line=line,column_names=column_names,
-                                     lineno=lineno,delimiter=delimiter,gff_line_type=gff_line_type)
+    def __init__(self,line=None,column_names=GFF_COLUMNS,lineno=None,
+                 delimiter='\t',gff_line_type=None):
+        GFFDataLine.__init__(self,line=line,column_names=column_names,
+                             lineno=lineno,delimiter=delimiter,
+                             gff_line_type=gff_line_type)
         self['attributes'] = GTFAttributes(str(self['attributes']))
 
 class GTFAttributes(object):
@@ -107,8 +113,8 @@ class GTFAttributes(object):
 
     """
     def __init__(self,attribute_data=None):
-        self.__attributes = GFFFile.OrderedDictionary()
-        for attr in GFFFile.GFFAttributes(attribute_data=attribute_data).nokeys():
+        self.__attributes = OrderedDictionary()
+        for attr in GFFAttributes(attribute_data=attribute_data).nokeys():
             key = attr.split(' ')[0]
             self.__attributes[key] = ' '.join(attr.split(' ')[1:]).strip('"')
     def __getitem__(self,name):
@@ -121,7 +127,7 @@ class GTFAttributes(object):
     def __iter__(self):
         return iter(self.__attributes.keys())
 
-class GTFFile(GFFFile.GFFFile):
+class GTFFile(GFFFile):
     """Class for handling GTF files in-memory
 
     Subclass of GFFFile which uses a GTFDataLine to store the
@@ -138,9 +144,9 @@ class GTFFile(GFFFile.GFFFile):
     """
     def __init__(self,gtf_file,fp=None,**args):
         args['gffdataline'] = GTFDataLine
-        GFFFile.GFFFile.__init__(self,gtf_file,fp=fp,format='gtf',**args)
+        GFFFile.__init__(self,gtf_file,fp=fp,format='gtf',**args)
 
-class GTFIterator(GFFFile.GFFIterator):
+class GTFIterator(GFFIterator):
     def __init__(self,gtf_file=None,fp=None,**args):
         args['gffdataline'] = GTFDataLine
-        GFFFile.GFFIterator.__init__(self,gff_file=gtf_file,fp=fp,**args)
+        GFFIterator.__init__(self,gff_file=gtf_file,fp=fp,**args)

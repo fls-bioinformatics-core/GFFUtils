@@ -3,6 +3,7 @@
 import unittest
 from io import StringIO
 from GFFUtils.GTFFile import *
+from GFFUtils.GFFFile import PRAGMA,ANNOTATION,COMMENT
 
 class TestGTFDataLine(unittest.TestCase):
 
@@ -107,9 +108,9 @@ chr1	ENSEMBL	transcript	11872	14412	.	+	.	gene_id "ENSG00000223972.4"; transcrip
             nlines += 1
             self.assertNotEqual(line.type,None)
             self.assertEqual(line.lineno(),nlines)
-            if line.type == GFFFile.PRAGMA: npragma += 1
-            if line.type == GFFFile.COMMENT: ncomment += 1
-            if line.type == GFFFile.ANNOTATION: nannotation += 1
+            if line.type == PRAGMA: npragma += 1
+            if line.type == COMMENT: ncomment += 1
+            if line.type == ANNOTATION: nannotation += 1
         # Check counts
         self.assertEqual(nlines,11)
         self.assertEqual(npragma,5)
