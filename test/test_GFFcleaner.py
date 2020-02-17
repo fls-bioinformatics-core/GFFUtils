@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 import unittest
-import cStringIO
+from io import StringIO
 from GFFUtils.GFFcleaner import *
 
 class TestGroupGeneSubsets(unittest.TestCase):
 
     def setUp(self):
         # List of genes to group
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=CDS:YEL0W01:1;SGD=YEL0W01
+        self.fp = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=CDS:YEL0W01:1;SGD=YEL0W01
 chr1\tTest\tCDS\t29963\t32155\t0\t-\t0\tID=CDS:YEL0W02:1;SGD=YEL0W02
 chr1\tTest\tCDS\t32611\t34140\t0\t-\t0\tID=CDS:YEL0W02:2;SGD=YEL0W02
 chr1\tTest\tCDS\t34525\t35262\t0\t-\t0\tID=CDS:YEL0W03:1;SGD=YEL0W03
@@ -31,11 +31,11 @@ class TestGFFUpdateAttributes(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object to read data in
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=abc;kaks=-le+100;SGD=YEL0W;ncbi=-1e+100;Name=def;
+        self.fp = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=abc;kaks=-le+100;SGD=YEL0W;ncbi=-1e+100;Name=def;
 """)
-        self.fp2 = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=abc;kaks=-le+100;SGD=YEL0W;ncbi=-1e+100;Name=def;123-234;456-567;
+        self.fp2 = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=abc;kaks=-le+100;SGD=YEL0W;ncbi=-1e+100;Name=def;123-234;456-567;
 """)
 
     def test_update_attributes_exclude_keys(self):
@@ -83,8 +83,8 @@ class TestGFFGetDuplicateSGDs(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object to read data in
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=YEL0W01;SGD=YEL0W01
+        self.fp = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=YEL0W01;SGD=YEL0W01
 chr1\tTest\tCDS\t29963\t32155\t0\t-\t0\tID=YEL0W02;SGD=YEL0W02
 chr1\tTest\tCDS\t32611\t34140\t0\t-\t0\tID=YEL0W02;SGD=YEL0W02
 chr1\tTest\tCDS\t34525\t35262\t0\t-\t0\tID=YEL0W03;SGD=YEL0W03
@@ -118,8 +118,8 @@ class TestGFFResolveDuplicateSGDs(unittest.TestCase):
         # - unrelated duplicates in same chromosome (YEL0W01)
         # - unrelated duplicates in different chromosomes (YEL0W2)
         # - grouped duplicated in same chromosome (YEL0W03)
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=CDS:YEL0W01:1;SGD=YEL0W01
+        self.fp = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=CDS:YEL0W01:1;SGD=YEL0W01
 chr1\tTest\tCDS\t29963\t32155\t0\t-\t0\tID=CDS:YEL0W02:1;SGD=YEL0W02
 chr1\tTest\tCDS\t32611\t34140\t0\t-\t0\tID=CDS:YEL0W02:2;SGD=YEL0W02
 chr1\tTest\tCDS\t34525\t35262\t0\t-\t0\tID=CDS:YEL0W03:1;SGD=YEL0W03
@@ -130,32 +130,32 @@ chr2\tTest\tCDS\t40406\t40864\t0\t-\t0\tID=CDS:YEL0W02:1;SGD=YEL0W02
 chr2\tTest\tCDS\t41402\t41831\t0\t+\t0\tID=CDS:YEL0W05:1;SGD=YEL0W05
 """)
         # Mapping data to resolve all duplicates
-        self.mp_resolve_all = cStringIO.StringIO(
-"""YEL0W01\tchr1\t39195\t39569\t-
+        self.mp_resolve_all = StringIO(
+u"""YEL0W01\tchr1\t39195\t39569\t-
 YEL0W03\tchr1\t34525\t37004\t-
 YEL0W02\tchr2\t40406\t40864\t-
 """)
         # Mapping data with a mapping gene removed
-        self.mp_missing_mapping_gene = cStringIO.StringIO(
-"""YEL0W01\tchr1\t39195\t39569\t-
+        self.mp_missing_mapping_gene = StringIO(
+u"""YEL0W01\tchr1\t39195\t39569\t-
 YEL0W03\tchr1\t34525\t37004\t-
 """)
         # Mapping data with a mapping gene that doesn't match
         # on strand for one duplicate
-        self.mp_missing_matching_mapping_gene = cStringIO.StringIO(
-"""YEL0W01\tchr1\t39195\t39569\t-
+        self.mp_missing_matching_mapping_gene = StringIO(
+u"""YEL0W01\tchr1\t39195\t39569\t-
 YEL0W03\tchr1\t34525\t37004\t+
 YEL0W02\tchr2\t40406\t40864\t-
 """)
         # Mapping data with a mapping gene that doesn't overlap
-        self.mp_mapping_gene_no_overlap = cStringIO.StringIO(
-"""YEL0W03\tchr1\t34525\t37004\t-
+        self.mp_mapping_gene_no_overlap = StringIO(
+u"""YEL0W03\tchr1\t34525\t37004\t-
 YEL0W01\tchr1\t41402\t41831\t-
 YEL0W02\tchr2\t40406\t40864\t-
 """)
         # Mapping data with multiple mapping genes with same name
-        self.mp_multiple_mapping_genes = cStringIO.StringIO(
-"""YEL0W01\tchr1\t28789\t29049\t-
+        self.mp_multiple_mapping_genes = StringIO(
+u"""YEL0W01\tchr1\t28789\t29049\t-
 YEL0W03\tchr1\t34525\t37004\t-
 YEL0W01\tchr1\t39195\t39569\t-
 YEL0W02\tchr2\t40406\t40864\t-
@@ -340,8 +340,8 @@ class TestGFFGroupSGDs(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object to read data in
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=YEL0W01;SGD=YEL0W01
+        self.fp = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=YEL0W01;SGD=YEL0W01
 chr1\tTest\tCDS\t29963\t32155\t0\t-\t0\tID=YEL0W02;SGD=YEL0W02
 chr1\tTest\tCDS\t32611\t34140\t0\t-\t0\tID=YEL0W02;SGD=YEL0W02
 chr1\tTest\tCDS\t34525\t35262\t0\t-\t0\tID=YEL0W03;SGD=YEL0W03
@@ -375,8 +375,8 @@ class TestGFFInsertMissingGenes(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object for GFF data
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=CDS:YEL0W01:1;SGD=YEL0W01
+        self.fp = StringIO(
+u"""chr1\tTest\tCDS\t28789\t29049\t0\t-\t0\tID=CDS:YEL0W01:1;SGD=YEL0W01
 chr1\tTest\tCDS\t29963\t32155\t0\t-\t0\tID=CDS:YEL0W02:1;SGD=YEL0W02
 chr1\tTest\tCDS\t34525\t35262\t0\t-\t0\tID=CDS:YEL0W04:1;SGD=YEL0W04
 chr1\tTest\tCDS\t35823\t37004\t0\t-\t0\tID=CDS:YEL0W04:2;SGD=YEL0W04
@@ -385,8 +385,8 @@ chr2\tTest\tCDS\t39195\t39569\t0\t-\t0\tID=CDS:YEL0W06:1;SGD=YEL0W06
 chr2\tTest\tCDS\t40406\t40864\t0\t-\t0\tID=CDS:YEL0W06:2;SGD=YEL0W06
 """)
         # Make a file-like object for mapping data
-        self.mp = cStringIO.StringIO(
-"""YEL0W03\tchr1\t32611\t34140\t-
+        self.mp = StringIO(
+u"""YEL0W03\tchr1\t32611\t34140\t-
 YEL0W06\tchr2\t49195\t49569\t-
 """
 )
@@ -415,8 +415,8 @@ class TestGFFAddExonIDs(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object for GFF pseudo-data
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\texon\t1890\t3287\t.\t+\t.\tParent=DDB0216437
+        self.fp = StringIO(
+u"""chr1\tTest\texon\t1890\t3287\t.\t+\t.\tParent=DDB0216437
 chr1\tTest\texon\t3848\t4855\t.\t+\t.\tParent=DDB0216438
 chr1\tTest\tCDS\t5505\t7769\t.\t+\t.\tParent=DDB0216439
 chr1\tTest\tCDS\t8308\t9522\t.\t-\t.\tParent=DDB0216440
@@ -445,8 +445,8 @@ class TestGFFAddIDAttributes(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object for GFF pseudo-data
-        self.fp = cStringIO.StringIO(
-"""chr1\tTest\texon\t1890\t3287\t.\t+\t.\tParent=DDB0216437
+        self.fp = StringIO(
+u"""chr1\tTest\texon\t1890\t3287\t.\t+\t.\tParent=DDB0216437
 chr1\tTest\texon\t3848\t4855\t.\t+\t.\tParent=DDB0216438
 chr1\tTest\tCDS\t5505\t7769\t.\t+\t.\tParent=DDB0216439
 chr1\tTest\tCDS\t8308\t9522\t.\t-\t.\tParent=DDB0216440
@@ -474,8 +474,8 @@ class TestGFFDecodeAttributes(unittest.TestCase):
 
     def setUp(self):
         # Make file-like object for GFF pseudo-data
-        self.fp = cStringIO.StringIO(
-"""chr1\t.\tgene\t5505\t7769\t.\t+\t.\tID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon%3B refer to Genbank M11339 for full-length element
+        self.fp = StringIO(
+u"""chr1\t.\tgene\t5505\t7769\t.\t+\t.\tID=DDB_G0267182;Name=DDB_G0123456;description=ORF2 protein fragment of DIRS1 retrotransposon%3B refer to Genbank M11339 for full-length element
 chr1\t.\tgene\t21490\t23468\t.\t+\t.\tID=DDB_G0267204;Name=DDB_G0123456;description=putative pseudogene%3B similar to a family of genes%2C including %3Ca href%3D%22%2Fgene%2FDDB_G0267252%22%3EDDB_G0267252%3C%2Fa%3E
 """)
 

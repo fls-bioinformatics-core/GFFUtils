@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-import cStringIO
+from io import StringIO
 from GFFUtils.GFFFile import *
 
 class TestGFFIterator(unittest.TestCase):
@@ -10,8 +10,8 @@ class TestGFFIterator(unittest.TestCase):
 
     def setUp(self):
         # Example GFF file fragment
-        self.fp = cStringIO.StringIO(
-"""##gff-version 3
+        self.fp = StringIO(
+u"""##gff-version 3
 # generated: Wed Feb 21 12:01:58 2012
 DDB0123458	Sequencing Center	chromosome	1	4923596	.	+	.	ID=DDB0232428;Name=1
 DDB0232428	Sequencing Center	contig	101	174493	.	+	.	ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02
@@ -49,8 +49,8 @@ class TestGFFFile(unittest.TestCase):
 
     def setUp(self):
         # Example GFF file fragment
-        self.fp = cStringIO.StringIO(
-"""##gff-version 3
+        self.fp = StringIO(
+u"""##gff-version 3
 # generated: Wed Feb 21 12:01:58 2012
 DDB0123458	Sequencing Center	chromosome	1	4923596	.	+	.	ID=DDB0232428;Name=1
 DDB0232428	Sequencing Center	contig	101	174493	.	+	.	ID=DDB0232440;Parent=DDB0232428;Name=DDB0232440;description=Contig generated from contig finding genome version 2.5;Dbxref=Contig GI Number:90970918,Accession Number:AAFI02000001,SeqID for Genbank:DDB0232440.02
