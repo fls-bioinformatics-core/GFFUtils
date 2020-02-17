@@ -66,7 +66,7 @@ import glob
 # Class definitions
 #######################################################################
 
-class GFFAnnotationLookup:
+class GFFAnnotationLookup(object):
     """Utility class for acquiring parent gene names and data
 
     The GFFAnnotationLookup class provides functionality for indexing
@@ -244,7 +244,7 @@ class GFFAnnotationLookup:
         # Done
         return annotation
 
-class GFFAnnotation:
+class GFFAnnotation(object):
     """Container class for GFF annotation data
 
     Once instantiated the calling subprogram should populate the
@@ -266,7 +266,7 @@ class GFFAnnotation:
         self.end = ''
         self.gene_length = ''
 
-class HTSeqCountFile:
+class HTSeqCountFile(object):
     """Class for handling data from output of htseq-count program
 
     The htseq-count program outputs 2-columns of tab-delimited data,
