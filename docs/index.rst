@@ -18,13 +18,19 @@ Installation
 
 To install from github, do::
 
-    pip2 install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/master/requirements.txt
-    pip2 install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
+    pip install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/master/requirements.txt
+    pip install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
 
 .. note::
 
-   ``GFFUtils`` requires Python 2 and doesn't currently work with
-   Python 3.
+   ``GFFUtils`` is currently supported for the following Python
+   versions:
+
+   * 2.7
+   * 3.7
+
+   but support for Python 2.7 is likely to be dropped in the near
+   future.
 
 Contents
 ********
@@ -50,8 +56,8 @@ Credits
 
 These utilities have been developed by Peter Briggs with input from
 Leo Zeef, to support the activities of the Bioinformatics Core Facility
-(BCF) in the Faculty of Life Sciences (FLS) at the University of
-Manchester (UoM).
+(BCF) in the Faculty of Biology Medicine and Health (FBMH) at the
+University of Manchester (UoM).
 
 
 Indices and tables
