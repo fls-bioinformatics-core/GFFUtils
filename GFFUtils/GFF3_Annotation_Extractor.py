@@ -175,7 +175,7 @@ class GFFAnnotationLookup(object):
         try:
             while True:
                 idx0 = self.getParentID(idx0)
-        except KeyError,ex:
+        except KeyError as ex:
             if idx0 != idx:
                 # Check that it's a gene
                 data = self.getDataFromID(idx0)

@@ -257,7 +257,7 @@ class OrderedDictionary(object):
             self.__keys.insert(i,key)
             self.__dict[key] = value
         else:
-            raise KeyError, "Key '%s' already exists" % key
+            raise KeyError("insert: key '%s' already exists" % key)
 
 class GFFAttributes(OrderedDictionary):
     """Class for handling GFF 'attribute' data
@@ -362,7 +362,8 @@ class GFFAttributes(OrderedDictionary):
         if new_setting in (True,False):
             self.__encode_values = new_setting
         elif new_setting is not None:
-            raise ValueError, "bad value '%s': can only be True or False" % new_setting
+            raise ValueError("encode: bad value '%s': can only be True "
+                             "or False" % new_setting)
         return self.__encode_values
 
     def __escape_value(self,key,value):
