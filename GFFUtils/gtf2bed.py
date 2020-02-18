@@ -21,9 +21,17 @@ def main():
     """
     p = optparse.OptionParser(usage="%prog FILE.gtf",
                               description="Convert GTF file to BED format")
+    p.add_option('-o',action="store",dest="outfile",default=None,
+                 help="write output to OUTFILE (default is to write to stdout)")
     opts,args = p.parse_args()
     if len(args) != 1:
         p.error("Expected single argument (GTF file)")
+    # Output stream
+    if opts.outfile is None:
+        fp = sys.stdout
+    else:
+        fp = open(opts.outfile,'w')
+    # Iterate over GTF
     for line in GTFIterator(args[0]):
         this_gene = None
         start = 0
@@ -36,12 +44,13 @@ def main():
                     this_gene = attributes['gene_name']
                     start = line['start']
                     stop = line['end']
-                    print("%s\t%s\t%d\t%d\t%s\t%s" % (attributes['gene_name'],
-                                                      line['seqname'],
-                                                      line['start'],
-                                                      line['end'],
-                                                      line['strand'],
-                                                      line['feature']))
+                    fp.write("%s\t%s\t%d\t%d\t%s\t%s\n" %
+                             (attributes['gene_name'],
+                              line['seqname'],
+                              line['start'],
+                              line['end'],
+                              line['strand'],
+                              line['feature']))
             else:
                 # Non-gene feature
                 if this_gene == attributes['gene_name']:
@@ -67,7 +76,7 @@ def main():
                                  line['end'],
                                  line['strand'],
                                  line['feature']))
-                    
+    fp.close()
         
 if __name__ == "__main__":
     main()
