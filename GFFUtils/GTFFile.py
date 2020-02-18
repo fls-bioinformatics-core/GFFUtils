@@ -114,9 +114,16 @@ class GTFAttributes(object):
     """
     def __init__(self,attribute_data=None):
         self.__attributes = OrderedDictionary()
+        self.__quotes = dict()
         for attr in GFFAttributes(attribute_data=attribute_data).nokeys():
             key = attr.split(' ')[0]
-            self.__attributes[key] = ' '.join(attr.split(' ')[1:]).strip('"')
+            value = ' '.join(attr.split(' ')[1:])
+            if value.startswith('"') and value.endswith('"'):
+                # Store quotation style for quoted values
+                self.__quotes[key] = '"'
+                value = value[1:-1]
+            self.__attributes[key] = value
+
     def __getitem__(self,name):
         try:
             return self.__attributes[name]
@@ -126,6 +133,19 @@ class GTFAttributes(object):
         return self[name] is not None
     def __iter__(self):
         return iter(self.__attributes.keys())
+    def __repr__(self):
+        # Reconstruct and return the original attribute string
+        attributes = list()
+        for key in self:
+            try:
+                quotes = self.__quotes[key]
+            except KeyError:
+                quotes = ''
+            attributes.append("%s %s%s%s;" % (key,
+                                              quotes,
+                                              self[key],
+                                              quotes))
+        return ' '.join(attributes)
 
 class GTFFile(GFFFile):
     """Class for handling GTF files in-memory
