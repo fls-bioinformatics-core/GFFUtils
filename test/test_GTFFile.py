@@ -34,6 +34,8 @@ class TestGTFDataLine(unittest.TestCase):
         self.assertEqual("2",line['attributes']['level'])
         self.assertEqual("OTTHUMG00000000961.2",line['attributes']['havana_gene'])
         self.assertEqual(None,line['attributes']['missing'])
+        # Check we get back original representation
+        self.assertEqual(self.gtf_line,str(line))
 
 class TestGTFAttributes(unittest.TestCase):
 
@@ -74,6 +76,13 @@ class TestGTFAttributes(unittest.TestCase):
         line = GTFDataLine(self.gtf_line)
         for attr in line['attributes']:
             self.assertNotEqual(line['attributes'][attr],None)
+
+    def test_recover_representation(self):
+        """Test that __repr__ returns original string
+        """
+        attributes = """gene_id "ENSG00000223972.4"; transcript_id "ENSG00000223972.4"; gene_type "pseudogene"; gene_status "KNOWN"; gene_name "DDX11L1"; transcript_type "pseudogene"; transcript_status "KNOWN"; transcript_name "DDX11L1"; level 2; havana_gene "OTTHUMG00000000961.2";"""
+        attr = GTFAttributes(attributes)
+        self.assertEqual(attributes,str(attr))
 
 class TestGTFIterator(unittest.TestCase):
     """Basic tests for iterating through a GTF file
