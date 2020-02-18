@@ -1,0 +1,32 @@
+##gff-version 3
+DDB0232429	Sequencing Center	mRNA	6679320	6680012	.	+	.	ID=DDB0166998;Parent=DDB_G0276345;Name=DDB0166998;description=JC2V2_0_02629: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Protein Accession Version:EAL69253.1,Inparanoid V. 5.1:DDB0166998,Protein Accession Number:EAL69253,Protein GI Number:60471291,Genome V. 2.0 ID:JC2V2_0_02629,Genome V. 1.0 ID:JC2V1_0C0012_14064
+DDB0232429	Sequencing Center	exon	6679320	6679397	.	+	.	Parent=DDB0166998
+DDB0232429	Sequencing Center	CDS	6679320	6679397	.	+	.	Parent=DDB0166998
+DDB0232429	Sequencing Center	exon	6679470	6679535	.	+	.	Parent=DDB0166998
+DDB0232429	Sequencing Center	CDS	6679470	6679535	.	+	.	Parent=DDB0166998
+DDB0232429	Sequencing Center	exon	6679617	6680012	.	+	.	Parent=DDB0166998
+DDB0232429	Sequencing Center	CDS	6679617	6680012	.	+	.	Parent=DDB0166998
+DDB0232429	.	gene	6679320	6680012	.	+	.	ID=DDB_G0276345;Name=naa20;description=ortholog of the conserved catalytic subunit of the NatB N-terminal acetyltransferase %28NAA20%29%2C which in yeast catalyzes the transfer of an acetyl group to the N-terminal residue of a protein that contains a Met-Glu%2C Met-Asp%2C Met-Asn%2C or Met-Met N-terminus
+DDB0232429	Sequencing Center	mRNA	6679320	6680012	.	+	.	ID=DDB0166998;Parent=DDB_G0276345;Name=DDB0166998;description=JC2V2_0_02629: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Protein Accession Version:EAL69253.1,Inparanoid V. 5.1:DDB0166998,Protein Accession Number:EAL69253,Protein GI Number:60471291,Genome V. 2.0 ID:JC2V2_0_02629,Genome V. 1.0 ID:JC2V1_0C0012_14064
+DDB0232429	dictyBase Curator	mRNA	6679320	6680012	.	+	.	ID=DDB0238097;Parent=DDB_G0276345;Name=DDB0238097;description=dictyBase Generated Feature;translation_start=1;Note=Primary feature;Dbxref=Protein Accession Version:EAL69253.2,Protein Accession Number:EAL69253.2,Protein GI Number:165988668,UniProt:Q8SSN5
+DDB0232429	Sequencing Center	mRNA	5954835	5955486	.	+	.	ID=DDB0167147;Parent=DDB_G0275629;Name=DDB0167147;description=JC2V2_0_02342: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Protein Accession Version:EAL69565.1,Inparanoid V. 5.1:DDB0167147,Protein Accession Number:EAL69565.1,Protein GI Number:60471609,UniProt:Q86IE6,Genome V. 2.0 ID:JC2V2_0_02342,Genome V. 1.0 ID:JC2V1_0C0016_00113
+DDB0232429	Sequencing Center	exon	5954835	5954850	.	+	.	Parent=DDB0167147
+DDB0232429	Sequencing Center	CDS	5954835	5954850	.	+	.	Parent=DDB0167147
+DDB0232429	Sequencing Center	exon	5955332	5955486	.	+	.	Parent=DDB0167147
+DDB0232429	Sequencing Center	CDS	5955332	5955486	.	+	.	Parent=DDB0167147
+DDB0232429	.	gene	5954835	5955486	.	+	.	ID=DDB_G0275629;Name=DDB_G0275629
+DDB0232429	Sequencing Center	mRNA	5954835	5955486	.	+	.	ID=DDB0167147;Parent=DDB_G0275629;Name=DDB0167147;description=JC2V2_0_02342: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Protein Accession Version:EAL69565.1,Inparanoid V. 5.1:DDB0167147,Protein Accession Number:EAL69565.1,Protein GI Number:60471609,UniProt:Q86IE6,Genome V. 2.0 ID:JC2V2_0_02342,Genome V. 1.0 ID:JC2V1_0C0016_00113
+DDB0232429	.	gene	5741117	5744830	.	+	.	ID=DDB_G0275703;Name=gefN;description=putative Ras guanine nucleotide exchange factor%3B promotes the exchange of GDP for GTP on Ras small GTPases thus converting them into the active form
+DDB0232429	Sequencing Center	mRNA	5739374	5744830	.	+	.	ID=DDB0167277;Parent=DDB_G0275703;Name=DDB0167277;description=JC2V2_0_02274: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Genome V. 2.0 ID:JC2V2_0_02274,Genome V. 1.0 ID:JC2V1_0C0018_00228
+DDB0232429	dictyBase Curator	mRNA	5741117	5744830	.	+	.	ID=DDB0191325;Parent=DDB_G0275703;Name=DDB0191325;translation_start=1;Note=Primary feature;Dbxref=Protein Accession Version:EAL69602.1,Inparanoid V. 5.1:DDB0191325,Protein Accession Number:EAL69602.1,Protein GI Number:60471646,UniProt:Q8IS12
+DDB0232429	Sequencing Center	mRNA	5739374	5744830	.	+	.	ID=DDB0167277;Parent=DDB_G0275703;Name=DDB0167277;description=JC2V2_0_02274: Obtained from the Dictyostelium Genome Consortium at The Wellcome Trust Sanger Institute;translation_start=1;Dbxref=Genome V. 2.0 ID:JC2V2_0_02274,Genome V. 1.0 ID:JC2V1_0C0018_00228
+DDB0232429	Sequencing Center	exon	5739374	5740899	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	CDS	5739374	5740899	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	exon	5741041	5741418	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	CDS	5741041	5741418	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	exon	5741505	5743586	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	CDS	5741505	5743586	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	exon	5743700	5744216	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	CDS	5743700	5744216	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	exon	5744315	5744830	.	+	.	Parent=DDB0167277
+DDB0232429	Sequencing Center	CDS	5744315	5744830	.	+	.	Parent=DDB0167277

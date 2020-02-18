@@ -432,8 +432,7 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
         htseq_data[htseqfile] = HTSeqCountFile(htseqfile)
 
     # Create a TabFile for output
-<<<<<<< HEAD
-    print "Building annotated count file for output"
+    print("Building annotated count file for output")
     annotated_counts = TabFile(column_names=['exon_parent',
                                              'feature_type_exon_parent',
                                              'gene_ID',
@@ -445,20 +444,6 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
                                              'gene_length',
                                              'locus',
                                              'description'])
-=======
-    print("Building annotated count file for output")
-    annotated_counts = TabFile.TabFile(column_names=['exon_parent',
-                                                     'feature_type_exon_parent',
-                                                     'gene_ID',
-                                                     'gene_name',
-                                                     'chr',
-                                                     'start',
-                                                     'end',
-                                                     'strand',
-                                                     'gene_length',
-                                                     'locus',
-                                                     'description'])
->>>>>>> Update 'print' statements to use the 'print()' function, for Python 3 compatibility.
     for htseqfile in htseq_files:
         annotated_counts.appendColumn(htseqfile)
 
@@ -489,13 +474,8 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
     annotated_counts.write(annotated_counts_out_file,include_header=True,no_hash=True)
 
     # Make second file for the trailing table data
-<<<<<<< HEAD
-    print "Building trailing tables data file for output"
-    table_counts = TabFile(column_names=['count'])
-=======
     print("Building trailing tables data file for output")
-    table_counts = TabFile.TabFile(column_names=['count'])
->>>>>>> Update 'print' statements to use the 'print()' function, for Python 3 compatibility.
+    table_counts = TabFile(column_names=['count'])
     for htseqfile in htseq_files:
         table_counts.appendColumn(htseqfile)
     for name in htseq_data[htseq_files[0]].table():

@@ -1,0 +1,7 @@
+count	/home/pjb/projects/python3/GFFUtils/examples/data/mm10_htseq_counts.txt
+total_counted_into_genes	80
+no_feature	1780126
+ambiguous	9966
+too_low_aQual	0
+not_aligned	0
+alignment_not_unique	0

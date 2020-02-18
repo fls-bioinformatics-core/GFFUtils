@@ -1,0 +1,6 @@
+exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description	/home/pjb/projects/python3/GFFUtils/examples/data/mm10_day6_s1_htseq_counts.txt
+Gm10327	gene	None	Gm10327	chr10	33808497	33809498	-	1001	chr10:33808497-33809498		38
+Gm10334	gene	None	Gm10334	chr6	41442216	41446145	-	3929	chr6:41442216-41446145		5
+Gm10335	gene	None	Gm10335	chr10	14523078	14523545	+	467	chr10:14523078-14523545		4
+snoZ196	gene	None	snoZ196	chr1	63178686	63178720	+	34	chr1:63178686-63178720		0
+snopsi28S-3327	gene	None	snopsi28S-3327	chr4	132309464	132309600	+	136	chr4:132309464-132309600		0
