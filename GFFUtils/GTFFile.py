@@ -122,7 +122,14 @@ class GTFAttributes(object):
                 # Store quotation style for quoted values
                 self.__quotes[key] = '"'
                 value = value[1:-1]
-            self.__attributes[key] = value
+            if key not in self:
+                # New attribute
+                self.__attributes[key] = value
+            else:
+                # Attribute with multiple values
+                if not isinstance(self.__attributes[key],list):
+                    self.__attributes[key] = [self.__attributes[key]]
+                self.__attributes[key].append(value)
 
     def __getitem__(self,name):
         try:
@@ -141,10 +148,15 @@ class GTFAttributes(object):
                 quotes = self.__quotes[key]
             except KeyError:
                 quotes = ''
-            attributes.append("%s %s%s%s;" % (key,
-                                              quotes,
-                                              self[key],
-                                              quotes))
+            if not isinstance(self[key],list):
+                values = [self[key]]
+            else:
+                values = self[key]
+            for value in values:
+                attributes.append("%s %s%s%s;" % (key,
+                                                  quotes,
+                                                  value,
+                                                  quotes))
         return ' '.join(attributes)
 
 class GTFFile(GFFFile):

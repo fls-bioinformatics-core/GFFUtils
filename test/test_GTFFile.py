@@ -84,6 +84,27 @@ class TestGTFAttributes(unittest.TestCase):
         attr = GTFAttributes(attributes)
         self.assertEqual(attributes,str(attr))
 
+    def test_gtf_attributes_multiple_tags(self):
+        attributes = """gene_id "ENSMUSG00000000028"; transcript_id "ENSMUST00000115585"; exon_number "5"; gene_name "Cdc45"; gene_source "ensembl_havana"; gene_biotype "protein_coding"; transcript_name "Cdc45-002"; transcript_source "havana"; exon_id "ENSMUSE00000703491"; tag "cds_end_NF"; tag "mRNA_end_NF";"""
+        attr = GTFAttributes(attributes)
+        self.assertEqual(attr['gene_id'],'ENSMUSG00000000028')
+        self.assertEqual(attr['transcript_id'],'ENSMUST00000115585')
+        self.assertEqual(attr['exon_number'],'5')
+        self.assertEqual(attr['gene_name'],'Cdc45')
+        self.assertEqual(attr['gene_source'],'ensembl_havana')
+        self.assertEqual(attr['gene_biotype'],'protein_coding')
+        self.assertEqual(attr['transcript_name'],'Cdc45-002')
+        self.assertEqual(attr['transcript_source'],'havana')
+        self.assertEqual(attr['exon_id'],'ENSMUSE00000703491')
+        self.assertEqual(attr['tag'],['cds_end_NF','mRNA_end_NF'])
+
+    def test_recover_representation_multiple_tags(self):
+        """Test that __repr__ returns original string
+        """
+        attributes = """gene_id "ENSMUSG00000000028"; transcript_id "ENSMUST00000115585"; exon_number "5"; gene_name "Cdc45"; gene_source "ensembl_havana"; gene_biotype "protein_coding"; transcript_name "Cdc45-002"; transcript_source "havana"; exon_id "ENSMUSE00000703491"; tag "cds_end_NF"; tag "mRNA_end_NF";"""
+        attr = GTFAttributes(attributes)
+        self.assertEqual(attributes,str(attr))
+
 class TestGTFIterator(unittest.TestCase):
     """Basic tests for iterating through a GTF file
     """
