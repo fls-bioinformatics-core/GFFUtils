@@ -5,8 +5,8 @@
 #
 import sys
 import optparse
-from GTFFile import GTFIterator
-from GFFFile import ANNOTATION
+from .GTFFile import GTFIterator
+from .GFFFile import ANNOTATION
 
 def warning(msg):
     """
