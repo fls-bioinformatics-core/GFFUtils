@@ -192,7 +192,8 @@ cd test-output
 #
 # gtf2bed.py
 run_test "gtf2bed" \
-    --command "gtf2bed ${DATA_DIR}/mm10.gtf"
+    --expected "mm10.bed" \
+    --command "gtf2bed -o mm10.bed ${DATA_DIR}/mm10.gtf"
 #
 # GFF3_Annotation_Extractor with GFF input
 run_test "GFF3_Annotation_Extractor with GFF input" \
@@ -216,6 +217,11 @@ run_test "GFF3_Annotation_Extractor with GTF input using 'gene_name' for ID" \
 run_test "GFFcleaner" \
     --expected "dicty_cleaned.gff" \
     --command "GFFcleaner -o dicty_cleaned.gff ${DATA_DIR}/dicty.gff"
+#
+# GTF_extract
+run_test "GTF_extract" \
+    --expected "mm10_exons.gtf" \
+    --command "GTF_extract -o mm10_exons.gtf -f exon ${DATA_DIR}/mm10.gtf"
 #
 # Finished
 report_tests
