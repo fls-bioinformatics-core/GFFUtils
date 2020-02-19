@@ -138,6 +138,7 @@ class GFFDataLine(TabDataLine):
         self['attributes'] = GFFAttributes(self['attributes'])
         # Metadata
         self.__type = gff_line_type
+        self._format = 'gff'
 
     @property
     def type(self):
@@ -147,6 +148,13 @@ class GFFDataLine(TabDataLine):
         ANNOTATION, indicating the type of data held by the line.
         """
         return self.__type
+
+    @property
+    def format(self):
+        """Return the format e.g. 'gff'
+
+        """
+        return self._format
 
 class GFFFile(TabFile):
     """Class for handling GFF files in-memory

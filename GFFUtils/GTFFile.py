@@ -104,6 +104,7 @@ class GTFDataLine(GFFDataLine):
                              lineno=lineno,delimiter=delimiter,
                              gff_line_type=gff_line_type)
         self['attributes'] = GTFAttributes(str(self['attributes']))
+        self._format = 'gtf'
 
 class GTFAttributes(object):
     """Class for handling GTF 'attribute' data
