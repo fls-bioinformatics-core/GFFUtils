@@ -26,7 +26,7 @@ setup(
     entry_points = { 'console_scripts': [
         'GFF3_Annotation_Extractor = GFFUtils.cli.gff3_annotation_extractor:main',
         'GFFcleaner = GFFUtils.GFFcleaner:main',
-        'GTF_extract = GFFUtils.GTF_extract:main',
+        'GTF_extract = GFFUtils.cli.gtf_extract:main',
         'gtf2bed = GFFUtils.cli.gtf2bed:main',]
     },
     license = 'Artistic License',

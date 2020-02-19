@@ -1,24 +1,17 @@
-#!/bin/env python
+#!/usr/bin/env python
 #
-#     GTF_extract.py: extract selected data from GTF file
+#     gtf_extract.py: extract selected data from GTF file
 #     Copyright (C) University of Manchester 2012 Peter Briggs
 #
-######################################################################
-#
-# GTF_extract.py
-#
-#######################################################################
 
-"""GTF_extract
-
-Utility program to extract selected data items from a GTF file.
+"""Utility program to extract selected data items from a GTF file.
 """
 
 #######################################################################
 # Module metadata
 #######################################################################
 
-from . import get_version
+from .. import get_version
 __version__ = get_version()
 
 #######################################################################
@@ -27,11 +20,12 @@ __version__ = get_version()
 
 import os
 import sys
+import logging
 import optparse
-from .GFFFile import GFFIterator
-from .GFFFile import PRAGMA
-from .GFFFile import ANNOTATION
-from .GTFFile import GTFIterator
+from ..GFFFile import GFFIterator
+from ..GFFFile import PRAGMA
+from ..GFFFile import ANNOTATION
+from ..GTFFile import GTFIterator
 
 # Main program
 #
@@ -104,7 +98,8 @@ def main():
         stop = 0
         if line.type == PRAGMA:
             if line[0].startswith('##gff-version') and not opts.is_gff:
-                sys.stderr.write("Input file is GFF not GTF? Rerun using --gff option\n")
+                logging.fatal("Input file is GFF not GTF? Rerun using --gff "
+                              "option")
                 sys.exit(1)
             if opts.keep_header:
                 fp.write("%s\n" % line)
