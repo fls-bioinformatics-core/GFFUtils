@@ -167,49 +167,22 @@ class GFFAnnotationLookup(object):
           for the feature identified by the supplied ID attribute.
         """
         # Return annotation for an ID
-        print("Getting annotation for %s" % idx)
-        annotation = GFFAnnotation()
+        print("Collecting annotation for %s" % idx)
         # Parent feature data
         try:
             parent_feature = self.getDataFromID(idx)
         except KeyError:
             # No parent data
             logging.warning("No parent data for feature '%s'" % idx)
-            return annotation
-        annotation.parent_feature_name = idx
-        annotation.parent_feature_type = parent_feature['feature']
-        annotation.parent_feature_parent = parent_feature['attributes']['Parent']
+            return GFFAnnotation(idx)
         # Parent gene data
         if self.__feature_data_format != 'gtf':
             gene = self.getAncestorGene(idx)
             if not gene:
-                return annotation
-            annotation.parent_gene_name = gene['attributes']['Name']
+                return GFFAnnotation(idx,parent_feature)
         else:
             gene = parent_feature
-            annotation.parent_gene_name = gene['attributes']['gene_name']
-        annotation.chr = gene['seqname']
-        annotation.start = gene['start']
-        annotation.end = gene['end']
-        annotation.strand = gene['strand']
-        # Build description text
-        # This is all attribute data from the 'description' attribute onwards
-        # (but not including the leading "description=" keyword)
-        store_attribute = False
-        description = []
-        for attr in gene['attributes']:
-            if store_attribute:
-                description.append(attr+'='+gene['attributes'][attr])
-            if attr == 'description':
-                description.append(gene['attributes'][attr])
-                store_attribute = True
-        # Reconstruct the description string
-        description = ';'.join(description)
-        # Finally: replace any tab characters that were introduced by % decoding
-        description = description.replace('\t','    ')
-        annotation.description = description
-        # Done
-        return annotation
+        return GFFAnnotation(idx,parent_feature,gene)
 
 class GFFAnnotation(object):
     """Container class for GFF annotation data
@@ -218,18 +191,44 @@ class GFFAnnotation(object):
     object properties with the appropriate data.
     """
 
-    def __init__(self):
+    def __init__(self,name,feature=None,associated_gene=None):
         """Create a new GFFAnnotation instance
+
+        Arguments:
+          name (str): name of the feature that the
+            annotation is associated with
+          feature (GFFDataLine): optional feature data
+            to populate the annotation from
+          associated_gene (GFFDataLine): optional gene
+            data to populate the annotation from
         """
-        self.parent_feature_name = ''
-        self.parent_feature_type = ''
-        self.parent_feature_parent = ''
-        self.parent_gene_name = ''
-        self.description = ''
-        self.chr = ''
-        self.start = ''
-        self.strand = ''
-        self.end = ''
+        self.parent_feature_name = str(name)
+        # Set data from the feature, if supplied
+        if feature is not None:
+            self.parent_feature_type = feature['feature']
+            self.parent_feature_parent = feature['attributes']['Parent']
+        else:
+            self.parent_feature_type = ''
+            self.parent_feature_parent = ''
+        # Set data from the associated gene, if supplied
+        if associated_gene is not None:
+            if associated_gene.format == 'gff':
+                self.parent_gene_name = associated_gene['attributes']['Name']
+            elif associated_gene.format == 'gtf':
+                self.parent_gene_name = associated_gene['attributes']['gene_name']
+            self.chr = associated_gene['seqname']
+            self.start = associated_gene['start']
+            self.end = associated_gene['end']
+            self.strand = associated_gene['strand']
+            self.description = self.build_description_text(
+                associated_gene['attributes'])
+        else:
+            self.parent_gene_name = ''
+            self.description = ''
+            self.chr = ''
+            self.start = ''
+            self.strand = ''
+            self.end = ''
 
     @property
     def gene_locus(self):
@@ -248,6 +247,27 @@ class GFFAnnotation(object):
         if self.start and self.end:
             return int(self.end) - int(self.start)
         return ''
+
+    def build_description_text(self,attributes):
+        """
+        Build description text from gene attributes data
+
+        This is all attribute data from the 'description'
+        attribute onwards
+        """
+        store_attribute = False
+        description = []
+        for attr in attributes:
+            if store_attribute:
+                description.append(attr+'='+attributes[attr])
+            if attr == 'description':
+                description.append(attributes[attr])
+                store_attribute = True
+        # Reconstruct the description string
+        description = ';'.join(description)
+        # Finally: replace any tab characters that were introduced
+        # by % decoding
+        return description.replace('\t','    ')
 
 class HTSeqCountFile(object):
     """Class for handling data from output of htseq-count program
