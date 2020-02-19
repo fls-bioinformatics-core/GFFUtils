@@ -21,12 +21,13 @@ setup(
     url = 'https://github.com/fls-bioinformatics-core/GFFUtils',
     maintainer = 'Peter Briggs',
     maintainer_email = 'peter.briggs@manchester.ac.uk',
-    packages = ['GFFUtils',],
+    packages = ['GFFUtils',
+                'GFFUtils.cli'],
     entry_points = { 'console_scripts': [
         'GFF3_Annotation_Extractor = GFFUtils.GFF3_Annotation_Extractor:main',
         'GFFcleaner = GFFUtils.GFFcleaner:main',
         'GTF_extract = GFFUtils.GTF_extract:main',
-        'gtf2bed = GFFUtils.gtf2bed:main',]
+        'gtf2bed = GFFUtils.cli.gtf2bed:main',]
     },
     license = 'Artistic License',
     install_requires = ['genomics-bcftbx'],
