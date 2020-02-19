@@ -128,6 +128,32 @@ class TestGFFAnnotation(unittest.TestCase):
         self.assertEqual(annot.strand,"")
         self.assertEqual(annot.gene_length,"")
 
+    def test_gff_annotation_set_manually(self):
+        """
+        GFFAnnotation: data set manually
+        """
+        annot = GFFAnnotation()
+        annot.parent_feature_name = "DDB0166998"
+        annot.parent_feature_type = "mRNA"
+        annot.parent_feature_parent = "DDB_G0276345"
+        annot.parent_gene_name = "naa20"
+        annot.chr = "DDB0232429"
+        annot.start = 6679320
+        annot.end = 6680012
+        annot.strand = "+"
+        annot.description = "Description of gene naa20"
+        self.assertEqual(annot.parent_feature_name,"DDB0166998")
+        self.assertEqual(annot.parent_feature_type,"mRNA")
+        self.assertEqual(annot.parent_feature_parent,"DDB_G0276345")
+        self.assertEqual(annot.parent_gene_name,"naa20")
+        self.assertEqual(annot.gene_locus,"DDB0232429:6679320-6680012")
+        self.assertEqual(annot.description,"Description of gene naa20")
+        self.assertEqual(annot.chr,"DDB0232429")
+        self.assertEqual(annot.start,6679320)
+        self.assertEqual(annot.end,6680012)
+        self.assertEqual(annot.strand,"+")
+        self.assertEqual(annot.gene_length,692)
+
 class TestHTSeqCountFile(unittest.TestCase):
 
     def setUp(self):

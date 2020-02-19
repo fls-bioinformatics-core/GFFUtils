@@ -192,10 +192,6 @@ class GFFAnnotationLookup(object):
         annotation.start = gene['start']
         annotation.end = gene['end']
         annotation.strand = gene['strand']
-        # Locus: chromosome plus start and end data
-        annotation.gene_locus = "%s:%s-%s" % (gene['seqname'],gene['start'],gene['end'])
-        # Gene length
-        annotation.gene_length = gene['end'] - gene['start']
         # Build description text
         # This is all attribute data from the 'description' attribute onwards
         # (but not including the leading "description=" keyword)
@@ -229,13 +225,29 @@ class GFFAnnotation(object):
         self.parent_feature_type = ''
         self.parent_feature_parent = ''
         self.parent_gene_name = ''
-        self.gene_locus = ''
         self.description = ''
         self.chr = ''
         self.start = ''
         self.strand = ''
         self.end = ''
-        self.gene_length = ''
+
+    @property
+    def gene_locus(self):
+        """
+        Locus is chromosome plus start and end data
+        """
+        if self.chr and self.start and self.end:
+            return "%s:%s-%s" % (self.chr,self.start,self.end)
+        return ''
+
+    @property
+    def gene_length(self):
+        """
+        Gene length is 'end' - 'start'
+        """
+        if self.start and self.end:
+            return int(self.end) - int(self.start)
+        return ''
 
 class HTSeqCountFile(object):
     """Class for handling data from output of htseq-count program
