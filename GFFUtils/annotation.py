@@ -1,63 +1,12 @@
 #!/usr/bin/env python
 #
-#     GFF3_Annotation_Extractor.py: annotate feature counts with data from GFF
-#     Copyright (C) University of Manchester 2012 Peter Briggs, Leo Zeef
+#     annotation.py: handling GFF annotation data
+#     Copyright (C) University of Manchester 2020 Peter Briggs
 #
-#######################################################################
-#
-# GFF3_Annotation_Extractor.py
-#
-#######################################################################
 
-"""GFF3_Annotation_Extractor.py
-
-Annotate gene feature data (for example the output from one or more runs of the
-HTSeq-count program) by combining it with data about each feature's parent gene,
-taken from a GFF file.
-
-By default the program takes a single tab-delimited input file where the first column
-contains feature IDs, and appends data about the feature's parent gene.
-
-In "htseq-count" mode, one or more `htseq-count` output files should be provided as
-input, and the program will write out the data about the feature's parent gene appended
-with the counts from each input file.
-
-To generate the feature count files using `htseq-count` do e.g.:
-
-        htseq-count --type=exon -i Parent <file>.gff <file>.sam
-
-which returns counts of each exon against the name of that exon's parent.
-
-Multiple parents
-----------------
-
-It's possible for features in a GFF file to have multiple parents.
-
-In this case the output from htseq-count will reproduce the 'Parent'
-attribute verbatim, e.g. AF2312,AB2812,abc-3. However
-GFF3_Annotation_Extractor will be unable to determine the parent genes
-in this case, and so will issue a warning and continue.
-"""
-
-#######################################################################
-# Module metadata
-#######################################################################
-
-from . import get_version
-__version__ = get_version()
-
-#######################################################################
-# Import modules that this module depends on
-#######################################################################
-
-import optparse
-import sys
-import logging
 import os
-import glob
-from .GFFFile import GFFFile
-from .GFFFile import OrderedDictionary
-from .GTFFile import GTFFile
+import logging
+from .GFFFile import OrderedDictionary 
 from bcftbx.TabFile import TabFile
 
 #######################################################################
@@ -67,9 +16,30 @@ from bcftbx.TabFile import TabFile
 class GFFAnnotationLookup(object):
     """Utility class for acquiring parent gene names and data
 
-    The GFFAnnotationLookup class provides functionality for indexing
-    data from a GFF file in order to facilitate finding the parent
-    genes and associated data from the IDs of "feature parents".
+    The GFFAnnotationLookup class provides functionality for
+    indexing data from GFF or GTF files, in order to facilitate
+    finding the parent genes and associated data from the IDs of
+    "feature parents".
+
+    The following methods are available:
+
+    - getDataFromID: returns the line from the input GFF or GTF
+      where the 'ID' attribute (for GFF) or 'gene_id' (for GTF)
+      matches the supplied id
+
+    - getParentID: returns the id for the "parent" feature of
+      the supplied id, from the 'Parent' attribute (GFF only)
+
+    - getAncestorGene: returns the "ancestor" gene for the
+      feature which matches the supplied id; this is determined
+      by following the parent features until a 'gene' feature
+      is located (GFF only)
+
+    - getAnnotation: returns a GFFAnnotation object for the
+      feature that matches the supplied id
+
+    Note that for GTF data only 'gene' features are added to the
+    lookup tables.
     """
 
     def __init__(self,gff_data,id_attr=None):
@@ -88,7 +58,8 @@ class GFFAnnotationLookup(object):
         elif self.__feature_data_format == 'gtf':
             self._load_from_gtf(gff_data,id_attr=id_attr)
         else:
-            raise Exception("Unknown format for feature data: '%s'" % gff_data.format)
+            raise Exception("Unknown format for feature data: '%s'" %
+                            gff_data.format)
 
     def _load_from_gff(self,gff_data,id_attr=None):
         """Create the lookup tables from GFF input
@@ -102,7 +73,8 @@ class GFFAnnotationLookup(object):
                 idx = line['attributes'][id_attr]
                 if idx in self.__lookup_id:
                     logging.warning("Identifier '%s' is not unique: "
-                                    "feature '%s' already found" % (id_attr,idx))
+                                    "feature '%s' already found" %
+                                    (id_attr,idx))
                 # Store reference to data by ID
                 self.__lookup_id[idx] = line
                 if parent_attr in line['attributes']:
@@ -112,8 +84,9 @@ class GFFAnnotationLookup(object):
                     # Check for multiple parents
                     if len(parent.split(',')) > 1:
                         # Issue a warning but continue for now
-                        logging.warning("Multiple parents found on line %d: %s" % (line.lineno(),
-                                                                                   parent))
+                        logging.warning("Multiple parents found on "
+                                        "line %d: %s" % (line.lineno(),
+                                                         parent))
             else:
                 logging.warning("No identifier attribute (%s) on line %d" % 
                                 (id_attr,line.lineno()))
@@ -123,17 +96,17 @@ class GFFAnnotationLookup(object):
         """
         if id_attr is None:
             id_attr = 'gene_id'
-        #id_attr = 'gene_name'
         for line in gtf_data:
             # Only interested in 'gene' features
             if line['feature'] == 'gene':
                 if id_attr in line['attributes']:
                     idx = line['attributes'][id_attr]
                     self.__lookup_id[idx] = line
-                    ##self.__lookup_parent[idx] = idx
                 else:
-                    logging.warning("No '%s' attribute found on line %d: %s" %
-                                    (id_attr,line.lineno(),line))
+                    logging.warning("No '%s' attribute found on "
+                                    "line %d: %s" % (id_attr,
+                                                     line.lineno(),
+                                                     line))
 
     def getDataFromID(self,idx):
         """Return line of data from GFF file matching the ID attribute
@@ -194,53 +167,22 @@ class GFFAnnotationLookup(object):
           for the feature identified by the supplied ID attribute.
         """
         # Return annotation for an ID
-        print("Getting annotation for %s" % idx)
-        annotation = GFFAnnotation()
+        print("Collecting annotation for %s" % idx)
         # Parent feature data
         try:
             parent_feature = self.getDataFromID(idx)
         except KeyError:
             # No parent data
             logging.warning("No parent data for feature '%s'" % idx)
-            return annotation
-        annotation.parent_feature_name = idx
-        annotation.parent_feature_type = parent_feature['feature']
-        annotation.parent_feature_parent = parent_feature['attributes']['Parent']
+            return GFFAnnotation(idx)
         # Parent gene data
         if self.__feature_data_format != 'gtf':
             gene = self.getAncestorGene(idx)
             if not gene:
-                return annotation
-            annotation.parent_gene_name = gene['attributes']['Name']
+                return GFFAnnotation(idx,parent_feature)
         else:
             gene = parent_feature
-            annotation.parent_gene_name = gene['attributes']['gene_name']
-        annotation.chr = gene['seqname']
-        annotation.start = gene['start']
-        annotation.end = gene['end']
-        annotation.strand = gene['strand']
-        # Locus: chromosome plus start and end data
-        annotation.gene_locus = "%s:%s-%s" % (gene['seqname'],gene['start'],gene['end'])
-        # Gene length
-        annotation.gene_length = gene['end'] - gene['start']
-        # Build description text
-        # This is all attribute data from the 'description' attribute onwards
-        # (but not including the leading "description=" keyword)
-        store_attribute = False
-        description = []
-        for attr in gene['attributes']:
-            if store_attribute:
-                description.append(attr+'='+gene['attributes'][attr])
-            if attr == 'description':
-                description.append(gene['attributes'][attr])
-                store_attribute = True
-        # Reconstruct the description string
-        description = ';'.join(description)
-        # Finally: replace any tab characters that were introduced by % decoding
-        description = description.replace('\t','    ')
-        annotation.description = description
-        # Done
-        return annotation
+        return GFFAnnotation(idx,parent_feature,gene)
 
 class GFFAnnotation(object):
     """Container class for GFF annotation data
@@ -249,20 +191,83 @@ class GFFAnnotation(object):
     object properties with the appropriate data.
     """
 
-    def __init__(self):
+    def __init__(self,name,feature=None,associated_gene=None):
         """Create a new GFFAnnotation instance
+
+        Arguments:
+          name (str): name of the feature that the
+            annotation is associated with
+          feature (GFFDataLine): optional feature data
+            to populate the annotation from
+          associated_gene (GFFDataLine): optional gene
+            data to populate the annotation from
         """
-        self.parent_feature_name = ''
-        self.parent_feature_type = ''
-        self.parent_feature_parent = ''
-        self.parent_gene_name = ''
-        self.gene_locus = ''
-        self.description = ''
-        self.chr = ''
-        self.start = ''
-        self.strand = ''
-        self.end = ''
-        self.gene_length = ''
+        self.parent_feature_name = str(name)
+        # Set data from the feature, if supplied
+        if feature is not None:
+            self.parent_feature_type = feature['feature']
+            self.parent_feature_parent = feature['attributes']['Parent']
+        else:
+            self.parent_feature_type = ''
+            self.parent_feature_parent = ''
+        # Set data from the associated gene, if supplied
+        if associated_gene is not None:
+            if associated_gene.format == 'gff':
+                self.parent_gene_name = associated_gene['attributes']['Name']
+            elif associated_gene.format == 'gtf':
+                self.parent_gene_name = associated_gene['attributes']['gene_name']
+            self.chr = associated_gene['seqname']
+            self.start = associated_gene['start']
+            self.end = associated_gene['end']
+            self.strand = associated_gene['strand']
+            self.description = self.build_description_text(
+                associated_gene['attributes'])
+        else:
+            self.parent_gene_name = ''
+            self.description = ''
+            self.chr = ''
+            self.start = ''
+            self.strand = ''
+            self.end = ''
+
+    @property
+    def gene_locus(self):
+        """
+        Locus is chromosome plus start and end data
+        """
+        if self.chr and self.start and self.end:
+            return "%s:%s-%s" % (self.chr,self.start,self.end)
+        return ''
+
+    @property
+    def gene_length(self):
+        """
+        Gene length is 'end' - 'start'
+        """
+        if self.start and self.end:
+            return int(self.end) - int(self.start)
+        return ''
+
+    def build_description_text(self,attributes):
+        """
+        Build description text from gene attributes data
+
+        This is all attribute data from the 'description'
+        attribute onwards
+        """
+        store_attribute = False
+        description = []
+        for attr in attributes:
+            if store_attribute:
+                description.append(attr+'='+attributes[attr])
+            if attr == 'description':
+                description.append(attributes[attr])
+                store_attribute = True
+        # Reconstruct the description string
+        description = ';'.join(description)
+        # Finally: replace any tab characters that were introduced
+        # by % decoding
+        return description.replace('\t','    ')
 
 class HTSeqCountFile(object):
     """Class for handling data from output of htseq-count program
@@ -317,7 +322,7 @@ class HTSeqCountFile(object):
             else:
                 # Trailing table i.e.:
                 # too_low_aQual	0
-                self.__htseq_table[name] = count
+                self.__htseq_table[name] = int(count)
         # Finished reading from file
         fp.close()
         # Add total counted at the start of the table of counts
@@ -327,12 +332,12 @@ class HTSeqCountFile(object):
     def feature_IDs(self):
         """Return list of feature IDs from the HTSeq-count output
         """
-        return self.__htseq_counts
+        return self.__htseq_counts.keys()
 
     def count(self,feature_id):
         """Return count for feature ID
         """
-        return self.__htseq_counts[feature_id]
+        return int(self.__htseq_counts[feature_id])
 
     def table(self):
         """Return the trailing table data
@@ -347,8 +352,6 @@ class HTSeqCountFile(object):
 # Functions
 #######################################################################
 
-# annotate_feature_data
-#
 def annotate_feature_data(gff_lookup,feature_data_file,out_file):
     """Annotate feature data with gene information
 
@@ -400,8 +403,6 @@ def annotate_feature_data(gff_lookup,feature_data_file,out_file):
     print("Writing output file %s" % out_file)
     feature_data.write(out_file,include_header=True,no_hash=True)
 
-# annotate_htseq_count_data
-#
 def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
     """Annotate count data from htseq-count output with gene information
 
@@ -445,7 +446,7 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
                                              'locus',
                                              'description'])
     for htseqfile in htseq_files:
-        annotated_counts.appendColumn(htseqfile)
+        annotated_counts.appendColumn(os.path.basename(htseqfile))
 
     # Combine feature counts and parent feature data
     for feature_ID in htseq_data[htseq_files[0]].feature_IDs():
@@ -486,107 +487,3 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
         table_counts.append(data=data)
     print("Writing output file %s" % tables_out_file)
     table_counts.write(tables_out_file,include_header=True,no_hash=True)
-
-# Main program
-#
-def main():
-    """Main program
-    """
-    # Process command line
-    p = optparse.OptionParser(usage="\n  %prog OPTIONS GFF_FILE FEATURE_DATA\n"
-                              "  %prog --htseq-count OPTIONS GFF_FILE FEATURE_COUNTS "
-                              "[ FEATURE_COUNTS ... ]",
-                              version="%prog "+__version__,
-                              description="Annotate feature count data with information from a "
-                              "GFF file. Default mode is to take a single tab-delimited "
-                              "FEATURE_DATA input file where the first column consists of feature "
-                              "IDs from the input GFF_FILE; in this mode each line of "
-                              "FEATURE_DATA will be appended with data about the 'parent feature' "
-                              "and 'parent gene' matching the feature ID. In --htseq-count mode "
-                              "input consists of one or more FEATURE_COUNTS files generated using "
-                              "htseq-count (e.g. 'htseq-count -q -t exon -i Parent gff_file "
-                              "sam_file'). The annotator looks up the parent genes of each "
-                              "feature and outputs this information against the feature counts "
-                              "(in <gff_file>_annot.txt) plus the totals assigned, not "
-                              "counted etc (in <gff_file>_annot_stats.txt).")
-    p.add_option('-o',action="store",dest="out_file",default=None,
-                 help="specify output file name")
-    p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
-                 help="feature type listed in input count files (default 'exon'; if used in "
-                 "conjunction with --htseq-count option then should be the same as that specified "
-                 "when running htseq-count)")
-    p.add_option('-i','--id-attribute',action="store",dest="id_attribute",default=None,
-                 help="explicitly specify the name of the attribute to get the feature IDs from "
-                 "(defaults to 'ID' for GFF input, 'gene_id' for GTF input)")
-    p.add_option('--htseq-count',action="store_true",dest="htseq_count",default=False,
-                 help="htseq-count mode: input is one or more output FEATURE_COUNT files from "
-                 "the htseq-count program")
-    options,arguments = p.parse_args()
-
-    # Determine what mode to operate in
-    htseq_count_mode = options.htseq_count
-
-    # Initial check on arguments
-    if len(arguments) < 2:
-        p.error("Expected GFF/GTF file and at least one feature data file")
-
-    # Input GFF file
-    gff_file = arguments[0]
-    if not os.path.exists(gff_file):
-        p.error("Input GFF/GTF file %s not found" % gff_file)
-
-    # Check for wildcards in feature data file names, to emulate linux shell globbing
-    # on platforms such as Windows which don't have this built in
-    feature_data_files = []
-    for arg in arguments[1:]:
-        for filen in glob.iglob(arg):
-            if not os.path.exists(filen):
-                p.error("File '%s' not found" % filen)
-            feature_data_files.append(filen)
-    if not feature_data_files:
-        p.error("No input feature data files found")
-
-    # Final check on number of input files
-    if not htseq_count_mode and len(feature_data_files) > 1:  
-        p.error("Expected GFF/GTF file and a single feature data file")
-
-    # Feature type being considered
-    feature_type = options.feature_type
-
-    # Output file
-    if options.out_file:
-        out_file = options.out_file
-    else:
-        out_file = os.path.splitext(os.path.basename(gff_file))[0] + "_annot.txt"
-
-    # Process GFF/GTF data
-    print("Reading data from %s" % gff_file)
-    if gff_file.endswith('.gtf'):
-        gff = GTFFile(gff_file)
-    else:
-        gff = GFFFile(gff_file)
-    feature_format = gff.format.upper()
-
-    # Build lookup
-    print("Creating lookup for %s" % feature_format)
-    feature_lookup = GFFAnnotationLookup(gff,id_attr=options.id_attribute)
-
-    # Annotate input data
-    if htseq_count_mode:
-        # HTSeq-count mode
-        annotate_htseq_count_data(feature_lookup,
-                                  feature_data_files,
-                                  out_file)
-    else:
-        # Standard mode
-        annotate_feature_data(feature_lookup,
-                              feature_data_files[0],
-                              out_file)
-
-#######################################################################
-# Main program
-#######################################################################
-
-if __name__ == "__main__":
-    logging.basicConfig(format="%(levelname)s: %(message)s")
-    main()

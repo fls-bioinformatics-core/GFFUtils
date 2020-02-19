@@ -13,6 +13,8 @@ class TestGTFDataLine(unittest.TestCase):
 
     def test_gtf_data_line(self):
         line = GTFDataLine(self.gtf_line)
+        # Check format
+        self.assertEqual("gtf",line.format)
         # Check basic data items
         self.assertEqual("chr1",line['seqname'])
         self.assertEqual("HAVANA",line['source'])

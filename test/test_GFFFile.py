@@ -34,6 +34,7 @@ DDB0232428	Sequencing Center	CDS	1890	3287	.	+	.	Parent=DDB0216437
             nlines += 1
             self.assertNotEqual(line.type,None)
             self.assertEqual(line.lineno(),nlines)
+            self.assertEqual(line.format,"gff")
             if line.type == PRAGMA: npragma += 1
             if line.type == COMMENT: ncomment += 1
             if line.type == ANNOTATION: nannotation += 1
