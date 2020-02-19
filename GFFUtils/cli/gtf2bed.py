@@ -1,33 +1,36 @@
 #!/usr/bin/env python
 #
 #     gtf2bed: convert GTF contents to BED format
-#     Copyright (C) University of Manchester 2012 Peter Briggs
+#     Copyright (C) University of Manchester 2012,2020 Peter Briggs
 #
 import sys
-import optparse
 import logging
+from argparse import ArgumentParser
 from ..GTFFile import GTFIterator
 from ..GFFFile import ANNOTATION
+from .. import get_version
 
 def main():
     """
     gtf2bed: convert GTF file to BED format
 
     """
-    p = optparse.OptionParser(usage="%prog FILE.gtf",
-                              description="Convert GTF file to BED format")
-    p.add_option('-o',action="store",dest="outfile",default=None,
-                 help="write output to OUTFILE (default is to write to stdout)")
-    opts,args = p.parse_args()
-    if len(args) != 1:
-        p.error("Expected single argument (GTF file)")
+    p = ArgumentParser(description="Convert GTF file to BED format")
+    p.add_argument('gtf_in',metavar="FILE.gtf",
+                   help="GTF file to convert")
+    p.add_argument('-v','--version',action='version',
+                   version=get_version())
+    p.add_argument('-o',action="store",dest="outfile",default=None,
+                   help="write output to OUTFILE (default is to write "
+                   "to stdout)")
+    args = p.parse_args()
     # Output stream
-    if opts.outfile is None:
+    if args.outfile is None:
         fp = sys.stdout
     else:
-        fp = open(opts.outfile,'w')
+        fp = open(args.outfile,'wt')
     # Iterate over GTF
-    for line in GTFIterator(args[0]):
+    for line in GTFIterator(args.gtf_in):
         this_gene = None
         start = 0
         stop = 0
