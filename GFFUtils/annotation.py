@@ -58,7 +58,8 @@ class GFFAnnotationLookup(object):
         elif self.__feature_data_format == 'gtf':
             self._load_from_gtf(gff_data,id_attr=id_attr)
         else:
-            raise Exception("Unknown format for feature data: '%s'" % gff_data.format)
+            raise Exception("Unknown format for feature data: '%s'" %
+                            gff_data.format)
 
     def _load_from_gff(self,gff_data,id_attr=None):
         """Create the lookup tables from GFF input
@@ -72,7 +73,8 @@ class GFFAnnotationLookup(object):
                 idx = line['attributes'][id_attr]
                 if idx in self.__lookup_id:
                     logging.warning("Identifier '%s' is not unique: "
-                                    "feature '%s' already found" % (id_attr,idx))
+                                    "feature '%s' already found" %
+                                    (id_attr,idx))
                 # Store reference to data by ID
                 self.__lookup_id[idx] = line
                 if parent_attr in line['attributes']:
@@ -82,8 +84,9 @@ class GFFAnnotationLookup(object):
                     # Check for multiple parents
                     if len(parent.split(',')) > 1:
                         # Issue a warning but continue for now
-                        logging.warning("Multiple parents found on line %d: %s" % (line.lineno(),
-                                                                                   parent))
+                        logging.warning("Multiple parents found on "
+                                        "line %d: %s" % (line.lineno(),
+                                                         parent))
             else:
                 logging.warning("No identifier attribute (%s) on line %d" % 
                                 (id_attr,line.lineno()))
@@ -93,17 +96,17 @@ class GFFAnnotationLookup(object):
         """
         if id_attr is None:
             id_attr = 'gene_id'
-        #id_attr = 'gene_name'
         for line in gtf_data:
             # Only interested in 'gene' features
             if line['feature'] == 'gene':
                 if id_attr in line['attributes']:
                     idx = line['attributes'][id_attr]
                     self.__lookup_id[idx] = line
-                    ##self.__lookup_parent[idx] = idx
                 else:
-                    logging.warning("No '%s' attribute found on line %d: %s" %
-                                    (id_attr,line.lineno(),line))
+                    logging.warning("No '%s' attribute found on "
+                                    "line %d: %s" % (id_attr,
+                                                     line.lineno(),
+                                                     line))
 
     def getDataFromID(self,idx):
         """Return line of data from GFF file matching the ID attribute
