@@ -44,10 +44,10 @@ __version__ = get_version()
 # Import modules that this module depends on
 #######################################################################
 
-import optparse
 import sys
 import os
 import glob
+from argparse import ArgumentParser
 from ..GFFFile import GFFFile
 from ..GTFFile import GTFFile
 from ..annotation import GFFAnnotationLookup
@@ -60,52 +60,53 @@ def main():
     """Main program
     """
     # Process command line
-    p = optparse.OptionParser(usage="\n  %prog OPTIONS GFF_FILE FEATURE_DATA\n"
-                              "  %prog --htseq-count OPTIONS GFF_FILE FEATURE_COUNTS "
-                              "[ FEATURE_COUNTS ... ]",
-                              version="%prog "+__version__,
-                              description="Annotate feature count data with information from a "
-                              "GFF file. Default mode is to take a single tab-delimited "
-                              "FEATURE_DATA input file where the first column consists of feature "
-                              "IDs from the input GFF_FILE; in this mode each line of "
-                              "FEATURE_DATA will be appended with data about the 'parent feature' "
-                              "and 'parent gene' matching the feature ID. In --htseq-count mode "
-                              "input consists of one or more FEATURE_COUNTS files generated using "
-                              "htseq-count (e.g. 'htseq-count -q -t exon -i Parent gff_file "
-                              "sam_file'). The annotator looks up the parent genes of each "
-                              "feature and outputs this information against the feature counts "
-                              "(in <gff_file>_annot.txt) plus the totals assigned, not "
-                              "counted etc (in <gff_file>_annot_stats.txt).")
-    p.add_option('-o',action="store",dest="out_file",default=None,
-                 help="specify output file name")
-    p.add_option('-t','--type',action="store",dest="feature_type",default='exon',
-                 help="feature type listed in input count files (default 'exon'; if used in "
-                 "conjunction with --htseq-count option then should be the same as that specified "
-                 "when running htseq-count)")
-    p.add_option('-i','--id-attribute',action="store",dest="id_attribute",default=None,
-                 help="explicitly specify the name of the attribute to get the feature IDs from "
-                 "(defaults to 'ID' for GFF input, 'gene_id' for GTF input)")
-    p.add_option('--htseq-count',action="store_true",dest="htseq_count",default=False,
-                 help="htseq-count mode: input is one or more output FEATURE_COUNT files from "
-                 "the htseq-count program")
-    options,arguments = p.parse_args()
+    p = ArgumentParser(description="Annotate feature count data with information "
+                       "from a GFF or GTF file. Default mode is to take a single "
+                       "tab-delimited FEATURE_DATA input file where the first column "
+                       "consists of feature IDs from the input GFF_FILE; in this "
+                       "mode each line of FEATURE_DATA will be appended with data "
+                       "about the 'parent feature' and 'parent gene' matching the "
+                       "feature ID. In --htseq-count mode input consists of one or "
+                       "more FEATURE_COUNTS files generated using htseq-count (e.g. "
+                       "'htseq-count -q -t exon -i Parent gff_file sam_file'). The "
+                       "annotator looks up the parent genes of each feature and "
+                       "outputs this information against the feature counts "
+                       "(in <GFF_FILE>_annot.txt) plus the totals assigned, not "
+                       "counted etc (in <GFF_FILE>_annot_stats.txt).")
+    p.add_argument('-v','--version',action='version',version="%{prog}s "+__version__)
+    p.add_argument('gff_file',metavar="GFF_FILE",
+                   help="GFF or GTF file to get annotation data from")
+    p.add_argument('feature_files',metavar="FEATURE_FILE",nargs="+",
+                   help="feature data to annotate")
+    p.add_argument('-o',action="store",dest="out_file",default=None,
+                   help="specify output file name")
+    p.add_argument('-t','--type',action="store",dest="feature_type",default='exon',
+                   help="feature type listed in input count files (default 'exon'; "
+                   "if used in conjunction with --htseq-count option then should be "
+                   "the same as that specified when running htseq-count)")
+    p.add_argument('-i','--id-attribute',action="store",dest="id_attribute",
+                   default=None,
+                   help="explicitly specify the name of the attribute to get the "
+                   "feature IDs from (defaults to 'ID' for GFF input, 'gene_id' for "
+                   "GTF input)")
+    p.add_argument('--htseq-count',action="store_true",dest="htseq_count",
+                   default=False,
+                   help="htseq-count mode: input is one or more FEATURE_FILEs "
+                   "output from htseq-count")
+    args = p.parse_args()
 
     # Determine what mode to operate in
-    htseq_count_mode = options.htseq_count
-
-    # Initial check on arguments
-    if len(arguments) < 2:
-        p.error("Expected GFF/GTF file and at least one feature data file")
+    htseq_count_mode = args.htseq_count
 
     # Input GFF file
-    gff_file = arguments[0]
+    gff_file = args.gff_file
     if not os.path.exists(gff_file):
         p.error("Input GFF/GTF file %s not found" % gff_file)
 
     # Check for wildcards in feature data file names, to emulate linux shell globbing
     # on platforms such as Windows which don't have this built in
     feature_data_files = []
-    for arg in arguments[1:]:
+    for arg in args.feature_files:
         for filen in glob.iglob(arg):
             if not os.path.exists(filen):
                 p.error("File '%s' not found" % filen)
@@ -118,11 +119,11 @@ def main():
         p.error("Expected GFF/GTF file and a single feature data file")
 
     # Feature type being considered
-    feature_type = options.feature_type
+    feature_type = args.feature_type
 
     # Output file
-    if options.out_file:
-        out_file = options.out_file
+    if args.out_file:
+        out_file = args.out_file
     else:
         out_file = os.path.splitext(os.path.basename(gff_file))[0] + "_annot.txt"
 
@@ -136,7 +137,7 @@ def main():
 
     # Build lookup
     print("Creating lookup for %s" % feature_format)
-    feature_lookup = GFFAnnotationLookup(gff,id_attr=options.id_attribute)
+    feature_lookup = GFFAnnotationLookup(gff,id_attr=args.id_attribute)
 
     # Annotate input data
     if htseq_count_mode:
