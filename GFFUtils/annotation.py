@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 #
 #     annotation.py: handling GFF annotation data
 #     Copyright (C) University of Manchester 2020 Peter Briggs
@@ -266,7 +266,7 @@ class HTSeqCountFile(object):
             else:
                 # Trailing table i.e.:
                 # too_low_aQual	0
-                self.__htseq_table[name] = count
+                self.__htseq_table[name] = int(count)
         # Finished reading from file
         fp.close()
         # Add total counted at the start of the table of counts
@@ -276,12 +276,12 @@ class HTSeqCountFile(object):
     def feature_IDs(self):
         """Return list of feature IDs from the HTSeq-count output
         """
-        return self.__htseq_counts
+        return self.__htseq_counts.keys()
 
     def count(self,feature_id):
         """Return count for feature ID
         """
-        return self.__htseq_counts[feature_id]
+        return int(self.__htseq_counts[feature_id])
 
     def table(self):
         """Return the trailing table data
@@ -390,7 +390,7 @@ def annotate_htseq_count_data(gff_lookup,htseq_files,out_file):
                                              'locus',
                                              'description'])
     for htseqfile in htseq_files:
-        annotated_counts.appendColumn(htseqfile)
+        annotated_counts.appendColumn(os.path.basename(htseqfile))
 
     # Combine feature counts and parent feature data
     for feature_ID in htseq_data[htseq_files[0]].feature_IDs():
