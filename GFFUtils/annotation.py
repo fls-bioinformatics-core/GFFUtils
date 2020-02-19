@@ -16,9 +16,30 @@ from bcftbx.TabFile import TabFile
 class GFFAnnotationLookup(object):
     """Utility class for acquiring parent gene names and data
 
-    The GFFAnnotationLookup class provides functionality for indexing
-    data from a GFF file in order to facilitate finding the parent
-    genes and associated data from the IDs of "feature parents".
+    The GFFAnnotationLookup class provides functionality for
+    indexing data from GFF or GTF files, in order to facilitate
+    finding the parent genes and associated data from the IDs of
+    "feature parents".
+
+    The following methods are available:
+
+    - getDataFromID: returns the line from the input GFF or GTF
+      where the 'ID' attribute (for GFF) or 'gene_id' (for GTF)
+      matches the supplied id
+
+    - getParentID: returns the id for the "parent" feature of
+      the supplied id, from the 'Parent' attribute (GFF only)
+
+    - getAncestorGene: returns the "ancestor" gene for the
+      feature which matches the supplied id; this is determined
+      by following the parent features until a 'gene' feature
+      is located (GFF only)
+
+    - getAnnotation: returns a GFFAnnotation object for the
+      feature that matches the supplied id
+
+    Note that for GTF data only 'gene' features are added to the
+    lookup tables.
     """
 
     def __init__(self,gff_data,id_attr=None):
