@@ -1,4 +1,4 @@
-exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description	/home/pjb/projects/python3/GFFUtils/examples/data/dicty_htseq_counts.dimA.txt	/home/pjb/projects/python3/GFFUtils/examples/data/dicty_htseq_counts.AXA4.txt
+exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description	dicty_htseq_counts.dimA.txt	dicty_htseq_counts.AXA4.txt
 DDB0166998	mRNA	DDB_G0276345	naa20	DDB0232429	6679320	6680012	+	692	DDB0232429:6679320-6680012	ortholog of the conserved catalytic subunit of the NatB N-terminal acetyltransferase (NAA20), which in yeast catalyzes the transfer of an acetyl group to the N-terminal residue of a protein that contains a Met-Glu, Met-Asp, Met-Asn, or Met-Met N-terminus	1	2
 DDB0167147	mRNA	DDB_G0275629	DDB_G0275629	DDB0232429	5954835	5955486	+	651	DDB0232429:5954835-5955486		1	0
 DDB0167277	mRNA	DDB_G0275703	gefN	DDB0232429	5741117	5744830	+	3713	DDB0232429:5741117-5744830	putative Ras guanine nucleotide exchange factor; promotes the exchange of GDP for GTP on Ras small GTPases thus converting them into the active form	37	16
