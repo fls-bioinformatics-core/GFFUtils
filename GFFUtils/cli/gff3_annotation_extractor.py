@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 #
-#     GFF3_Annotation_Extractor.py: annotate feature counts with data from GFF
-#     Copyright (C) University of Manchester 2012 Peter Briggs, Leo Zeef
+#     gff3_annotation_extractor.py: annotate feature counts with data from GFF
+#     Copyright (C) University of Manchester 2012,2020 Peter Briggs, Leo Zeef
 #
-#######################################################################
-#
-# GFF3_Annotation_Extractor.py
-#
-#######################################################################
 
-"""GFF3_Annotation_Extractor.py
-
+"""
 Annotate gene feature data (for example the output from one or more runs of the
 HTSeq-count program) by combining it with data about each feature's parent gene,
 taken from a GFF file.
@@ -43,7 +37,7 @@ in this case, and so will issue a warning and continue.
 # Module metadata
 #######################################################################
 
-from . import get_version
+from .. import get_version
 __version__ = get_version()
 
 #######################################################################
@@ -55,9 +49,9 @@ import sys
 import logging
 import os
 import glob
-from .GFFFile import GFFFile
-from .GFFFile import OrderedDictionary
-from .GTFFile import GTFFile
+from ..GFFFile import GFFFile
+from ..GFFFile import OrderedDictionary
+from ..GTFFile import GTFFile
 from bcftbx.TabFile import TabFile
 
 #######################################################################

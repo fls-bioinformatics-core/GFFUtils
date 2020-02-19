@@ -24,7 +24,7 @@ setup(
     packages = ['GFFUtils',
                 'GFFUtils.cli'],
     entry_points = { 'console_scripts': [
-        'GFF3_Annotation_Extractor = GFFUtils.GFF3_Annotation_Extractor:main',
+        'GFF3_Annotation_Extractor = GFFUtils.cli.gff3_annotation_extractor:main',
         'GFFcleaner = GFFUtils.GFFcleaner:main',
         'GTF_extract = GFFUtils.GTF_extract:main',
         'gtf2bed = GFFUtils.cli.gtf2bed:main',]
