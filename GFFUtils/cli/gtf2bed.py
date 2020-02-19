@@ -5,14 +5,9 @@
 #
 import sys
 import optparse
+import logging
 from ..GTFFile import GTFIterator
 from ..GFFFile import ANNOTATION
-
-def warning(msg):
-    """
-    Print message to stderr
-    """
-    sys.stderr.write("%s\n" % msg)
 
 def main():
     """
@@ -56,26 +51,26 @@ def main():
                 if this_gene == attributes['gene_name']:
                     print_details = False
                     if line['start'] < start:
-                        warning("WARNING Start is before gene start")
+                        logging.warn("WARNING Start is before gene start")
                         print_details = True
                     elif line['end'] > stop:
-                        warning("WARNING End is after gene end (%s > %s)" %
-                                (line['end'],stop))
+                        logging.warn("WARNING End is after gene end "
+                                     "(%s > %s)" % (line['end'],stop))
                         print_details = True
                     if line['end'] < start:
-                        warning("WARNING End is before gene start")
+                        logging.warn("WARNING End is before gene start")
                         print_details = True
                     elif line['start'] > stop:
-                        warning("WARNING Start is after gene end")
+                        logging.warn("WARNING Start is after gene end")
                         print_details = True
                     if print_details:
-                        warning("%s\t%s\t%s\t%s\t%s\t%s" %
-                                (attributes['gene_name'],
-                                 line['seqname'],
-                                 line['start'],
-                                 line['end'],
-                                 line['strand'],
-                                 line['feature']))
+                        logging.warn("%s\t%s\t%s\t%s\t%s\t%s" %
+                                     (attributes['gene_name'],
+                                      line['seqname'],
+                                      line['start'],
+                                      line['end'],
+                                      line['strand'],
+                                      line['feature']))
     fp.close()
         
 if __name__ == "__main__":
