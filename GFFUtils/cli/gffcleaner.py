@@ -1,16 +1,9 @@
 #!/bin/env python
 #
-#     GFFcleaner.py: various functions to clean up GFF files
-#     Copyright (C) University of Manchester 2011-2014 Peter Briggs
-#
-######################################################################
-#
-# GFFcleaner.py
-#
-#######################################################################
+#     gffcleaner.py: various functions to clean up GFF files
+#     Copyright (C) University of Manchester 2011-2014,2020 Peter Briggs
 
-"""GFFcleaner
-
+"""
 Utility program which can perform various operations to 'clean' a GFF
 file.
 """
@@ -18,7 +11,7 @@ file.
 # Module metadata
 #######################################################################
 
-from . import get_version
+from .. import get_version
 __version__ = get_version()
 
 #######################################################################
@@ -28,10 +21,10 @@ __version__ = get_version()
 import os,sys
 import logging
 import optparse
-from .GFFFile import GFFFile
-from .GFFFile import GFFAttributes
-from .GFFFile import GFFID
-from .GFFFile import OrderedDictionary
+from ..GFFFile import GFFFile
+from ..GFFFile import GFFAttributes
+from ..GFFFile import GFFID
+from ..GFFFile import OrderedDictionary
 from bcftbx.TabFile import TabFile
 
 #######################################################################
