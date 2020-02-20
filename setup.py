@@ -22,6 +22,7 @@ setup(
     maintainer = 'Peter Briggs',
     maintainer_email = 'peter.briggs@manchester.ac.uk',
     packages = ['GFFUtils',
+                'GFFUtils.clean',
                 'GFFUtils.cli'],
     entry_points = { 'console_scripts': [
         'GFF3_Annotation_Extractor = GFFUtils.cli.gff3_annotation_extractor:main',
