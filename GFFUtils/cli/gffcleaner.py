@@ -18,9 +18,10 @@ __version__ = get_version()
 # Import modules
 #######################################################################
 
-import os,sys
+import os
+import sys
 import logging
-import optparse
+from argparse import ArgumentParser
 from ..GFFFile import GFFFile
 from ..GFFFile import OrderedDictionary
 from ..clean.sgd import GroupByID
@@ -42,80 +43,106 @@ def main():
     # Set up logging format
     logging.basicConfig(format='%(levelname)s: %(message)s')
 
-    p = optparse.OptionParser(usage="%prog [options] <file>.gff",
-                              version="%prog "+__version__,
-                              description=
-                              "Utility to perform various 'cleaning' operations on a GFF file.")
-    p.add_option('-o',action='store',dest='output_gff',default=None,
-                 help="Name of output GFF file (default is '<file>_clean.gff')")
-    p.add_option('--prepend',action='store',dest='prepend_str',default=None,
-                 help="String to prepend to seqname in first column")
-    p.add_option('--clean',action='store_true',dest='do_clean',
-                 help="Perform all the 'cleaning' manipulations on the input data (equivalent "
-                 "to specifying all of --clean-score, --clean-replace-attributes, "
-                 "--clean-exclude-attributes and --clean-group-sgds)")
-    p.add_option('--clean-score',action='store_true',dest='do_clean_score',
-                 help="Replace 'Anc_*' and blanks in 'score' field with zeroes")
-    p.add_option('--clean-replace-attributes',action='store_true',
-                 dest='do_clean_replace_attributes',
-                 help="Replace 'ID', 'Gene', 'Parent' and 'Name' attributes with the value "
-                 "of the SGD attribute, if present")
-    p.add_option('--clean-exclude-attributes',action='store_true',
-                 dest='do_clean_exclude_attributes',
-                 help="Remove the 'kaks', 'kaks2' and 'ncbi' attributes (to remove "
-                 "arbitrary attributes, see the --remove-attribute=... option)")
-    p.add_option('--clean-group-sgds',action='store_true',dest='do_clean_group_sgds',
-                 help="Group features with the same SGD by adding unique numbers to the 'ID' "
-                 "attributes; IDs will have the form 'CDS:<SGD>:<n>' (where n is a unique "
-                 "number for a given SGD)")
-    p.add_option('--report-duplicates',action='store_true',dest='report_duplicates',
-                 help="Report duplicate SGD names and write list to <file>_duplicates.gff "
-                 "with line numbers, chromosome, start coordinate and strand.")
-    p.add_option('--resolve-duplicates',action='store',dest='mapping_file',default=None,
-                 help="Resolve duplicate SGDs by matching against 'best' genes in the supplied "
-                 "mapping file; other non-matching genes are discarded and written to "
-                 "<file>_discarded.gff.")
-    p.add_option('--discard-unresolved',action='store_true',dest='discard_unresolved',
-                 help="Discard any unresolved duplicates, which are written to "
-                 "<file>_unresolved.gff.")
-    p.add_option('--insert-missing',action='store',dest='gene_file',default=None,
-                 help="Insert genes from gene file with SGD names that don't appear in the "
-                 "input GFF. If GENE_FILE is blank ('='s must still be present) then the mapping "
-                 "file supplied with the --resolve-duplicates option will be used instead.")
-    p.add_option('--add-exon-ids',action='store_true',dest='add_exon_ids',default=False,
-                 help="For exon features without an ID attribute, construct and insert an "
-                 "ID of the form 'exon:<Parent>:<n>' (where n is a unique number).")
-    p.add_option('--add-missing-ids',action='store_true',dest='add_missing_ids',default=False,
-                 help="For features without an ID attribute, construct and insert a "
-                 "generated ID of the form '<feature>:<Parent>:<n>' (where n is a unique "
-                 "number).")
-    p.add_option('--no-percent-encoding',action='store_true',dest='no_encoding',default=False,
-                 help="Convert encoded attributes to the correct characters in "
-                 "the output GFF. WARNING this may result in a non-cannonical GFF that can't "
-                 "be read correctly by this or other programs.")
-    p.add_option('--remove-attribute',action='append',dest='rm_attr',
-                 help="Remove attribute RM_ATTR from the list of attributes for all records "
-                 "in the GFF file (can be specified multiple times)")
-    p.add_option('--strict-attributes',action='store_true',dest='strict_attributes',
-                 help="Remove attributes that don't conform to the KEY=VALUE format")
-    p.add_option('--debug',action='store_true',dest='debug',
-                 help="Print debugging information")
+    p = ArgumentParser(description="Utility to perform various 'cleaning' "
+                       "operations on a GFF file")
+    p.add_argument('gff_file',metavar="FILE.gff",
+                   help="GFF file to operate on")
+    p.add_argument('-v','--version',action='version',
+                   version="%{prog}s "+__version__)
+    p.add_argument('-o',action='store',dest='output_gff',
+                   default=None,
+                   help="Name of output GFF file (default is "
+                   "'<file>_clean.gff')")
+    p.add_argument('--prepend',action='store',dest='prepend_str',
+                   default=None,
+                   help="String to prepend to seqname in first column")
+    p.add_argument('--clean',action='store_true',dest='do_clean',
+                   help="Perform all the 'cleaning' manipulations on the "
+                   "input data (equivalent to specifying all of "
+                   "--clean-score, --clean-replace-attributes, "
+                   "--clean-exclude-attributes and --clean-group-sgds)")
+    p.add_argument('--clean-score',action='store_true',
+                   dest='do_clean_score',
+                   help="Replace 'Anc_*' and blanks in 'score' field with "
+                   "zeroes")
+    p.add_argument('--clean-replace-attributes',action='store_true',
+                   dest='do_clean_replace_attributes',
+                   help="Replace 'ID', 'Gene', 'Parent' and 'Name' "
+                   "attributes with the value of the SGD attribute, if "
+                   "present")
+    p.add_argument('--clean-exclude-attributes',action='store_true',
+                   dest='do_clean_exclude_attributes',
+                   help="Remove the 'kaks', 'kaks2' and 'ncbi' attributes "
+                   "(to remove arbitrary attributes, see the "
+                   "--remove-attribute=... option)")
+    p.add_argument('--clean-group-sgds',action='store_true',
+                   dest='do_clean_group_sgds',
+                   help="Group features with the same SGD by adding "
+                   "unique numbers to the 'ID' attributes; IDs will have "
+                   "the form 'CDS:<SGD>:<n>' (where n is a unique "
+                   "number for a given SGD)")
+    p.add_argument('--report-duplicates',action='store_true',
+                   dest='report_duplicates',
+                   help="Report duplicate SGD names and write list to "
+                   "<file>_duplicates.gff with line numbers, chromosome, "
+                   "start coordinate and strand.")
+    p.add_argument('--resolve-duplicates',action='store',dest='mapping_file',
+                   default=None,
+                   help="Resolve duplicate SGDs by matching against 'best' "
+                   "genes in the supplied mapping file; other non-matching "
+                   "genes are discarded and written to "
+                   "<file>_discarded.gff.")
+    p.add_argument('--discard-unresolved',action='store_true',
+                   dest='discard_unresolved',
+                   help="Discard any unresolved duplicates, which are "
+                   "written to <file>_unresolved.gff.")
+    p.add_argument('--insert-missing',action='store',dest='gene_file',
+                   default=None,
+                   help="Insert genes from gene file with SGD names that "
+                   "don't appear in the input GFF. If GENE_FILE is blank "
+                   "('='s must still be present) then the mapping "
+                   "file supplied with the --resolve-duplicates option will "
+                   "be used instead.")
+    p.add_argument('--add-exon-ids',action='store_true',dest='add_exon_ids',
+                   default=False,
+                   help="For exon features without an ID attribute, "
+                   "construct and insert an ID of the form "
+                   "'exon:<Parent>:<n>' (where n is a unique number).")
+    p.add_argument('--add-missing-ids',action='store_true',
+                   dest='add_missing_ids',default=False,
+                   help="For features without an ID attribute, construct "
+                   "and insert a generated ID of the form "
+                   "'<feature>:<Parent>:<n>' (where n is a unique "
+                   "number).")
+    p.add_argument('--no-percent-encoding',action='store_true',
+                   dest='no_encoding',default=False,
+                   help="Convert encoded attributes to the correct "
+                   "characters in the output GFF. WARNING this may result "
+                   "in a non-cannonical GFF that can be read correctly by "
+                   "this or other programs.")
+    p.add_argument('--remove-attribute',action='append',dest='rm_attr',
+                   help="Remove attribute RM_ATTR from the list of "
+                   "attributes for all records in the GFF file (can be "
+                   "specified multiple times)")
+    p.add_argument('--strict-attributes',action='store_true',
+                   dest='strict_attributes',
+                   help="Remove attributes that don't conform to the "
+                   "KEY=VALUE format")
+    p.add_argument('--debug',action='store_true',dest='debug',
+                   help="Print debugging information")
 
     # Process the command line
-    options,arguments = p.parse_args()
+    args = p.parse_args()
 
     # Check for debugging
-    if options.debug:
+    if args.debug:
         # Turn on debugging output
         logging.getLogger().setLevel(logging.DEBUG)
 
-    # Input files
-    if len(arguments) != 1:
-        p.error("input GFF file required")
-    else:
-        infile = arguments[0]
-        if not os.path.exists(infile):
-            p.error("Input file '%s' not found" % infile)
+    # Input file
+    infile = args.gff_file
+    if not os.path.exists(infile):
+        p.error("Input file '%s' not found" % infile)
 
     # Report version
     p.print_version()
@@ -123,9 +150,9 @@ def main():
     # Set flags based on command line
 
     # String to prepend to first column
-    prepend_str = options.prepend_str
+    prepend_str = args.prepend_str
     # Cleaning options
-    if options.do_clean:
+    if args.do_clean:
         # Update values in the "score" column
         clean_score = True
         # Clean up the "attributes" column
@@ -135,47 +162,47 @@ def main():
         group_SGDs = True
     else:
         # Set options based on user input
-        clean_score = options.do_clean_score
-        clean_replace_attributes = options.do_clean_replace_attributes
-        clean_exclude_attributes = options.do_clean_exclude_attributes
-        group_SGDs = options.do_clean_group_sgds
+        clean_score = args.do_clean_score
+        clean_replace_attributes = args.do_clean_replace_attributes
+        clean_exclude_attributes = args.do_clean_exclude_attributes
+        group_SGDs = args.do_clean_group_sgds
     # Report duplicate names
-    report_duplicates = options.report_duplicates
+    report_duplicates = args.report_duplicates
     # Resolve duplicated genes using CDS file
-    if options.mapping_file is not None:
+    if args.mapping_file is not None:
         resolve_duplicates = True
-        cdsfile = options.mapping_file
+        cdsfile = args.mapping_file
     else:
         resolve_duplicates = False
         cdsfile = None
     # Discard unresolved duplicates
-    discard_unresolved = options.discard_unresolved
+    discard_unresolved = args.discard_unresolved
     # Insert missing genes
-    if options.gene_file is not None:
+    if args.gene_file is not None:
         insert_missing = True
-        if options.gene_file:
-            genefile = options.gene_file
+        if args.gene_file:
+            genefile = args.gene_file
         else:
             genefile = cdsfile
     else:
         insert_missing = False
         genefile = None
     # Add an artificial exon ID attribute
-    add_exon_ids = options.add_exon_ids
+    add_exon_ids = args.add_exon_ids
     # Add generated ID attributes
-    add_missing_ids = options.add_missing_ids
+    add_missing_ids = args.add_missing_ids
     # Suppress encoding of attributes on output
-    no_attribute_encoding = options.no_encoding
+    no_attribute_encoding = args.no_encoding
     # Remove attributes that don't conform to KEY=VALUE format
-    strict_attributes = options.strict_attributes
+    strict_attributes = args.strict_attributes
 
     # Name for output files
-    if not options.output_gff:
+    if not args.output_gff:
         outbase = os.path.splitext(os.path.basename(infile))[0]
         outfile = outbase+'_clean.gff'
     else:
-        outbase = os.path.splitext(os.path.basename(options.output_gff))[0]
-        outfile = options.output_gff
+        outbase = os.path.splitext(os.path.basename(args.output_gff))[0]
+        outfile = args.output_gff
     print("Input : %s" % infile)
     print("Output: %s" % outfile)
     dupfile = outbase+'_duplicates.txt'
@@ -403,11 +430,11 @@ def main():
         gff_data = GFFAddIDAttributes(gff_data)
 
     # Strip attributes requested for removal
-    if options.rm_attr:
+    if args.rm_attr:
         print("Removing the following attributes from all records:")
-        for attr in options.rm_attr:
+        for attr in args.rm_attr:
             print("\t* %s" % attr)
-        GFFUpdateAttributes(gff_data,exclude_keys=options.rm_attr)
+        GFFUpdateAttributes(gff_data,exclude_keys=args.rm_attr)
 
     # Remove attributes that don't conform to KEY=VALUE format
     if strict_attributes:
