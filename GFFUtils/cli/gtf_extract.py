@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 #     gtf_extract.py: extract selected data from GTF file
-#     Copyright (C) University of Manchester 2012 Peter Briggs
+#     Copyright (C) University of Manchester 2012,2020 Peter Briggs
 #
 
 """Utility program to extract selected data items from a GTF file.
@@ -38,7 +38,7 @@ def main():
                        "on GFF files provided the --gff option is specified.")
     p.add_argument('gtf_file',metavar="GTF_FILE",
                    help="input GTF file to extract data items from")
-    p.add_argument('-v','--version',action="version",version="%{prog}s "+__version__)
+    p.add_argument('-v','--version',action="version",version=__version__)
     p.add_argument('-f','--feature',action="store",dest="feature_type",default=None,
                    help="only extract data for lines where feature is FEATURE_TYPE")
     p.add_argument('--fields',action="store",dest="field_list",default=None,
