@@ -73,7 +73,7 @@ def main():
                        "outputs this information against the feature counts "
                        "(in <GFF_FILE>_annot.txt) plus the totals assigned, not "
                        "counted etc (in <GFF_FILE>_annot_stats.txt).")
-    p.add_argument('-v','--version',action='version',version="%{prog}s "+__version__)
+    p.add_argument('-v','--version',action='version',version=__version__)
     p.add_argument('gff_file',metavar="GFF_FILE",
                    help="GFF or GTF file to get annotation data from")
     p.add_argument('feature_files',metavar="FEATURE_FILE",nargs="+",
