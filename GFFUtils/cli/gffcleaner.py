@@ -171,7 +171,7 @@ def main():
         p.error("Input file '%s' not found" % infile)
 
     # Report version
-    p.print_version()
+    print("gffcleaner %s" % __version__)
 
     # Set flags based on command line
 
