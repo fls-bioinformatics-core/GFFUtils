@@ -188,6 +188,14 @@ class TestGFFAttributes(unittest.TestCase):
         del(nokeys[:])
         self.assertEqual(attr.nokeys(),[])
 
+    def test_contains_attribute(self):
+        """
+        GFFAttributes: check if attribute is present
+        """
+        attr = GFFAttributes("ID=GOAT_ENSP00000332668;Shift=2;589008-589009;589535-589539")
+        self.assertTrue("ID" in attr)
+        self.assertFalse("Parent" in attr)
+
 class TestGFFID(unittest.TestCase):
     """Unit tests for GFFID class
     """
@@ -264,3 +272,12 @@ class TestOrderedDictionary(unittest.TestCase):
                 pass
         except KeyError:
             self.fail("Iteration over OrderedDictionary failed")
+
+    def test_contains(self):
+        """
+        OrderedDictionary: test if key is present
+        """
+        d = OrderedDictionary()
+        d['hello'] = 'goodbye'
+        self.assertTrue("hello" in d)
+        self.assertFalse("goodbye" in d)
