@@ -25,11 +25,11 @@ setup(
                 'GFFUtils.clean',
                 'GFFUtils.cli'],
     entry_points = { 'console_scripts': [
-        'gff3_annotation_extractor = GFFUtils.cli.gff3_annotation_extractor:main',
+        'gff_annotation_extractor = GFFUtils.cli.gff_annotation_extractor:main',
         'gff_cleaner = GFFUtils.cli.gff_cleaner:main',
         'gtf_extract = GFFUtils.cli.gtf_extract:main',
         'gtf2bed = GFFUtils.cli.gtf2bed:main',
-        'GFF3_Annotation_Extractor = GFFUtils.cli.gff3_annotation_extractor:main',
+        'GFF3_Annotation_Extractor = GFFUtils.cli.gff_annotation_extractor:main',
         'GFFcleaner = GFFUtils.cli.gff_cleaner:main',
         'GTF_extract = GFFUtils.cli.gtf_extract:main',]
     },

@@ -1,10 +1,10 @@
-``GFF3_Annotation_Extractor``: annotate gene feature data
+``gff_annotation_extractor``: annotate gene feature data
 =========================================================
 
 Overview
 --------
 
-``GFF3_Annotation_Extractor`` takes gene feature data (for example the
+``gff_annotation_extractor`` takes gene feature data (for example the
 output from one or more runs of the HTSeq-count program) and combines
 it with data about each feature's parent gene from a GFF file.
 
@@ -22,23 +22,23 @@ To generate the feature count files using ``htseq-count`` do e.g.::
 
 which returns counts of each exon against the name of that exon's parent.
 
-``GFF3_Annotation_Extractor`` will match up the exon parent with its
+``gff_annotation_extractor`` will match up the exon parent with its
 parent gene and output the counts against gene names.
 
 .. note::
 
-   ``GFF3_Annotation_Extractor`` can also be used with GTF input.
+   ``gff_annotation_extractor`` can also be used with GTF input.
 
 Usage and options
 -----------------
 
 General usage syntax::
 
-    GFF3_Annotation_Extractor.py OPTIONS <file>.gff FEATURE_DATA
+    gff_annotation_extractor OPTIONS <file>.gff FEATURE_DATA
 
 or::
 
-    GFF3_Annotation_Extractor.py --htseq-count OPTIONS <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
+    gff_annotation_extractor --htseq-count OPTIONS <file>.gff FEATURE_COUNTS [FEATURE_COUNTS2 ...]
 
 if working with ``htseq-count`` data.
 
