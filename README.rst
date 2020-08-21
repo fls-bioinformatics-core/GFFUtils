@@ -14,30 +14,46 @@ Full documentation is available at http://gffutils.readthedocs.org/
 Installation
 ------------
 
-It is recommended to use::
+To install the latest version of ``GFFUtils``, download the latest
+release from as a ``tar.gz`` file from:
 
-    pip install -r requirements.txt
-    pip install .
+https://github.com/fls-bioinformatics-core/GFFUtils/releases
 
-from within the top-level source directory to install the package.
+For example for version 0.10.3, download ``GFFUtils-0.10.3.tar.gz``.
 
-To use the package without installing it first you will need to add the
-directory to your ``PYTHONPATH`` environment.
+Unpack the code using:
 
-To install directly from github using ``pip``::
+::
 
-    pip install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/master/requirements.txt
-    pip install git+https://github.com/fls-bioinformatics-core/GFFUtils.git
+   tar xzf GFFUtils-0.10.3.tar.gz
 
-(In either of these latter two cases you will also need to install the
-``genomics-bcftbx`` package from
-https://github.com/fls-bioinformatics-core/genomics)
+which will unpack into a new directory called e.g. ``GFFUtils-0.10.3``.
+
+It is recommended to install the code into a Python virtual
+environment, which you can create by doing:
+
+::
+
+   virtualenv venv
+   source venv/bin/activate
+   pip install -r ./GFFUtils-0.10.3/requirements.txt
+   pip install ./GFFUtils-0.10.3/
+
+To install the developmental code directly from GitHub:
+
+::
+
+    pip install -r https://raw.githubusercontent.com/fls-bioinformatics-core/GFFUtils/devel/requirements.txt
+    pip install git+https://github.com/fls-bioinformatics-core/GFFUtils.git@devel
 
 Note that ``GFFUtils`` is currently supported for the following Python
 versions:
 
 * 2.7
+* 3.5
+* 3.6
 * 3.7
+* 3.8
 
 but support for Python 2.7 is likely to be dropped in the near future.
 
