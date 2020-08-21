@@ -29,9 +29,9 @@ setup(
         'gff_cleaner = GFFUtils.cli.gff_cleaner:main',
         'gtf_extract = GFFUtils.cli.gtf_extract:main',
         'gtf2bed = GFFUtils.cli.gtf2bed:main',
-        'GFF3_Annotation_Extractor = GFFUtils.cli.gff_annotation_extractor:main',
-        'GFFcleaner = GFFUtils.cli.gff_cleaner:main',
-        'GTF_extract = GFFUtils.cli.gtf_extract:main',]
+        'GFF3_Annotation_Extractor = GFFUtils.cli.gff_annotation_extractor:GFF3_Annotation_Extractor',
+        'GFFcleaner = GFFUtils.cli.gff_cleaner:GFFcleaner',
+        'GTF_extract = GFFUtils.cli.gtf_extract:GTF_extract',]
     },
     license = 'Artistic License',
     install_requires = ['genomics-bcftbx'],

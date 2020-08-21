@@ -13,6 +13,12 @@ for working with GFF and GTF files, specifically:
  * ``gtf_extract``: extract selected data items from a GTF file
  * ``gtf2bed``: convert GTF file to BED format
 
+.. warning::
+
+   The old names for the utilities (``GFFcleaner``,
+   ``GFF3_Annotation_Extractor`` and ``GTF_extract``) are
+   still supported, but will be removed in a future release.
+
 Installation
 ************
 

@@ -125,6 +125,15 @@ def main():
     if args.outfile is not None:
         fp.close()
 
+def GTF_extract():
+    """
+    Deprecated frontend
+    """
+    logging.warning("'GTF_extract' is deprecated and will "
+                    "be removed in a future release")
+    logging.warning("Please use 'gtf_extract'")
+    main()
+
 #######################################################################
 # Main program
 #######################################################################

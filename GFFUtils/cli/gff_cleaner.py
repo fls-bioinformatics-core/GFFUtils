@@ -481,6 +481,15 @@ def main():
     print("Writing output file %s" % outfile)
     gff_data.write(outfile)
 
+def GFFcleaner():
+    """
+    Deprecated frontend
+    """
+    logging.warning("'GFFcleaner' is deprecated and will "
+                    "be removed in a future release")
+    logging.warning("Please use 'gff_cleaner'")
+    main()
+
 #######################################################################
 # Main program
 #######################################################################
