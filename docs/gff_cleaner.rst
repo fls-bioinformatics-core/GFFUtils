@@ -1,10 +1,10 @@
-``GFFcleaner``: clean up GFF files
-==================================
+``gff_cleaner``: clean up GFF files
+===================================
 
 Overview
 --------
 
-The ``GFFcleaner`` utility performs various manipulations on a GFF
+The ``gff_cleaner`` utility performs various manipulations on a GFF
 file to "clean" it.
 
 Usage and options
@@ -12,7 +12,7 @@ Usage and options
 
 General usage syntax::
 
-     GFFcleaner [OPTIONS] <file>.gff
+     gff_cleaner [OPTIONS] <file>.gff
 
 Options:
 
