@@ -1,10 +1,10 @@
-``GTF_extract``: extract data items from GTF/GFF
+``gtf_extract``: extract data items from GTF/GFF
 ================================================
 
 Overview
 --------
 
-The ``GTF_extract`` utility extracts selected data items from a
+The ``gtf_extract`` utility extracts selected data items from a
 GTF file and output in tab-delimited format.
 
 .. note::
@@ -17,7 +17,7 @@ Usage and options
 
 General usage syntax::
 
-    GTF_extract.py OPTIONS <gft_file>
+    gtf_extract OPTIONS <gft_file>
 
 Options:
 

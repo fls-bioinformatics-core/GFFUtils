@@ -47,6 +47,7 @@ __version__ = get_version()
 import sys
 import os
 import glob
+import logging
 from argparse import ArgumentParser
 from ..GFFFile import GFFFile
 from ..GTFFile import GTFFile
@@ -150,6 +151,15 @@ def main():
         annotate_feature_data(feature_lookup,
                               feature_data_files[0],
                               out_file)
+
+def GFF3_Annotation_Extractor():
+    """
+    Deprecated frontend
+    """
+    logging.warning("'GFF3_Annotation_Extractor' is deprecated and will "
+                    "be removed in a future release")
+    logging.warning("Please use 'gff_annotation_extractor'")
+    main()
 
 #######################################################################
 # Main program

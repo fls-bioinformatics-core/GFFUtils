@@ -7,11 +7,17 @@ Overview
 The ``GFFUtils`` package provides a small set of utility programs
 for working with GFF and GTF files, specifically:
 
- * ``GFFcleaner``: perform "cleaning" operations on a GFF file
- * ``GFF3_Annotation_Extractor``: combine and annotate feature
+ * ``gff_cleaner``: perform "cleaning" operations on a GFF file
+ * ``gff_annotation_extractor``: combine and annotate feature
    counts (e.g. from ``htseq-count``) with data from a GFF file
- * ``GTF_extract``: extract selected data items from a GTF file
+ * ``gtf_extract``: extract selected data items from a GTF file
  * ``gtf2bed``: convert GTF file to BED format
+
+.. warning::
+
+   The old names for the utilities (``GFFcleaner``,
+   ``GFF3_Annotation_Extractor`` and ``GTF_extract``) are
+   still supported, but will be removed in a future release.
 
 Installation
 ************
@@ -69,9 +75,9 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   GFFcleaner
-   GFF3_Annotation_Extractor
-   GTF_extract
+   gff_cleaner
+   gff_annotation_extractor
+   gtf_extract
    gtf2bed
    extras
 

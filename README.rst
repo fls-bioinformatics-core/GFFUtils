@@ -3,10 +3,10 @@ GFFUtils
 
 Utilities for working with GFF and GTF files:
 
-* ``GFFcleaner.py``: perform various "cleaning" manipulations on a GFF file
-* ``GFF3_Annotation_Extractor``: combine and annotate feature counts with data
+* ``gff_cleaner.py``: perform various "cleaning" manipulations on a GFF file
+* ``gff_annotation_extractor``: combine and annotate feature counts with data
   from a GFF or GTF file
-* ``GTF_extract``: extract selected data items from a GTF file
+* ``gft_extract``: extract selected data items from a GTF file
 * ``gtf2bed``: convert GTF contents to BED format
 
 Full documentation is available at http://gffutils.readthedocs.org/
