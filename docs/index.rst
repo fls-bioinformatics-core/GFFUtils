@@ -81,11 +81,18 @@ Contents
    gtf2bed
    extras
 
+Version history
+***************
+
+See the :doc:`CHANGELOG <changes>`.
+
 Additional information
 **********************
 
 See http://www.sanger.ac.uk/resources/software/gff/spec.html for
 details of the GFF format.
+
+
 
 Credits
 *******

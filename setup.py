@@ -33,7 +33,7 @@ setup(
         'GFFcleaner = GFFUtils.cli.gff_cleaner:GFFcleaner',
         'GTF_extract = GFFUtils.cli.gtf_extract:GTF_extract',]
     },
-    license = 'Artistic License',
+    license = 'AFL-3',
     install_requires = ['genomics-bcftbx'],
     test_suite = 'nose.collector',
     tests_require = ['nose'],
@@ -44,7 +44,7 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "Intended Audience :: System Administrators",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: Artistic License (AFL)",
+        "License :: OSI Approved :: Academic Free License (AFL)",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
