@@ -57,42 +57,10 @@ versions:
 
 but support for Python 2.7 is likely to be dropped in the near future.
 
-Documentation
--------------
-
-Documentation based on ``sphinx`` is available under the ``docs`` directory.
-
-To build do either::
-
-    python setup.py sphinx_build
-
-or::
-
-    cd docs
-    make html
-
-both of which create the documentation in the ``docs/build`` subdirectory.
-
 Licensing
 ---------
 
 This software is licensed under the Academic Free License 3.
-
-Running Tests
--------------
-
-The Python unit tests can be run using::
-
-    python setup.py test
-
-Note that this requires the ``nose`` package.
-
-In addition the tests are run via TravisCI whenever this GitHub repository
-is updated:
-
-.. image:: https://travis-ci.org/fls-bioinformatics-core/GFFUtils.png?branch=master
-   :alt: Current status of TravisCI build for master branch
-   :target: https://travis-ci.org/fls-bioinformatics-core/GFFUtils/builds
 
 Credits
 -------
