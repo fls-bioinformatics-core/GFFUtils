@@ -73,6 +73,11 @@ or::
 
 both of which create the documentation in the ``docs/build`` subdirectory.
 
+Licensing
+---------
+
+This software is licensed under the Academic Free License 3.
+
 Running Tests
 -------------
 
