@@ -2,6 +2,22 @@ Version History and Changes
 ===========================
 
 ---------------------------
+Version 0.11.0 (2020-09-02)
+---------------------------
+
+* Updated licence to Academic Free Licence 3
+* Standardise the utility names to ``gff_annotation_extractor``,
+  ``gff_cleaner`` and ``gtf_extract`` (NB the old names are still
+  available but will be dropped in a future release)
+  (`PR #41 <https://github.com/fls-bioinformatics-core/GFFUtils/pull/41>`_)
+* Updated to support Python 3 (versions 3.5, 3.6, 3.7 and 3.8);
+  Python 2.7 is still supported but will be dropped in a future
+  release
+  (`PR #34 <https://github.com/fls-bioinformatics-core/GFFUtils/pull/34>`_)
+* ``gtf2bed``: new option ``-o`` allows output file to be specified
+  (`PR #28 <https://github.com/fls-bioinformatics-core/GFFUtils/pull/28>`_)
+
+---------------------------
 Version 0.10.3 (2019-09-10)
 ---------------------------
 
