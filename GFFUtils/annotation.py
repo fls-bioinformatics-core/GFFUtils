@@ -375,8 +375,17 @@ def annotate_feature_data(gff_lookup,feature_data_file,out_file):
             break
 
     # Read the feature data into a TabFile
-    input_data = TabFile(filen=feature_data_file,
-                         first_line_is_header=first_line_is_header)
+    try:
+        input_data = TabFile(filen=feature_data_file,
+                             first_line_is_header=first_line_is_header)
+    except IndexError as ex:
+        if first_line_is_header:
+            # Maybe first line was just a comment?
+            # Try again without header
+            input_data = TabFile(filen=feature_data_file)
+        else:
+            # Some other failure
+            raise ex
 
     # Initialise columns for output
     if input_data.header():
