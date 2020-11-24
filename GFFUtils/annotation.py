@@ -301,7 +301,7 @@ class HTSeqCountFile(object):
         # Total reads counted
         self.__total_reads = 0
         # Read in data from file
-        fp = open(htseqfile,'rU')
+        fp = open(htseqfile,'rt')
         # Flag indicating whether we're reading feature counts
         # or trailing totals
         reading_feature_counts = True
