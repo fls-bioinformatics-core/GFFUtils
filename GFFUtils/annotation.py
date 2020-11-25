@@ -42,16 +42,23 @@ class GFFAnnotationLookup(object):
     lookup tables.
     """
 
-    def __init__(self,gff_data,id_attr=None):
+    def __init__(self,gff_data,id_attr=None,feature_type=None):
         """Create a new GFFAnnotationLookup instance
 
         Arguments:
           gff_data: a GFFFile object populated from a GFF file
+          id_attr: the attribute to use to extract the ID of
+            of a feature (defaults to 'ID' for GFF and 'gene_id'
+            for GTF, if not set)
+          feature_type: if not None then only allow features
+            of the specified type to be considered as parents
+            when fetching annotation (GFF only)
 
         """
         self.__feature_data_format = gff_data.format
         self.__lookup_id = {}
         self.__lookup_parent = {}
+        self.__feature_type = feature_type
         print("Input file is '%s' format" % self.__feature_data_format)
         if self.__feature_data_format == 'gff':
             self._load_from_gff(gff_data,id_attr=id_attr)
@@ -171,14 +178,21 @@ class GFFAnnotationLookup(object):
         parent_feature = None
         try:
             for data in self.getDataFromID(idx):
-                # Return the first feature
-                parent_feature = data
-                break
+                if self.__feature_type:
+                    # Match the feature type
+                    if data['feature'] == self.__feature_type:
+                        parent_feature = data
+                        break
+                else:
+                    # Return the first feature
+                    parent_feature = data
+                    break
         except KeyError:
             # No parent data
             pass
         if not parent_feature:
-            logging.warning("No parent data for feature '%s'" % idx)
+            logging.warning("Unable to locate parent data for feature "
+                            "'%s'" % idx)
             return GFFAnnotation(idx)
         # Parent gene data
         if self.__feature_data_format != 'gtf':
