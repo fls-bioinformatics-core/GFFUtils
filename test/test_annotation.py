@@ -254,15 +254,20 @@ class TestAnnotateFeatureData(unittest.TestCase):
         # Temporary directory
         self.wd = tempfile.mkdtemp()
         # Feature data fragment
-        self.feature_data = """#Gene
-DDB0166998
-DDB0167147
+        self.feature_data_with_header = """#Gene	Counts
+DDB0166998	167
+DDB0167147	8787
 """
-        # Write to temporary file
+        self.feature_data_no_header = """DDB0166998	167
+DDB0167147	8787
+"""
+        self.feature_data_bad_header = """#This is just a comment not a header
+DDB0166998	167
+DDB0167147	8787
+"""
+        # Feature file path
         self.feature_data_file = os.path.join(self.wd,
                                              "features.txt")
-        with open(self.feature_data_file,'wt') as fp:
-            fp.write(self.feature_data)
         # Output file name
         self.out_file = os.path.join(self.wd,"out.txt")
 
@@ -270,10 +275,13 @@ DDB0167147
         if os.path.exists(self.wd):
             shutil.rmtree(self.wd)
 
-    def test_annotate_feature_data(self):
+    def test_annotate_feature_data_with_header(self):
         """
-        annotate_feature_data: annotates from GFF file
+        annotate_feature_data: annotates from GFF file (with header)
         """
+        # Make feature file
+        with open(self.feature_data_file,'wt') as fp:
+            fp.write(self.feature_data_with_header)
         # Load GFF data
         gff = GFFFile("test.gff",StringIO(gff_data))
         lookup = GFFAnnotationLookup(gff)
@@ -284,9 +292,53 @@ DDB0167147
         # Check output
         with open(self.out_file,'rt') as fp:
             self.assertEqual(fp.read(),
-                             """Gene	exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description
-DDB0166998	DDB0166998	mRNA	DDB_G0276345	naa20	DDB0232429	6679320	6680012	+	692	DDB0232429:6679320-6680012	Description of gene naa20
-DDB0167147	DDB0167147	mRNA	DDB_G0275629	DDB_G0275629	DDB0232429	5954835	5955486	+	651	DDB0232429:5954835-5955486	Description of gene DDB_G0275629
+                             """Gene	Counts	exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description
+DDB0166998	167	DDB0166998	mRNA	DDB_G0276345	naa20	DDB0232429	6679320	6680012	+	692	DDB0232429:6679320-6680012	Description of gene naa20
+DDB0167147	8787	DDB0167147	mRNA	DDB_G0275629	DDB_G0275629	DDB0232429	5954835	5955486	+	651	DDB0232429:5954835-5955486	Description of gene DDB_G0275629
+""")
+
+    def test_annotate_feature_data_no_header(self):
+        """
+        annotate_feature_data: annotates from GFF file (no header)
+        """
+        # Make feature file
+        with open(self.feature_data_file,'wt') as fp:
+            fp.write(self.feature_data_no_header)
+        # Load GFF data
+        gff = GFFFile("test.gff",StringIO(gff_data))
+        lookup = GFFAnnotationLookup(gff)
+        # Do annotation
+        annotate_feature_data(lookup,
+                              self.feature_data_file,
+                              self.out_file)
+        # Check output
+        with open(self.out_file,'rt') as fp:
+            self.assertEqual(fp.read(),
+                             """data0	data1	exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description
+DDB0166998	167	DDB0166998	mRNA	DDB_G0276345	naa20	DDB0232429	6679320	6680012	+	692	DDB0232429:6679320-6680012	Description of gene naa20
+DDB0167147	8787	DDB0167147	mRNA	DDB_G0275629	DDB_G0275629	DDB0232429	5954835	5955486	+	651	DDB0232429:5954835-5955486	Description of gene DDB_G0275629
+""")
+
+    def test_annotate_feature_data_bad_header(self):
+        """
+        annotate_feature_data: annotates from GFF file (bad header)
+        """
+        # Make feature file
+        with open(self.feature_data_file,'wt') as fp:
+            fp.write(self.feature_data_bad_header)
+        # Load GFF data
+        gff = GFFFile("test.gff",StringIO(gff_data))
+        lookup = GFFAnnotationLookup(gff)
+        # Do annotation
+        annotate_feature_data(lookup,
+                              self.feature_data_file,
+                              self.out_file)
+        # Check output
+        with open(self.out_file,'rt') as fp:
+            self.assertEqual(fp.read(),
+                             """data0	data1	exon_parent	feature_type_exon_parent	gene_ID	gene_name	chr	start	end	strand	gene_length	locus	description
+DDB0166998	167	DDB0166998	mRNA	DDB_G0276345	naa20	DDB0232429	6679320	6680012	+	692	DDB0232429:6679320-6680012	Description of gene naa20
+DDB0167147	8787	DDB0167147	mRNA	DDB_G0275629	DDB_G0275629	DDB0232429	5954835	5955486	+	651	DDB0232429:5954835-5955486	Description of gene DDB_G0275629
 """)
 
 class TestAnnotateHtseqCountData(unittest.TestCase):

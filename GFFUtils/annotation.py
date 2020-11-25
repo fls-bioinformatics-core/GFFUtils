@@ -301,7 +301,7 @@ class HTSeqCountFile(object):
         # Total reads counted
         self.__total_reads = 0
         # Read in data from file
-        fp = open(htseqfile,'rU')
+        fp = open(htseqfile,'rt')
         # Flag indicating whether we're reading feature counts
         # or trailing totals
         reading_feature_counts = True
@@ -364,10 +364,41 @@ def annotate_feature_data(gff_lookup,feature_data_file,out_file):
       feature_data_file  input data file with feature IDs in first column
       out_file           name of output file
     """
-    # Read the feature data into a TabFile
+    # Determine if input file has a header line
     print("Reading in data from %s" % feature_data_file)
-    feature_data = TabFile(filen=feature_data_file,
-                           first_line_is_header=True)
+    with open(feature_data_file,'rt') as fp:
+        for line in fp:
+            if line.startswith('#'):
+                first_line_is_header = True
+            else:
+                first_line_is_header = False
+            break
+
+    # Read the feature data into a TabFile
+    try:
+        input_data = TabFile(filen=feature_data_file,
+                             first_line_is_header=first_line_is_header)
+    except IndexError as ex:
+        if first_line_is_header:
+            # Maybe first line was just a comment?
+            # Try again without header
+            input_data = TabFile(filen=feature_data_file)
+        else:
+            # Some other failure
+            raise ex
+
+    # Initialise columns for output
+    if input_data.header():
+        # Copy header
+        columns = [c for c in input_data.header()]
+    else:
+        # Make generic header
+        columns = ['data%d' % x for x in range(0,input_data.nColumns())]
+
+    # Create and populate second TabFile for output
+    feature_data = TabFile(column_names=columns)
+    for line in input_data:
+        feature_data.append(data=[x for x in line])
 
     # Append columns for annotation
     print("Appending columns for annotation")
