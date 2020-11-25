@@ -78,13 +78,18 @@ def main():
     p.add_argument('gff_file',metavar="GFF_FILE",
                    help="GFF or GTF file to get annotation data from")
     p.add_argument('feature_files',metavar="FEATURE_FILE",nargs="+",
-                   help="feature data to annotate")
+                   help="feature data to annotate; should be either "
+                   "tab-delimited data, or output from htseq-count (if "
+                   "--htseq-count is also specified)")
     p.add_argument('-o',action="store",dest="out_file",default=None,
                    help="specify output file name")
-    p.add_argument('-t','--type',action="store",dest="feature_type",default='exon',
-                   help="feature type listed in input count files (default 'exon'; "
-                   "if used in conjunction with --htseq-count option then should be "
-                   "the same as that specified when running htseq-count)")
+    p.add_argument('-t','--type',action="store",dest="feature_type",
+                   default=None,
+                   help="restrict feature records to this type when "
+                   "matching features from input count files; if used in "
+                   "conjunction with --htseq-count then should be the "
+                   "same as that specified when running htseq-count "
+                   "(default: include all feature records)")
     p.add_argument('-i','--id-attribute',action="store",dest="id_attribute",
                    default=None,
                    help="explicitly specify the name of the attribute to get the "
@@ -138,7 +143,9 @@ def main():
 
     # Build lookup
     print("Creating lookup for %s" % feature_format)
-    feature_lookup = GFFAnnotationLookup(gff,id_attr=args.id_attribute)
+    feature_lookup = GFFAnnotationLookup(gff,
+                                         id_attr=args.id_attribute,
+                                         feature_type=feature_type)
 
     # Annotate input data
     if htseq_count_mode:

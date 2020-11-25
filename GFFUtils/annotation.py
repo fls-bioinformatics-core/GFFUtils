@@ -42,16 +42,23 @@ class GFFAnnotationLookup(object):
     lookup tables.
     """
 
-    def __init__(self,gff_data,id_attr=None):
+    def __init__(self,gff_data,id_attr=None,feature_type=None):
         """Create a new GFFAnnotationLookup instance
 
         Arguments:
           gff_data: a GFFFile object populated from a GFF file
+          id_attr: the attribute to use to extract the ID of
+            of a feature (defaults to 'ID' for GFF and 'gene_id'
+            for GTF, if not set)
+          feature_type: if not None then only allow features
+            of the specified type to be considered as parents
+            when fetching annotation (GFF only)
 
         """
         self.__feature_data_format = gff_data.format
         self.__lookup_id = {}
         self.__lookup_parent = {}
+        self.__feature_type = feature_type
         print("Input file is '%s' format" % self.__feature_data_format)
         if self.__feature_data_format == 'gff':
             self._load_from_gff(gff_data,id_attr=id_attr)
@@ -71,12 +78,10 @@ class GFFAnnotationLookup(object):
             if id_attr in line['attributes']:
                 # Check that the ID is unique
                 idx = line['attributes'][id_attr]
-                if idx in self.__lookup_id:
-                    logging.warning("Identifier '%s' is not unique: "
-                                    "feature '%s' already found" %
-                                    (id_attr,idx))
+                if idx not in self.__lookup_id:
+                    self.__lookup_id[idx] = []
                 # Store reference to data by ID
-                self.__lookup_id[idx] = line
+                self.__lookup_id[idx].append(line)
                 if parent_attr in line['attributes']:
                     # Store reference to parent by ID
                     parent = line['attributes'][parent_attr]
@@ -101,7 +106,7 @@ class GFFAnnotationLookup(object):
             if line['feature'] == 'gene':
                 if id_attr in line['attributes']:
                     idx = line['attributes'][id_attr]
-                    self.__lookup_id[idx] = line
+                    self.__lookup_id[idx] = [line]
                 else:
                     logging.warning("No '%s' attribute found on "
                                     "line %d: %s" % (id_attr,
@@ -115,8 +120,9 @@ class GFFAnnotationLookup(object):
           idx: ID attribute to search for
 
         Returns:
-          Line of data where the value of the ID attribute matches the
-          one supplied; raises KeyError exception if no match is found.
+          List of data lines where the value of the ID attribute matches
+          the one supplied; raises KeyError exception if no match is
+          found.
         """
         return self.__lookup_id[idx]
 
@@ -150,10 +156,10 @@ class GFFAnnotationLookup(object):
                 idx0 = self.getParentID(idx0)
         except KeyError as ex:
             if idx0 != idx:
-                # Check that it's a gene
-                data = self.getDataFromID(idx0)
-                assert(data['feature'] == 'gene')
-                return data
+                # Locate gene record in list
+                for data in self.getDataFromID(idx0):
+                    if data['feature'] == 'gene':
+                        return data
         return None
 
     def getAnnotation(self,idx):
@@ -169,11 +175,24 @@ class GFFAnnotationLookup(object):
         # Return annotation for an ID
         print("Collecting annotation for %s" % idx)
         # Parent feature data
+        parent_feature = None
         try:
-            parent_feature = self.getDataFromID(idx)
+            for data in self.getDataFromID(idx):
+                if self.__feature_type:
+                    # Match the feature type
+                    if data['feature'] == self.__feature_type:
+                        parent_feature = data
+                        break
+                else:
+                    # Return the first feature
+                    parent_feature = data
+                    break
         except KeyError:
             # No parent data
-            logging.warning("No parent data for feature '%s'" % idx)
+            pass
+        if not parent_feature:
+            logging.warning("Unable to locate parent data for feature "
+                            "'%s'" % idx)
             return GFFAnnotation(idx)
         # Parent gene data
         if self.__feature_data_format != 'gtf':

@@ -58,7 +58,9 @@ class TestGFFAnnotationLookup(unittest.TestCase):
         gff = GFFFile("test.gff",StringIO(gff_data))
         lookup = GFFAnnotationLookup(gff)
         # getDataFromID
-        self.assertEqual(str(lookup.getDataFromID("DDB_G0276345")),
+        data = lookup.getDataFromID("DDB_G0276345")
+        self.assertEqual(len(data),1)
+        self.assertEqual(str(data[0]),
                          str(GFFDataLine("DDB0232429	.	gene	6679320	6680012	.	+	.	ID=DDB_G0276345;Name=naa20;description=Description of gene naa20")))
         # getParentID
         self.assertEqual(lookup.getParentID("DDB0166998"),"DDB_G0276345")
@@ -87,7 +89,9 @@ class TestGFFAnnotationLookup(unittest.TestCase):
         gtf = GTFFile("test.gtf",StringIO(gtf_data))
         lookup = GFFAnnotationLookup(gtf)
         # getDataFromID
-        self.assertEqual(str(lookup.getDataFromID("ENSG00000223972.4")),
+        data = lookup.getDataFromID("ENSG00000223972.4")
+        self.assertEqual(len(data),1)
+        self.assertEqual(str(data[0]),
                          str(GTFDataLine("""chr1	HAVANA	gene	11869	14412	.	+	.	gene_id "ENSG00000223972.4"; transcript_id "ENSG00000223972.4"; gene_type "pseudogene"; gene_status "KNOWN"; gene_name "DDX11L1"; transcript_type "pseudogene"; transcript_status "KNOWN"; transcript_name "DDX11L1"; level 2; havana_gene "OTTHUMG00000000961.2";""")))
         # getParentID
         self.assertRaises(KeyError,

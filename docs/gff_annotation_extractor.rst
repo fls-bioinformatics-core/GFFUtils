@@ -10,19 +10,21 @@ it with data about each feature's parent gene from a GFF file.
 
 By default the program takes feature data from a single tab-delimited
 input file where the first column contains feature IDs, and outputs an
-updated copy of the file with data about the feature's parent gene
-appended to each line (chromosome, start and end positions, strand,
-etc).
+updated copy of the file with data about the feature's parent feature
+and parent gene appended to each line.
 
 In 'htseq-count' mode, one or more ``htseq-count`` output files should
 be provided as input; the program will write out the data about the
-feature's parent gene appended with the counts from each input file.
+feature's parent feature and parent gene appended with the counts from
+each input file.
 
 By default feature IDs from the feature data files are matched to
-exon records in the input GFF using the ``ID`` attribute in the
-record. The feature type to match against can be changed using the
-``-t`` option; the attribute used for the feature ID can be changed
-using the ``-i`` option.
+the first record in the input GFF where the ``ID`` attribute of that
+record is the same (a different attribute can be specified using the
+``-i`` option). All records are considered regardless of the feature
+type, unless the ``-t`` option is used to restrict the records to
+just those with the specified feature type (this may be required in
+'htseq-count' mode).
 
 The parent gene is located by recursively looking up records where
 the ``ID`` attribute matches the ``Parent`` attribute, until a
@@ -32,7 +34,8 @@ gene record is found.
 
    ``gff_annotation_extractor`` can also be used with GTF input,
    in which case the feature IDs are matched using the ``gene_id``
-   attribute by default.
+   attribute by default. Only ``gene`` feature types are considered
+   when using GTF data.
 
 Usage and options
 -----------------
@@ -65,10 +68,11 @@ Options:
 
 .. cmdoption:: -t FEATURE_TYPE, --type=FEATURE_TYPE
 
-   feature type listed in input count files (default
-   ``exon``; if used in conjunction with ``--htseq-count``
-   option then should be the same as that specified when
-   running htseq-count)
+   restrict feature records to this type when matching
+   features from input count files; if used in conjunction
+   with ``--htseq-count`` then should be the same as that
+   specified when running htseq-count (default: include all
+   feature records)
 
 .. cmdoption:: -i ID_ATTRIBUTE, --id-attribute=ID_ATTRIBUTE
 
@@ -142,14 +146,10 @@ The following is a non-exhaustive list of the warnings and errors
 that ``gff_annotation_extractor`` can produce, along with a brief
 description and possible cause:
 
-* ``No parent data for feature '...'``: indicates IDs in the feature
-  files for which no matching records can be located in the input GFF.
-  In this case the output annotation will be blank. Check that the
-  input feature file consists of tab-delimited data.
-
-* ``Identifier '...' is not unique: "feature '...' already found``:
-  indicates that multiple records exist in the GFF file which match
-  a feature ID from the feature file.
+* ``Unable to locate parent data for feature '...'``: indicates IDs
+  in the feature files for which no matching records can be located
+  in the input GFF. In this case the output annotation will be blank.
+  Check that the input feature file consists of tab-delimited data.
 
 * ``Multiple parents found on line ...``: indicates that a record
   matching a feature ID has a ``Parent`` attribute which contains
