@@ -2,6 +2,21 @@ Version History and Changes
 ===========================
 
 ---------------------------
+Version 0.12.0 (2020-11-25)
+---------------------------
+
+* ``gff_annotation_extractor``: fix bug with ``-t``/``--type`` option
+  which previous didn't do anything
+  (`PR #49 <https://github.com/fls-bioinformatics-core/GFFUtils/pull/49>`_)
+* ``gff_annotation_extractor``: fix bug when annotating non-htseq-count
+  feature files which didn't have a header
+  (`PR #48 <https://github.com/fls-bioinformatics-core/GFFUtils/pull/48>`_)
+* ``gff_annotation_extractor``: update the documentation to clarify
+  function and usage
+  (`PR #47 <https://github.com/fls-bioinformatics-core/GFFUtils/pull/47>`_)
+  
+
+---------------------------
 Version 0.11.0 (2020-09-02)
 ---------------------------
 
